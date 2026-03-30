@@ -1,0 +1,10 @@
+packages:
+  "gsap": "Complex timeline and scroll animations for premium feel"
+  "lucide-react": "Beautiful consistent iconography"
+
+images: []
+
+notes:
+  - "The site operates entirely via URL parameters to white-label itself. Example: ?name=FitPro&color=EF4444"
+  - "GSAP is used for the entrance sequence, IntersectionObserver for scroll reveals."
+  - "Tailwind v4 handles dynamic color opacities natively via color-mix."

@@ -1,0 +1,838 @@
+# 🏋️ REPLIT AI AGENT — FITNESS CLUB PREMIUM DEMO WEBSITE
+## White-Label Auto-Personalization System for Ýeňil Web Agency
+
+---
+
+## 🎯 WHAT YOU ARE BUILDING
+
+A **single, stunning fitness club website** that automatically personalizes itself based on URL parameters. This is a portfolio/demo tool for a web agency — when the agency shares a link with a potential client, the client sees a fully personalized website with THEIR club's name already on it.
+
+**The Magic:** `https://yenil.ru/fitness?name=GymCity&city=Ashgabat&color=FF6B00&phone=%2B99312345678`
+
+Opening this URL renders a complete, premium fitness website that says "GymCity", shows "Ashgabat" location, uses orange as the accent color, and displays their phone number — all without any backend or database.
+
+---
+
+## 🛠️ TECH STACK
+
+```
+Framework:    Pure HTML + CSS + Vanilla JavaScript (ONE FILE: index.html)
+Animations:   GSAP (CDN) + CSS custom animations
+Fonts:        Google Fonts CDN
+Icons:        Lucide Icons (CDN)
+NO BUILD STEP — works directly in browser, deployable to any static host
+```
+
+**Why single file?** Because Salam needs to send ONE link. No backend, no database, no build process. The file reads URL params and renders instantly. Vercel/Replit/GitHub Pages all host it for free.
+
+---
+
+## 📐 URL PARAMETER SYSTEM
+
+The website reads these URL parameters and applies them throughout:
+
+```javascript
+const params = new URLSearchParams(window.location.search);
+
+const CLUB = {
+  name:        params.get('name')    || 'FitPro Club',           // Club name
+  tagline:     params.get('tag')     || 'Güýçli. Sagdyn. Erkin.', // Hero tagline
+  city:        params.get('city')    || 'Aşgabat',               // City name
+  phone:       params.get('phone')   || '+993 12 34-56-78',       // Phone number
+  address:     params.get('addr')    || 'Garaşsyzlyk şaýoly 100', // Address
+  color:       params.get('color')   || 'EF4444',                 // Accent color (hex, no #)
+  colorDark:   params.get('colord')  || null,                     // Optional darker shade
+  instagram:   params.get('ig')      || '',                       // Instagram handle
+  telegram:    params.get('tg')      || '',                       // Telegram handle
+  established: params.get('est')     || '2019',                   // Founded year
+  members:     params.get('members') || '1200+',                  // Member count
+  trainers:    params.get('trainers')|| '25+',                    // Trainer count
+  logo:        params.get('logo')    || null,                     // Logo URL (optional)
+};
+
+// Auto-generate darker shade if colorDark not provided
+// Use color as CSS custom property throughout entire site
+document.documentElement.style.setProperty('--accent', '#' + CLUB.color);
+```
+
+**EVERY piece of text on the site** must pull from this CLUB object. No hardcoded club-specific content.
+
+---
+
+## 🎨 DESIGN DIRECTION — DARK PREMIUM ATHLETIC
+
+**Aesthetic:** High-end gym meets editorial magazine. Think Nike meets luxury spa. Dark backgrounds, explosive accent colors, cinematic typography, bold geometric shapes.
+
+**Non-negotiable design choices:**
+- **Background:** Near-black `#0A0A0B` as base, NOT pure black
+- **Surface cards:** `#111114` with `1px solid rgba(255,255,255,0.08)` border
+- **Accent:** Pulled from URL `?color=` parameter — vivid, electric
+- **Typography display:** `Bebas Neue` — powerful, sporty, cinematic
+- **Typography body:** `DM Sans` — clean and readable
+- **Typography numbers/stats:** `Oswald` — impactful stats
+- **Texture:** Very subtle noise grain overlay on hero (CSS SVG filter)
+- **Shapes:** Diagonal cuts between sections (clip-path: polygon)
+
+**Visual signature element:** A large diagonal stripe/slash shape in the accent color appearing throughout as a recurring motif — on cards, behind headings, as decorative dividers.
+
+---
+
+## 📱 SECTIONS — COMPLETE SPECIFICATION
+
+### SECTION 0: PAGE HEAD
+```html
+<title>[CLUB.name] — [CLUB.city] | Fitnes Kluby</title>
+<meta name="description" content="[CLUB.city] şäheriniň iň gowy fitnes kluby — [CLUB.name]. Hünärmen tälimçiler, häzirki zaman enjamlary.">
+<meta name="theme-color" content="#[CLUB.color]">
+<link rel="icon" href="[generated SVG favicon with club initials]">
+```
+
+Generate a favicon dynamically: SVG with first letter of club name in accent color on dark background.
+
+---
+
+### SECTION 1: NAVIGATION (Sticky)
+
+**Left:** Club logo or dynamically generated text logo:
+- If `CLUB.logo` URL provided → show `<img>` tag
+- If no logo → Generate a beautiful text logo: `[CLUB.name]` in Bebas Neue with accent color underline/dot
+
+**Center (desktop):** Nav links
+```
+Baş Sahypa · Hyzmatlar · Tälimçiler · Bahalar · Surat Galereýa · Habarlaş
+```
+
+**Right:** Phone number (from CLUB.phone) + CTA button "Mugt Synag"
+
+**Mobile:** Logo left + hamburger right
+- Full-screen overlay menu with staggered animation
+- Phone number prominently in mobile menu
+
+**Scroll behavior:**
+- On scroll down: Nav shrinks slightly, gets glass blur: `backdrop-filter: blur(20px); background: rgba(10,10,11,0.85)`
+- Bottom border: `1px solid rgba([accentRGB], 0.3)`
+
+---
+
+### SECTION 2: HERO (Full Viewport, Maximum Impact)
+
+**Background:** Dark with:
+1. Large, blurred accent color blob (bottom left) — `position: absolute, border-radius: 50%, filter: blur(120px), opacity: 0.15`
+2. Grid pattern overlay — `background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px)` at 40px intervals
+3. Diagonal accent stripe (top-right decorative element)
+4. Noise grain texture at 3% opacity
+
+**Hero Layout (asymmetric, desktop):**
+```
+LEFT (55%):                         RIGHT (45%):
+                                    [Floating stats card]
+[Small pill badge]                  ┌─────────────────┐
+● AÇYK · [CLUB.city]               │ 👥 [CLUB.members]│
+                                    │    Agza          │
+[MASSIVE HEADLINE]                  │ 💪 [CLUB.trainers]│
+[CLUB.name]                         │    Tälimçi       │
+FITNES                             │ 🏆 [years] Ýyl   │
+KLUBY                              │    Tejribe        │
+                                    └─────────────────┘
+[Subheadline]
+[CLUB.tagline]
+Sagdyn ýaşaýyş — güýçli durmuş.
+
+[TWO BUTTONS]
+[Mugt Synaga Ýazyl →]  [Bahalar →]
+
+[Trust strip]
+★★★★★  |  [CLUB.members] Agza  |  [CLUB.established]-njy Ýyldan
+```
+
+**Mobile Hero:**
+- Full-width, centered content
+- Stats card floats below main content with horizontal scroll
+- Headline: `clamp(3rem, 12vw, 6rem)` — massive but not overflowing
+- Background blobs still present but smaller
+
+**Hero Entrance Animation (GSAP timeline, 0-1.8s):**
+```javascript
+// Sequence:
+// 0.0s - Background grid fades in
+// 0.2s - Badge slides in from left  
+// 0.4s - "CLUB.name" text draws in letter by letter (stagger: 0.05)
+// 0.7s - "FITNES KLUBY" slides up
+// 0.9s - Subheadline fades up
+// 1.1s - Buttons scale in with bounce
+// 1.3s - Stats card slides in from right
+// 1.6s - Trust strip fades in
+```
+
+---
+
+### SECTION 3: STATS TICKER
+
+A full-width dark bar with animated counting numbers:
+
+```
+[CLUB.members]    [CLUB.trainers]    [calcYears(CLUB.established)]    24/7
+  Agza              Hünärmen              Ýyl Tejribe              Açyk
+```
+
+Numbers count up when scrolled into view (Intersection Observer + JS counter).
+Background: Accent color at 10% opacity. Left/right: faded accent glow.
+
+---
+
+### SECTION 4: SERVICES / PROGRAMS
+
+**Headline:** `Haýsy programma size laýyk?`
+
+**8 Service Cards in a magazine-style grid (not boring equal grid):**
+- Cards 1-2: Wide (2-col span)
+- Cards 3-6: Normal (1-col)
+- Cards 7-8: Wide (2-col span)
+
+```javascript
+const services = [
+  {
+    icon: "💪",
+    name: "Güýç Türgenleşigi",
+    name_en: "Strength Training",
+    desc: "Iň häzirki zaman enjamlar bilen myşsa gurluşyňyzy döretmek. Şahsy ösüş meýilnamasy.",
+    tag: "Beginners Welcome",
+    intensity: 4, // 1-5 bars
+    duration: "45-60 min"
+  },
+  {
+    icon: "🏃",
+    name: "Kardio Bölümi",
+    name_en: "Cardio Zone",
+    desc: "Ýürek-damar ulgamyňyzy güýçlendiriň. Беговые дорожки, велотренажёры, эллипсы.",
+    tag: "Ähli Derejeler",
+    intensity: 3,
+    duration: "30-60 min"
+  },
+  {
+    icon: "🧘",
+    name: "Ýoga & Meditasiýa",
+    name_en: "Yoga & Meditation",
+    desc: "Ruhuňyzy we bedeňizi sazlaşdyrýan sapaklary. Tejribeli hünärmenler ýolbaşçylygynda.",
+    tag: "Gündelik Sapaklar",
+    intensity: 2,
+    duration: "60 min"
+  },
+  {
+    icon: "🥊",
+    name: "Boks & MMA",
+    name_en: "Boxing & MMA",
+    desc: "Öz-özüňi goramak we fiziki taýýarlyk. Hünärmen tälimçiler bilen.",
+    tag: "Güýçli Taýýarlyk",
+    intensity: 5,
+    duration: "60-90 min"
+  },
+  {
+    icon: "🏊",
+    name: "Suwda Türgenleşik",
+    name_en: "Aqua Training",
+    desc: "Bogunlaryňyzy gorap, tutuş bedeniňizi işledýän suw türgenleşikleri.",
+    tag: "Pes Zarba",
+    intensity: 2,
+    duration: "45 min"
+  },
+  {
+    icon: "🔥",
+    name: "HIIT Trenažýory",
+    name_en: "HIIT Training",
+    desc: "Ýokary intensiwli interval türgenleşigi. 30 minutda maksimal netijeliligi gazanyň.",
+    tag: "Çalt Netije",
+    intensity: 5,
+    duration: "30 min"
+  },
+  {
+    icon: "🍎",
+    name: "Iýmitlenme Maslahaty",
+    name_en: "Nutrition Consulting",
+    desc: "Şahsy dietolog bilen sagdyn iýmitlenme meýilnamasy düzüň.",
+    tag: "Goşmaça Hyzmat",
+    intensity: 1,
+    duration: "Konsultasiýa"
+  },
+  {
+    icon: "🧖",
+    name: "SPA & Dikeltme",
+    name_en: "Spa & Recovery",
+    desc: "Türgenleşikden soň sauna, buhar otagy we massa otaglary bilen dynç alyň.",
+    tag: "Premium",
+    intensity: 1,
+    duration: "Açyk"
+  }
+];
+```
+
+**Card Design:**
+- Dark card `#111114` background
+- Top-left: Big icon in accent-colored circle
+- Intensity meter: `[●●●●○]` dots in accent color
+- Duration badge: small pill bottom-right
+- Hover: Card lifts, accent-colored left border appears (3px), icon rotates slightly
+- "Bellige Al" CTA appears on hover (slides up from bottom of card)
+
+---
+
+### SECTION 5: WHY US — CINEMATIC FEATURE SECTION
+
+**Layout:** Full-width dark section with accent color blob in background. Left = large bold text, Right = feature list with icons.
+
+**Left side headline:**
+```
+Näme üçin
+[CLUB.name]?
+
+[Large accent-colored number]
+[CLUB.members]
+Müşderimiz
+Biziň bilen Galýar
+```
+
+**Right side — 4 feature blocks with animated icons:**
+
+```
+⚡ Döwrebap Enjamlar
+   [CLUB.city] şäherindäki iň häzirki zaman
+   fitnes enjamlar. Ýewropa markaly.
+
+👨‍🏫 Hünärmen Tälimçiler
+   [CLUB.trainers] sertifikatly tälimçimiz.
+   Her biri öz pudagynyň ussady.
+
+🕐 24/7 Açyk
+   Işiňize, okuwuňyza garamazdan —
+   size amatly wagtda geliň.
+
+🎯 Şahsy Meýilnama
+   Her agza üçin aýratyn türgenleşik
+   we iýmitlenme programmasy.
+```
+
+**Animated detail:** When scrolling into view, each feature block slides in from the right with a staggered 0.15s delay.
+
+---
+
+### SECTION 6: TRAINERS SHOWCASE
+
+**Headline:** `Siziň Üstünligiňize Ynanýan Tälimçiler`
+
+**4 trainer cards in a magazine-style horizontal layout:**
+
+Generate realistic-looking placeholder trainer profiles:
+
+```javascript
+const trainers = [
+  {
+    name: "Merdan Hydyrow",
+    specialty: "Güýç & Powerlifting",
+    experience: "8 Ýyl",
+    cert: "NASM Sertifikatly",
+    emoji: "🏋️",
+    bgGradient: "accent-to-dark",
+    achievement: "Milli Çempion 2021"
+  },
+  {
+    name: "Aýgül Annagylyjowa",
+    specialty: "Ýoga & Pilates",
+    experience: "6 Ýyl",
+    cert: "RYT-500",
+    emoji: "🧘‍♀️",
+    bgGradient: "purple-to-dark",
+    achievement: "500+ Okuwçy"
+  },
+  {
+    name: "Serdar Atabaýew",
+    specialty: "Boks & MMA",
+    experience: "12 Ýyl",
+    cert: "WBC Sertifikatly",
+    emoji: "🥊",
+    bgGradient: "orange-to-dark",
+    achievement: "2x Çempion"
+  },
+  {
+    name: "Ogulgerek Durdyýewa",
+    specialty: "Kardio & HIIT",
+    experience: "5 Ýyl",
+    cert: "ACE Sertifikatly",
+    emoji: "🏃‍♀️",
+    bgGradient: "green-to-dark",
+    achievement: "1000+ Seans"
+  }
+];
+```
+
+**Trainer Card Design:**
+- Large card, tall aspect ratio (portrait orientation)
+- Top half: Emoji large, centered, on gradient background with abstract shape behind it
+- Bottom half: Dark, name in large Bebas Neue, specialty + experience + cert tag
+- Achievement badge: Gold pill positioned top-right (absolute)
+- Hover: Card tilts slightly (3D transform: rotateY(3deg)), gradient brightens
+- "Profil" button slides up on hover
+
+---
+
+### SECTION 7: GALLERY — MASONRY GRID
+
+**Headline:** `Klubumyzdan Görnüşler`
+
+**Use CSS Grid masonry or creative grid** with placeholder gradient images (since no real photos are available):
+
+Generate 9 beautiful gradient "placeholder" panels that look like gym interior photos:
+- Each uses different gradient combinations
+- Contains a subtle icon in center representing what room/area it shows
+- Labels: "Gym Zaly", "Kardio Bölümi", "SPA", "Ýoga Otagy", "Havuz", "Garderop", "Suwsuzlyk Bar", "Boks Ringi", "Açyk Meýdan"
+- Hover: Overlay appears with room name + view icon
+
+**Grid layout:** 
+- Desktop: 3 columns, mixed heights (CSS Grid with explicit row spans)
+- Mobile: 2 columns, equal heights
+
+---
+
+### SECTION 8: PRICING SECTION
+
+**Headline:** `Size Laýyk Bolan Meýilnama`
+**Sub:** `Şertnama ýok. Islän wagtyňyz ýatyrip bilersiňiz.`
+
+**3 pricing cards:**
+
+```javascript
+const plans = [
+  {
+    name: "Başlangyç",
+    badge: "Täze Agzalar Üçin",
+    price_monthly: 150, // TMT
+    price_annual_monthly: 120, // TMT (annual billing)
+    color: "default",
+    popular: false,
+    features: [
+      "✅ Gym Zaly — Çäklendirilmedik",
+      "✅ Kardio Bölümi",
+      "✅ Duş & Garderop",
+      "✅ Mobil App",
+      "❌ Gruppa sapaklary",
+      "❌ Şahsy tälimçi",
+      "❌ SPA Bölümi",
+      "❌ Iýmitlenme maslahaty"
+    ],
+    cta: "Başlamagy Saýla"
+  },
+  {
+    name: "Premium",
+    badge: "Iň Meşhur Saýlaw",
+    price_monthly: 300,
+    price_annual_monthly: 240,
+    color: "accent", // highlighted card
+    popular: true,
+    features: [
+      "✅ Gym Zaly — Çäklendirilmedik",
+      "✅ Ähli Gruppa Sapaklary",
+      "✅ Kardio & HIIT Bölümleri",
+      "✅ SPA & Sauna",
+      "✅ Mobil App + Premium",
+      "✅ Aýda 2x Şahsy Tälimçi",
+      "✅ Iýmitlenme Maslahaty",
+      "❌ Çäklendirilmedik Şahsy Tälimçi"
+    ],
+    cta: "Premium Al"
+  },
+  {
+    name: "Elite",
+    badge: "Iň Doly Tejribe",
+    price_monthly: 600,
+    price_annual_monthly: 480,
+    color: "gold",
+    popular: false,
+    features: [
+      "✅ Hemme Zada Girişlik",
+      "✅ Çäklendirilmedik Şahsy Tälimçi",
+      "✅ Bagyşlanan Tälimçi",
+      "✅ Şahsy Iýmitlenme Meýilnamasy",
+      "✅ VIP Garderop",
+      "✅ Myhmanlara Girişlik (2x/aý)",
+      "✅ Klub Etajerwkasy Çäreleri",
+      "✅ Ýörite Elite Kartasy"
+    ],
+    cta: "Elite Karta Al"
+  }
+];
+```
+
+**Monthly / Annual toggle:**
+- A beautifully animated toggle at the top of pricing section
+- Annual: "20% Tygşytlaň" green badge next to it
+- When switched, prices animate (cross-fade or count-down to new price)
+
+**Popular card (Premium):** 
+- Elevated above others (translateY: -8px)
+- Accent colored border (2px glow)
+- Popular badge floating on top
+- Slightly larger
+- Background: card with subtle accent gradient
+
+**Price display format:**
+```
+[150]  [TMT/aý]
+Annual: 120 TMT/aý  (billed annually)
+```
+
+---
+
+### SECTION 9: SCHEDULE / TIMETABLE
+
+**Headline:** `Hepdelik Sapak Tertibi`
+
+**A visual weekly schedule grid:**
+- Columns: Monday-Sunday (Duş – Ýek)  
+- Rows: Time slots 06:00 to 22:00 (every 2 hours)
+- Classes shown as colored chips in cells
+- Each chip: Class name + Trainer + Room number
+- Color coding by class type (Yoga=purple, Boxing=red, HIIT=orange, etc.)
+
+**On mobile:** Horizontal scroll, or tab by day.
+
+**Data** (generate realistic schedule):
+```javascript
+const schedule = {
+  "Duşenbe": [
+    { time: "07:00", class: "Irki HIIT", trainer: "O. Durdyýewa", room: "2", type: "hiit" },
+    { time: "10:00", class: "Ýoga", trainer: "A. Annagylyjowa", room: "3", type: "yoga" },
+    { time: "18:00", class: "Boks", trainer: "S. Atabaýew", room: "4", type: "boxing" },
+    { time: "20:00", class: "Kardio Blast", trainer: "O. Durdyýewa", room: "2", type: "cardio" },
+  ],
+  // ... for all 7 days
+};
+```
+
+---
+
+### SECTION 10: TESTIMONIALS — IMMERSIVE CARDS
+
+**Layout:** Horizontally scrollable on mobile, 3-column auto-rotating on desktop.
+
+**Auto-rotate:** Every 4 seconds, next testimonial slides in. User can manually swipe/click.
+
+```javascript
+const testimonials = [
+  {
+    name: "Aýna Rejepowa",
+    age: 28,
+    duration: "8 Aý Agza",
+    result: "12 kg azaldym",
+    rating: 5,
+    text: "[CLUB.name]-a gelmezden öň sportuň nämedigini hem bilmezdim. Indi günde 1 sagat trenažýorda — ömrümiň iň gowy karary! Tälimçiler örän professional we goldawçy.",
+    program: "Kardio + Iýmitlenme"
+  },
+  {
+    name: "Maksat Orazow",
+    age: 35,
+    duration: "1 Ýyl Agza",
+    result: "15 kg myşsa artdy",
+    rating: 5,
+    text: "Işden soň ýadadym diýip bahana tapýardym. [CLUB.name]-yň 24/7 açyk bolmagy durmuşymy üýtgetdi. Gijeki türgenleşiklerim iň öndürijileri!",
+    program: "Güýç Türgenleşigi"
+  },
+  {
+    name: "Güljahan Meredowa",
+    age: 42,
+    duration: "6 Aý Agza",
+    result: "Bedenim sagaldy",
+    rating: 5,
+    text: "Maşgalama görelde bolmak üçin başladym. Indi çagalarym hem bize goşulýar. [CLUB.name] diňe bir fitnes merkezi däl — bu jemgyýet.",
+    program: "Ýoga + SPA"
+  },
+  {
+    name: "Döwlet Hojamyradow",
+    age: 24,
+    duration: "3 Aý Agza",
+    result: "Rekord döwdüm",
+    rating: 5,
+    text: "Merdan tälimçi bilen işlemek başga derejelere çykartdy. Ol diňe görnüşi görkezmän, düşündirýär, goldaýar. Şahsy tälimçi almak — iň gowy goýum.",
+    program: "Powerlifting"
+  }
+];
+```
+
+**Testimonial card design:**
+- Large quote mark `"` in accent color, 120px, positioned behind text
+- Star rating with glowing gold stars
+- Result badge: `✨ 12 kg azaldym` — accent pill, stands out
+- Member avatar: Initials in circle (no photos needed)
+- Program type tag at bottom
+
+---
+
+### SECTION 11: MOBILE APP PROMO (If applicable)
+
+**A striking full-width section:**
+
+```
+LEFT: Phone mockup (CSS-drawn or SVG) showing app interface
+  - Dashboard with: Today's workout, calories, next class
+  - Bottom nav: Home, Schedule, Progress, Profile
+  - Dark theme with accent color
+
+RIGHT: 
+  [CLUB.name] Mobil Applikasiýasy
+
+  • Sapak tertibini gör we ýazyl
+  • Türgenleşik maglumatlaryňy yzarla  
+  • Tälimçiňe habar ýolla
+  • Girişlik kartaňy telefonda sakla
+
+  [App Store] [Google Play]
+  (Placeholder buttons, styled beautifully)
+```
+
+---
+
+### SECTION 12: CONTACT & LOCATION
+
+**Two-column layout:**
+
+**Left column — Contact Info:**
+```
+[CLUB.name] bilen habarlaşyň
+
+📞  [CLUB.phone]
+📍  [CLUB.address], [CLUB.city]
+📱  Telegram: @[CLUB.telegram]  (if provided)
+📸  Instagram: @[CLUB.instagram]  (if provided)
+
+Iş Wagty:
+Duş-Şen:  06:00 — 23:00
+Dynç günleri: 08:00 — 22:00
+```
+
+**Right column — Quick Inquiry Form:**
+```
+Adyňyz *          → text
+Telefonyňyz *     → tel  
+Gyzyklanma *      → select: [Agza bolmak / Sapak maglumaty / Şahsy tälimçi / Beýleki]
+Habar              → textarea (optional)
+
+[Iberiň →] button
+```
+
+On submit:
+- No backend needed — form opens `tel:` link OR shows a "Biz siz bilen habarlaşarys!" success state
+- Beautiful success animation (checkmark draws itself)
+
+**Below form — Map placeholder:**
+- Beautiful CSS-styled "map" card showing general [CLUB.city] info with address prominently displayed
+- "Google Kartada Gör →" button linking to `https://maps.google.com/?q=[CLUB.address]+[CLUB.city]`
+
+---
+
+### SECTION 13: FOOTER
+
+```
+[CLUB.name] Logo
+[CLUB.tagline]
+
+Quick Links:          Programs:           Contact:
+Baş Sahypa            Güýç Türgenleşigi   [CLUB.phone]
+Tälimçiler            Kardio              [CLUB.address]
+Bahalar               Ýoga                [CLUB.city]
+Galereýa              Boks
+Habarlaş              SPA
+
+Social: [TG icon] [IG icon] [TT icon] [YT icon]
+
+─────────────────────────────────────────
+© [currentYear] [CLUB.name]. Ähli hukuklar goragly.
+Bu saýt 🔧 Ýeňil Web Agentligi tarapyndan döredildi
+                              [yenil.ru] ←link
+```
+
+The "Ýeňil Web Agentligi" credit in footer is a subtle marketing backlink for the agency.
+
+---
+
+## 🎭 ANIMATIONS — COMPLETE LIST
+
+### On Page Load (GSAP, runs once):
+```javascript
+const tl = gsap.timeline();
+tl.from('.nav', { y: -80, opacity: 0, duration: 0.6, ease: 'power3.out' })
+  .from('.hero-badge', { x: -40, opacity: 0, duration: 0.5 }, '-=0.3')
+  .from('.hero-title span', { y: 100, opacity: 0, stagger: 0.08, duration: 0.7, ease: 'power4.out' }, '-=0.2')
+  .from('.hero-sub', { y: 30, opacity: 0, duration: 0.6 }, '-=0.3')
+  .from('.hero-buttons', { y: 30, opacity: 0, duration: 0.5 }, '-=0.3')
+  .from('.hero-stats', { x: 60, opacity: 0, duration: 0.7, ease: 'back.out(1.7)' }, '-=0.4');
+```
+
+### On Scroll (Intersection Observer):
+```javascript
+// Fade up with stagger for any element with class .reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      gsap.from(entry.target, { 
+        y: 50, 
+        opacity: 0, 
+        duration: 0.7, 
+        ease: 'power3.out',
+        stagger: 0.1
+      });
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.15 });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+```
+
+### Stat Counter Animation:
+```javascript
+function animateCounter(element, target, duration = 2000) {
+  const start = performance.now();
+  const update = (time) => {
+    const elapsed = time - start;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 4); // ease out quart
+    element.textContent = Math.floor(eased * target).toLocaleString() + '+';
+    if (progress < 1) requestAnimationFrame(update);
+    else element.textContent = target.toLocaleString() + '+';
+  };
+  requestAnimationFrame(update);
+}
+```
+
+### Continuous Animations (CSS):
+```css
+/* Floating card effect */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-12px); }
+}
+
+/* Glow pulse for CTA buttons */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.4); }
+  50%       { box-shadow: 0 0 40px rgba(var(--accent-rgb), 0.8); }
+}
+
+/* Diagonal stripe movement */
+@keyframes stripeShift {
+  0%   { background-position: 0% 0%; }
+  100% { background-position: 100% 100%; }
+}
+
+/* Background blob drift */
+@keyframes blobDrift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(40px, -30px) scale(1.1); }
+  66%       { transform: translate(-20px, 20px) scale(0.95); }
+}
+```
+
+---
+
+## 📱 MOBILE-SPECIFIC RULES
+
+```css
+/* Typography responsive clamp */
+.hero-title    { font-size: clamp(2.5rem, 12vw, 8rem); }
+.section-title { font-size: clamp(1.8rem, 7vw, 3.5rem); }
+.body-text     { font-size: clamp(0.9rem, 4vw, 1.125rem); }
+
+/* Prevent horizontal overflow */
+body, html { overflow-x: hidden; }
+* { box-sizing: border-box; }
+
+/* Touch targets */
+button, a, .card { min-height: 44px; }
+
+/* Mobile nav */
+.mobile-menu {
+  position: fixed; inset: 0; z-index: 999;
+  background: rgba(10,10,11,0.97);
+  backdrop-filter: blur(20px);
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+  gap: 2rem;
+}
+```
+
+**Mobile-specific layout changes:**
+- Hero: Stack vertically, stats below content
+- Services: 1-column cards
+- Trainers: Horizontal scroll (overflow-x: auto, snap scroll)
+- Schedule: Tab-based by day (not full grid)
+- Pricing: Single column, full-width
+- Footer: Stack all columns
+
+---
+
+## 🔗 DEMO URL EXAMPLES (For Salam to share with clients)
+
+```
+# Default demo:
+https://yenil.ru/fitness
+
+# GymCity Ashgabat (orange theme):
+https://yenil.ru/fitness?name=GymCity&city=Aşgabat&color=F97316&phone=%2B99312345678&members=1500%2B&trainers=30%2B&est=2018
+
+# FitZone Mary (blue theme):  
+https://yenil.ru/fitness?name=FitZone&city=Mary&color=3B82F6&phone=%2B99325123456&members=800%2B&trainers=15%2B&est=2020
+
+# PowerGym Turkmenabat (red theme):
+https://yenil.ru/fitness?name=PowerGym&city=Türkmenabat&color=EF4444&phone=%2B99362345678&members=600%2B&trainers=12%2B&est=2021
+
+# PlatinumFit (gold theme):
+https://yenil.ru/fitness?name=PlatinumFit&city=Aşgabat&color=D4A843&tag=Lýuks.+Sagdyn.+Üstün.&members=2000%2B&trainers=45%2B&est=2015
+```
+
+---
+
+## ⚠️ MANDATORY QUALITY RULES
+
+1. **ZERO HARDCODED CLUB DATA** — Every club-specific text must use `CLUB.variable`
+2. **NO EXTERNAL IMAGES** — Use CSS gradients, SVGs, and CSS-drawn elements for all visuals
+3. **SINGLE FILE** — Everything in `index.html`. Zero additional files needed.
+4. **RESPONSIVE** — Test at 375px, 390px, 414px (mobile) AND 768px, 1024px, 1440px (desktop)
+5. **NO HORIZONTAL SCROLL** — `overflow-x: hidden` on body, verified for every section
+6. **SMOOTH ANIMATIONS** — 60fps. Use `will-change: transform` on animated elements
+7. **ACCESSIBLE COLORS** — Ensure text has minimum 4.5:1 contrast ratio against backgrounds
+8. **WORKING FORMS** — Contact form must show success/error states gracefully
+9. **VALID HTML** — Semantic tags: `<header>`, `<main>`, `<section>`, `<footer>`, `<nav>`
+10. **FAST LOAD** — No unoptimized resources. All fonts preloaded. GSAP from CDN.
+
+---
+
+## 📦 CDN DEPENDENCIES (include in `<head>`)
+
+```html
+<!-- GSAP Animation Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+
+<!-- Lucide Icons -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
+```
+
+---
+
+## 🏁 FINAL INSTRUCTION TO REPLIT AGENT
+
+Build this as a **single `index.html` file** containing all HTML, CSS (inside `<style>` tags), and JavaScript (inside `<script>` tags).
+
+The file should be approximately 1500-3000 lines. Every line must serve a purpose.
+
+When a visitor opens this file, within the first 3 seconds they must think:
+**"This is the most impressive gym website I have ever seen. I need this for MY gym."**
+
+That is the only standard that matters.
+
+Start by planning the structure, then build section by section, then add animations, then polish the details. Do not rush. Build it right the first time.
+
+The output must be **production-ready, demo-perfect, and portfolio-worthy.**
+
+Now build it. 🚀

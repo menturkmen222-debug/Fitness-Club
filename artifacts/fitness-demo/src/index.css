@@ -1,0 +1,127 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  /* Map dynamic club accent to primary */
+  --color-primary: var(--club-accent);
+  --color-primary-foreground: #ffffff;
+  
+  --color-accent: var(--club-accent);
+  --color-accent-foreground: #ffffff;
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-sans: 'DM Sans', sans-serif;
+  --font-stats: 'Oswald', sans-serif;
+
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
+}
+
+:root {
+  --background: 240 5% 4%; /* #0A0A0B */
+  --foreground: 0 0% 98%;
+  
+  --card: 240 5% 7%; /* #111114 */
+  --card-foreground: 0 0% 98%;
+  
+  --border: 0 0% 100% / 0.08;
+  --input: 0 0% 100% / 0.1;
+  --ring: var(--club-accent);
+
+  --muted: 240 5% 12%;
+  --muted-foreground: 240 5% 65%;
+
+  /* Default club values (overridden by JS) */
+  --club-accent: #EF4444;
+  --club-accent-rgb: 239, 68, 68;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased font-sans overflow-x-hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display tracking-wide uppercase;
+  }
+}
+
+@layer utilities {
+  .bg-noise {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+  }
+
+  .bg-grid-pattern {
+    background-image: linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  .bg-stripe {
+    background: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 10px,
+      rgba(255,255,255,0.02) 10px,
+      rgba(255,255,255,0.02) 20px
+    );
+  }
+
+  .text-shadow-glow {
+    text-shadow: 0 0 30px rgba(var(--club-accent-rgb), 0.5);
+  }
+
+  .glass-panel {
+    @apply bg-card/80 backdrop-blur-xl border border-white/5 shadow-2xl;
+  }
+}
+
+/* Custom Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-15px); }
+}
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(var(--club-accent-rgb), 0.3); }
+  50% { box-shadow: 0 0 40px rgba(var(--club-accent-rgb), 0.7); }
+}
+
+@keyframes blobDrift {
+  0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+  33% { transform: translate(50px, -50px) scale(1.1) rotate(10deg); }
+  66% { transform: translate(-30px, 40px) scale(0.9) rotate(-5deg); }
+}
+
+.animate-float { animation: float 6s ease-in-out infinite; }
+.animate-glow { animation: glowPulse 3s infinite; }
+.animate-blob { animation: blobDrift 20s infinite alternate; }
+
+/* Scroll Reveal Initial States */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  will-change: opacity, transform;
+}
