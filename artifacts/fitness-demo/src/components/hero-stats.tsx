@@ -47,12 +47,31 @@ function Counter({ target, suffix = "" }: { target: number; suffix?: string }) {
 export function Hero({ club }: { club: FitnessClub }) {
   useEffect(() => {
     const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
-    
-    tl.from('.hero-badge', { x: -40, opacity: 0, duration: 0.6, delay: 0.2 })
-      .from('.hero-title-word', { y: 100, opacity: 0, stagger: 0.1, duration: 0.8, ease: "power4.out" }, '-=0.4')
-      .from('.hero-sub', { y: 30, opacity: 0, duration: 0.6 }, '-=0.5')
-      .from('.hero-buttons', { y: 30, opacity: 0, duration: 0.6 }, '-=0.4')
-      .from('.hero-stats-card', { x: 100, opacity: 0, duration: 0.8, ease: "back.out(1.5)" }, '-=0.6');
+
+    tl.fromTo('.hero-badge',
+        { x: -40, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.6, delay: 0.2 }
+      )
+      .fromTo('.hero-title-word',
+        { y: 100, opacity: 0 },
+        { y: 0, opacity: 1, stagger: 0.1, duration: 0.8, ease: "power4.out" },
+        '-=0.4'
+      )
+      .fromTo('.hero-sub',
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6 },
+        '-=0.5'
+      )
+      .fromTo('.hero-buttons',
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6 },
+        '-=0.4'
+      )
+      .fromTo('.hero-stats-card',
+        { x: 100, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.8, ease: "back.out(1.5)" },
+        '-=0.6'
+      );
   }, []);
 
   const currentYear = new Date().getFullYear();
@@ -72,22 +91,22 @@ export function Hero({ club }: { club: FitnessClub }) {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           
           <div className="lg:col-span-8 flex flex-col items-start text-left">
-            <div className="hero-badge inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm mb-8">
+            <div className="hero-badge inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm mb-8" style={{ opacity: 0 }}>
               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
               <span className="text-sm font-medium text-white tracking-wider">HÄZIR AÇYK · {club.city.toUpperCase()}</span>
             </div>
 
             <h1 className="font-display text-[clamp(3.5rem,10vw,8rem)] leading-[0.85] text-white uppercase mb-6 drop-shadow-2xl">
-              <div className="overflow-hidden pb-2"><span className="hero-title-word inline-block">{club.name}</span></div>
-              <div className="overflow-hidden pb-2 text-primary text-shadow-glow"><span className="hero-title-word inline-block">FITNES</span></div>
-              <div className="overflow-hidden pb-2"><span className="hero-title-word inline-block">KLUBY</span></div>
+              <div className="overflow-hidden pb-2"><span className="hero-title-word inline-block" style={{ opacity: 0 }}>{club.name}</span></div>
+              <div className="overflow-hidden pb-2 text-primary text-shadow-glow"><span className="hero-title-word inline-block" style={{ opacity: 0 }}>FITNES</span></div>
+              <div className="overflow-hidden pb-2"><span className="hero-title-word inline-block" style={{ opacity: 0 }}>KLUBY</span></div>
             </h1>
 
-            <p className="hero-sub text-xl md:text-2xl text-muted-foreground max-w-2xl mb-10 border-l-2 border-primary pl-4">
+            <p className="hero-sub text-xl md:text-2xl text-muted-foreground max-w-2xl mb-10 border-l-2 border-primary pl-4" style={{ opacity: 0 }}>
               {club.tag} Üstünlige sary ýoluňyz şu ýerden başlaýar.
             </p>
 
-            <div className="hero-buttons flex flex-wrap items-center gap-4 w-full sm:w-auto">
+            <div className="hero-buttons flex flex-wrap items-center gap-4 w-full sm:w-auto" style={{ opacity: 0 }}>
               <a href="#pricing" className="w-full sm:w-auto px-8 py-4 bg-primary text-white font-bold uppercase tracking-wider rounded flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:gap-4 group animate-glow">
                 Mugt Synaga Ýazyl
                 <ArrowRight size={20} className="transition-transform" />
@@ -97,7 +116,7 @@ export function Hero({ club }: { club: FitnessClub }) {
               </a>
             </div>
 
-            <div className="hero-buttons mt-10 flex items-center gap-4 text-sm text-muted-foreground">
+            <div className="hero-buttons mt-10 flex items-center gap-4 text-sm text-muted-foreground" style={{ opacity: 0 }}>
               <div className="flex gap-1 text-yellow-500">
                 {[1,2,3,4,5].map(i => <Star key={i} size={16} fill="currentColor" />)}
               </div>
@@ -109,7 +128,7 @@ export function Hero({ club }: { club: FitnessClub }) {
           </div>
 
           <div className="lg:col-span-4 hidden lg:block">
-            <div className="hero-stats-card animate-float glass-panel rounded-[2rem] p-8 relative">
+            <div className="hero-stats-card animate-float glass-panel rounded-[2rem] p-8 relative" style={{ opacity: 0 }}>
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 blur-[40px] rounded-full pointer-events-none" />
               
               <h3 className="font-display text-2xl text-white mb-8 border-b border-white/10 pb-4">Biz Hakynda</h3>
