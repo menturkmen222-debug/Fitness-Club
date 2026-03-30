@@ -189,7 +189,7 @@ export function Schedule() {
         </div>
 
         {/* Mobile Tabs */}
-        <div className="flex overflow-x-auto pb-4 gap-2 mb-8 hide-scrollbar md:hidden">
+        <div className="flex overflow-x-auto pb-4 gap-2 mb-8 scrollbar-hide md:hidden">
           {days.map(d => (
             <button
               key={d}

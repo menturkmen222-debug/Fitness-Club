@@ -21,6 +21,7 @@ export function Navbar({ club }: LayoutProps) {
     { name: "Hyzmatlar", href: "#services" },
     { name: "Tälimçiler", href: "#trainers" },
     { name: "Bahalar", href: "#pricing" },
+    { name: "Galereýa", href: "#gallery" },
     { name: "Habarlaş", href: "#contact" },
   ];
 
