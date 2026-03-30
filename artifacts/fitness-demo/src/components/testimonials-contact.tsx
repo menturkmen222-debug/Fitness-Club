@@ -66,7 +66,7 @@ export function Testimonials({ club }: { club: FitnessClub }) {
                       "{t.text}"
                     </p>
                     <span className="text-sm text-muted-foreground uppercase tracking-widest font-bold">
-                      Programm: {t.program}
+                      Programma: {t.program}
                     </span>
                   </div>
                 </div>

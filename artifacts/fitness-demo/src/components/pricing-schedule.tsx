@@ -53,7 +53,7 @@ export function Pricing() {
         { t: "Şahsy Iýmitlenme Meýilnamasy", inc: true },
         { t: "VIP Garderop", inc: true },
         { t: "Myhmanlara Girişlik (2x/aý)", inc: true },
-        { t: "Klub Etajerwkasy Çäreleri", inc: true },
+        { t: "Ýörite Klub Çäreleri", inc: true },
       ],
     }
   ];
@@ -159,16 +159,16 @@ export function Schedule() {
       { t: "19:00", c: "MMA", tr: "S. Atabaýew", type: "boxing" },
     ],
     "Anna": [
-       { t: "09:00", c: "Erkin türgenleşik", tr: "-", type: "cardio" },
+       { t: "09:00", c: "Erkin Türgenleşik", tr: "-", type: "cardio" },
        { t: "18:00", c: "Taý Boks", tr: "S. Atabaýew", type: "boxing" },
-       { t: "19:30", c: "Meditation", tr: "A. Annamyradowa", type: "yoga" },
+       { t: "19:30", c: "Meditasiýa", tr: "A. Annamyradowa", type: "yoga" },
     ],
     "Şenbe": [
-       { t: "10:00", c: "Weekend Warrior", tr: "M. Hydyrow", type: "hiit" },
-       { t: "12:00", c: "Stretching", tr: "A. Annamyradowa", type: "yoga" },
+       { t: "10:00", c: "Dynç Güni HIIT", tr: "M. Hydyrow", type: "hiit" },
+       { t: "12:00", c: "Çeýelik Maşklary", tr: "A. Annamyradowa", type: "yoga" },
     ],
     "Ýekşenbe": [
-       { t: "11:00", c: "Yoga Flow", tr: "A. Annamyradowa", type: "yoga" },
+       { t: "11:00", c: "Ýoga Sapagy", tr: "A. Annamyradowa", type: "yoga" },
     ]
   };
 

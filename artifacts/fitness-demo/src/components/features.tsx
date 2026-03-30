@@ -17,7 +17,7 @@ export function Services() {
     <section id="services" className="py-24 bg-background relative border-b border-white/5">
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex flex-col items-center text-center mb-16 reveal">
-          <span className="text-primary font-bold tracking-widest uppercase mb-4">Biziň Ulgamlar</span>
+          <span className="text-primary font-bold tracking-widest uppercase mb-4">Hyzmat Ugurlarymyz</span>
           <h2 className="text-[clamp(2.5rem,6vw,4rem)] text-white">Hyzmatlarymyz</h2>
           <p className="text-muted-foreground max-w-2xl text-lg mt-4">
             Her bir maksat üçin ýöriteleşdirilen programmalar. Özüňize iň laýyk gelýän ugruny saýlaň.

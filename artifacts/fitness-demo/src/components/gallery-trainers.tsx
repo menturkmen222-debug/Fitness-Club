@@ -108,7 +108,7 @@ export function Gallery() {
     { label: "Ýoga Otagy", icon: "🧘", cols: "col-span-1 md:col-span-1", rows: "row-span-2", src: `${BASE}gallery/yoga.png` },
     { label: "Boks Ringi", icon: "🥊", cols: "col-span-1 md:col-span-2", rows: "row-span-1", src: `${BASE}gallery/boxing.png` },
     { label: "Garderop & Duş", icon: "👕", cols: "col-span-1", rows: "row-span-1", src: `${BASE}gallery/locker.png` },
-    { label: "Suwsuzlyk Bar", icon: "🥤", cols: "col-span-1 md:col-span-2", rows: "row-span-1", src: `${BASE}gallery/juice-bar.png` },
+    { label: "Içgiler Bary", icon: "🥤", cols: "col-span-1 md:col-span-2", rows: "row-span-1", src: `${BASE}gallery/juice-bar.png` },
   ];
 
   return (
