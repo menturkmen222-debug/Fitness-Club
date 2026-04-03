@@ -222,6 +222,7 @@ export const translations = {
       ],
     },
     contact: {
+      title: (name: string) => `${name} bilen Habarlaşyň`,
       titleSuffix: "bilen Habarlaşyň",
       desc: "Soraglaryňyz barmy? Bize ýazyň, toparymyz gysga wagtyň içinde size jogap berer.",
       phoneLabel: "Telefon",
@@ -263,6 +264,12 @@ export const translations = {
       hours: "Hergün: 06:00 - 23:00",
       rights: "Ähli hukuklar goragly.",
       madeBy: "Ýeňil Web Agentligi",
+      madeByPrefix: "Bu saýt",
+      madeByPostfix: "tarapyndan döredildi",
+    },
+    appStats: {
+      calories: "Kkal",
+      bpm: "BPM",
     },
     defaultTag: "Güýçli. Sagdyn. Erkin.",
   },
@@ -488,6 +495,7 @@ export const translations = {
       ],
     },
     contact: {
+      title: (name: string) => `Связаться с ${name}`,
       titleSuffix: "Связаться с",
       desc: "Есть вопросы? Напишите нам, и наша команда ответит вам в кратчайшие сроки.",
       phoneLabel: "Телефон",
@@ -529,6 +537,12 @@ export const translations = {
       hours: "Каждый день: 06:00 - 23:00",
       rights: "Все права защищены.",
       madeBy: "Ýeňil Web Agentligi",
+      madeByPrefix: "Этот сайт создан",
+      madeByPostfix: "",
+    },
+    appStats: {
+      calories: "Ккал",
+      bpm: "BPM",
     },
     defaultTag: "Сильный. Здоровый. Свободный.",
   },

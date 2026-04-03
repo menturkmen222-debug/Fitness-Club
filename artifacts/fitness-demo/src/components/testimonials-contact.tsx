@@ -144,14 +144,14 @@ export function AppPromo({ club }: { club: FitnessClub }) {
                       <Flame size={20} />
                     </div>
                     <div className="font-mono text-xl text-white font-bold">450</div>
-                    <div className="text-xs text-muted-foreground">Kkal</div>
+                    <div className="text-xs text-muted-foreground">{t.appStats.calories}</div>
                   </div>
                   <div className="bg-card p-4 rounded-2xl border border-white/5">
                     <div className="text-primary mb-2">
                       <Activity size={20} />
                     </div>
                     <div className="font-mono text-xl text-white font-bold">120</div>
-                    <div className="text-xs text-muted-foreground">BPM</div>
+                    <div className="text-xs text-muted-foreground">{t.appStats.bpm}</div>
                   </div>
                 </div>
 
@@ -217,7 +217,7 @@ export function Contact({ club }: { club: FitnessClub }) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
           <div className="reveal">
             <h2 className="text-[clamp(2.5rem,6vw,4rem)] text-white mb-6 uppercase font-display">
-              {t.contact.titleSuffix} {club.name}
+              {t.contact.title(club.name)}
             </h2>
             <p className="text-muted-foreground text-lg mb-12">{t.contact.desc}</p>
 

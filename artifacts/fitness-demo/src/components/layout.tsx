@@ -172,7 +172,7 @@ export function Footer({ club }: LayoutProps) {
             </span>
           </div>
           <p className="text-muted-foreground max-w-sm mb-8 text-lg">
-            {t.footer.desc(club.city, club.tag)}
+            {t.footer.desc(club.city, club.tag === "Güýçli. Sagdyn. Erkin." ? t.defaultTag : club.tag)}
           </p>
           <div className="flex gap-4">
             <a
@@ -231,14 +231,14 @@ export function Footer({ club }: LayoutProps) {
           © {new Date().getFullYear()} {club.name}. {t.footer.rights}
         </p>
         <p>
-          Bu saýt{" "}
+          {t.footer.madeByPrefix}{" "}
           <a
             href="https://yenil.ru"
             className="text-white hover:text-primary transition-colors"
           >
             🔧 {t.footer.madeBy}
-          </a>{" "}
-          tarapyndan döredildi
+          </a>
+          {t.footer.madeByPostfix ? ` ${t.footer.madeByPostfix}` : ""}
         </p>
       </div>
     </footer>
