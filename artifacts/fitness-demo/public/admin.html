@@ -108,7 +108,7 @@ input,select,textarea{font-family:inherit;outline:none}
 .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
 .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;transition:.25s;cursor:pointer}
 .kpi-card:hover{border-color:var(--border-hover);transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.3)}
-.kpi-icon{font-size:24px;margin-bottom:10px}
+.kpi-icon{font-size:24px;margin-bottom:10px;display:flex;align-items:center;color:var(--text-muted)}.kpi-icon svg{width:24px;height:24px}.nav-item .nav-icon svg{width:18px;height:18px}.hamburger svg{width:18px;height:18px}.search-icon svg{width:14px;height:14px}.notif-btn svg{width:18px;height:18px}
 .kpi-val{font-size:28px;font-weight:800;letter-spacing:-.5px;line-height:1}
 .kpi-sub{font-size:12px;color:var(--text-muted);margin-top:4px}
 .kpi-trend{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;margin-top:8px}
@@ -306,7 +306,7 @@ tbody tr:last-child td{border-bottom:none}
 
 /* Misc */
 .empty-state{text-align:center;padding:60px 20px;color:var(--text-muted)}
-.empty-state .ei{font-size:48px;margin-bottom:12px}
+.empty-state .ei{font-size:48px;margin-bottom:12px;display:flex;align-items:center;justify-content:center}.empty-state .ei svg{width:48px;height:48px;opacity:.35}
 .stat-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(239,68,68,.05)}
 .stat-row:last-child{border-bottom:none}
 .stat-label{color:var(--text-muted);font-size:13px;flex:1}
@@ -322,7 +322,7 @@ tbody tr:last-child td{border-bottom:none}
   <div class="login-glow"></div>
   <div class="login-card" id="login-card">
     <div class="login-logo">
-      <div class="icon">💪</div>
+      <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#fff"><path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></svg></div>
       <h1>FitClub Admin</h1>
       <p>Dolandyryş Ulgamy</p>
     </div>
@@ -350,7 +350,7 @@ tbody tr:last-child td{border-bottom:none}
   <div class="sidebar" id="sidebar">
     <div style="position:relative">
       <div class="sidebar-logo">
-        <div class="logo-icon">💪</div>
+        <div class="logo-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:#fff"><path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></svg></div>
         <div class="logo-text">
           <h2>FitClub</h2>
           <p>Admin Panel</p>
@@ -368,7 +368,7 @@ tbody tr:last-child td{border-bottom:none}
     <nav class="sidebar-nav" id="sidebar-nav"></nav>
     <div class="sidebar-footer">
       <div class="nav-item" onclick="doLogout()" style="margin:0">
-        <span class="nav-icon">🚪</span>
+        <span class="nav-icon"><i data-lucide="log-out"></i></span>
         <span class="nav-label">Çykmak</span>
       </div>
     </div>
@@ -376,18 +376,18 @@ tbody tr:last-child td{border-bottom:none}
 
   <div class="main-content" id="main-content">
     <div class="topbar">
-      <div class="hamburger" onclick="openMobileSidebar()">☰</div>
+      <div class="hamburger" onclick="openMobileSidebar()"><i data-lucide="menu"></i></div>
       <div class="topbar-title">
         <h2 id="page-title">Dolandyryş Tagtasy</h2>
         <p id="page-sub">Fitnes Klubynyň Dolandyryşy</p>
       </div>
       <div class="topbar-search">
-        <span class="search-icon">🔍</span>
+        <span class="search-icon"><i data-lucide="search"></i></span>
         <input type="text" placeholder="Gözleg..." id="global-search" oninput="globalSearch(this.value)"/>
       </div>
       <div class="topbar-actions">
         <div class="notif-btn" onclick="navigate('notifications')">
-          🔔<span class="notif-badge" id="notif-count">0</span>
+          <i data-lucide="bell"></i><span class="notif-badge" id="notif-count">0</span>
         </div>
         <div class="topbar-avatar" id="topbar-avatar" style="background:#EF4444">BA</div>
       </div>
@@ -413,18 +413,18 @@ const PERMISSIONS={
   trainer:['dashboard','classes','schedule','notifications']
 };
 const NAV_ITEMS=[
-  {id:'dashboard',icon:'📊',label:'Dolandyryş Tagtasy'},
-  {id:'members',icon:'👥',label:'Agza Dolandyrma'},
-  {id:'classes',icon:'🏋️',label:'Sapak Dolandyrma'},
-  {id:'trainers',icon:'👨‍🏫',label:'Tälimçiler'},
-  {id:'schedule',icon:'📅',label:'Sapak Tertibi'},
-  {id:'equipment',icon:'🔧',label:'Enjamlar'},
-  {id:'nutrition',icon:'🥗',label:'Iýmitlenme'},
-  {id:'finance',icon:'💰',label:'Maliýe'},
-  {id:'reports',icon:'📈',label:'Hasabatlar'},
-  {id:'notifications',icon:'🔔',label:'Bildirişler'},
-  {id:'users',icon:'👤',label:'Ulanyjylar'},
-  {id:'settings',icon:'⚙️',label:'Sazlamalar'}
+  {id:'dashboard',icon:'layout-dashboard',label:'Dolandyryş Tagtasy'},
+  {id:'members',icon:'users',label:'Agza Dolandyrma'},
+  {id:'classes',icon:'dumbbell',label:'Sapak Dolandyrma'},
+  {id:'trainers',icon:'graduation-cap',label:'Tälimçiler'},
+  {id:'schedule',icon:'calendar',label:'Sapak Tertibi'},
+  {id:'equipment',icon:'wrench',label:'Enjamlar'},
+  {id:'nutrition',icon:'salad',label:'Iýmitlenme'},
+  {id:'finance',icon:'wallet',label:'Maliýe'},
+  {id:'reports',icon:'trending-up',label:'Hasabatlar'},
+  {id:'notifications',icon:'bell',label:'Bildirişler'},
+  {id:'users',icon:'user',label:'Ulanyjylar'},
+  {id:'settings',icon:'settings',label:'Sazlamalar'}
 ];
 
 const DB={
@@ -468,10 +468,10 @@ const DEMO_MEMBERS=[
 ];
 
 const DEMO_TRAINERS=[
-  {id:'TRN001',firstName:'Merdan',lastName:'Hydyrow',phone:'+993 65 111222',email:'merdan@gym.tm',birthDate:'1990-08-22',gender:'male',specialties:['strength','powerlifting','hiit'],bio:'Milli çempion, 11 ýyl tejribe. Güýç we powerlifting hünärmen.',certifications:['NASM-CPT','IPF Powerlifting'],experience:11,hireDate:'2020-05-01',salary:3500,assignedClasses:['CLS001','CLS003'],personalClients:['MBR001','MBR007','MBR009','MBR011'],maxPersonalClients:8,totalSessions:520,avgRating:4.9,reviewCount:87,active:true,leaveUntil:null,notes:'',color:'#EF4444',emoji:'🏋️'},
-  {id:'TRN002',firstName:'Aýgül',lastName:'Annaýewa',phone:'+993 62 222333',email:'aygul@gym.tm',birthDate:'1993-03-15',gender:'female',specialties:['yoga','pilates','cardio'],bio:'Sertifisirli ýoga mugallymy. 8 ýyl tejribe.',certifications:['RYT-500','NASM'],experience:8,hireDate:'2021-02-01',salary:3000,assignedClasses:['CLS002','CLS004'],personalClients:['MBR002','MBR006'],maxPersonalClients:10,totalSessions:380,avgRating:4.8,reviewCount:65,active:true,leaveUntil:null,notes:'',color:'#06B6D4',emoji:'🧘'},
-  {id:'TRN003',firstName:'Serdar',lastName:'Durdyýew',phone:'+993 63 333444',email:'serdar@gym.tm',birthDate:'1988-11-08',gender:'male',specialties:['boxing','mma','cardio'],bio:'Boks we MMA tälimçisi. 14 ýyl tejribe.',certifications:['Boxing Coach Lvl 3'],experience:14,hireDate:'2019-09-01',salary:3200,assignedClasses:['CLS005','CLS006'],personalClients:['MBR004'],maxPersonalClients:11,totalSessions:620,avgRating:4.7,reviewCount:103,active:true,leaveUntil:null,notes:'',color:'#F97316',emoji:'🥊'},
-  {id:'TRN004',firstName:'Leýli',lastName:'Annaberdiýewa',phone:'+993 64 444555',email:'leyli@gym.tm',birthDate:'1995-06-20',gender:'female',specialties:['zumba','dance','cardio'],bio:'Zumba we tans tälimçisi. 6 ýyl tejribe.',certifications:['Zumba Instructor'],experience:6,hireDate:'2022-03-01',salary:2800,assignedClasses:['CLS007','CLS008'],personalClients:['MBR010','MBR012'],maxPersonalClients:8,totalSessions:245,avgRating:4.9,reviewCount:52,active:true,leaveUntil:null,notes:'',color:'#10B981',emoji:'💃'},
+  {id:'TRN001',firstName:'Merdan',lastName:'Hydyrow',phone:'+993 65 111222',email:'merdan@gym.tm',birthDate:'1990-08-22',gender:'male',specialties:['strength','powerlifting','hiit'],bio:'Milli çempion, 11 ýyl tejribe. Güýç we powerlifting hünärmen.',certifications:['NASM-CPT','IPF Powerlifting'],experience:11,hireDate:'2020-05-01',salary:3500,assignedClasses:['CLS001','CLS003'],personalClients:['MBR001','MBR007','MBR009','MBR011'],maxPersonalClients:8,totalSessions:520,avgRating:4.9,reviewCount:87,active:true,leaveUntil:null,notes:'',color:'#EF4444',emoji:'dumbbell'},
+  {id:'TRN002',firstName:'Aýgül',lastName:'Annaýewa',phone:'+993 62 222333',email:'aygul@gym.tm',birthDate:'1993-03-15',gender:'female',specialties:['yoga','pilates','cardio'],bio:'Sertifisirli ýoga mugallymy. 8 ýyl tejribe.',certifications:['RYT-500','NASM'],experience:8,hireDate:'2021-02-01',salary:3000,assignedClasses:['CLS002','CLS004'],personalClients:['MBR002','MBR006'],maxPersonalClients:10,totalSessions:380,avgRating:4.8,reviewCount:65,active:true,leaveUntil:null,notes:'',color:'#06B6D4',emoji:'heart-pulse'},
+  {id:'TRN003',firstName:'Serdar',lastName:'Durdyýew',phone:'+993 63 333444',email:'serdar@gym.tm',birthDate:'1988-11-08',gender:'male',specialties:['boxing','mma','cardio'],bio:'Boks we MMA tälimçisi. 14 ýyl tejribe.',certifications:['Boxing Coach Lvl 3'],experience:14,hireDate:'2019-09-01',salary:3200,assignedClasses:['CLS005','CLS006'],personalClients:['MBR004'],maxPersonalClients:11,totalSessions:620,avgRating:4.7,reviewCount:103,active:true,leaveUntil:null,notes:'',color:'#F97316',emoji:'zap'},
+  {id:'TRN004',firstName:'Leýli',lastName:'Annaberdiýewa',phone:'+993 64 444555',email:'leyli@gym.tm',birthDate:'1995-06-20',gender:'female',specialties:['zumba','dance','cardio'],bio:'Zumba we tans tälimçisi. 6 ýyl tejribe.',certifications:['Zumba Instructor'],experience:6,hireDate:'2022-03-01',salary:2800,assignedClasses:['CLS007','CLS008'],personalClients:['MBR010','MBR012'],maxPersonalClients:8,totalSessions:245,avgRating:4.9,reviewCount:52,active:true,leaveUntil:null,notes:'',color:'#10B981',emoji:'music'},
 ];
 
 const DEMO_CLASSES=[
@@ -521,12 +521,12 @@ const DEMO_NUTRITION=[
 
 const DEMO_NOTIFICATIONS=[
   {id:'N001',type:'member',icon:'🆕',text:'Täze agza ýazyldy — Ogulgerek Meredowa (Premium)',time:new Date(Date.now()-2*60000).toISOString(),read:false,link:'members'},
-  {id:'N002',type:'finance',icon:'💰',text:'Töleg alyndy — Maýa Gurbanova 600 TMT',time:new Date(Date.now()-18*60000).toISOString(),read:false,link:'finance'},
-  {id:'N003',type:'member',icon:'⚠️',text:'Abunasy gutarýar — Maral Hojaýewa (2 günde)',time:new Date(Date.now()-60*60000).toISOString(),read:false,link:'members'},
-  {id:'N004',type:'equipment',icon:'🔧',text:'Tehniki syna gerek — Ylgaw ýodajygy №2',time:new Date(Date.now()-2*3600000).toISOString(),read:false,link:'equipment'},
-  {id:'N005',type:'member',icon:'⚠️',text:'Abunasy gutarýar — Baýram Nurmedow (5 günde)',time:new Date(Date.now()-3*3600000).toISOString(),read:true,link:'members'},
-  {id:'N006',type:'class',icon:'📅',text:'Şu gün sapak bar — HIIT 07:00 (5 ýazylgy)',time:new Date(Date.now()-4*3600000).toISOString(),read:true,link:'schedule'},
-  {id:'N007',type:'finance',icon:'💰',text:'Töleg alyndy — Oraz Nurlyýew 700 TMT (abuna + şahsy)',time:new Date(Date.now()-5*3600000).toISOString(),read:true,link:'finance'},
+  {id:'N002',type:'finance',icon:'wallet',text:'Töleg alyndy — Maýa Gurbanova 600 TMT',time:new Date(Date.now()-18*60000).toISOString(),read:false,link:'finance'},
+  {id:'N003',type:'member',icon:'alert-triangle',text:'Abunasy gutarýar — Maral Hojaýewa (2 günde)',time:new Date(Date.now()-60*60000).toISOString(),read:false,link:'members'},
+  {id:'N004',type:'equipment',icon:'wrench',text:'Tehniki syna gerek — Ylgaw ýodajygy №2',time:new Date(Date.now()-2*3600000).toISOString(),read:false,link:'equipment'},
+  {id:'N005',type:'member',icon:'alert-triangle',text:'Abunasy gutarýar — Baýram Nurmedow (5 günde)',time:new Date(Date.now()-3*3600000).toISOString(),read:true,link:'members'},
+  {id:'N006',type:'class',icon:'calendar',text:'Şu gün sapak bar — HIIT 07:00 (5 ýazylgy)',time:new Date(Date.now()-4*3600000).toISOString(),read:true,link:'schedule'},
+  {id:'N007',type:'finance',icon:'wallet',text:'Töleg alyndy — Oraz Nurlyýew 700 TMT (abuna + şahsy)',time:new Date(Date.now()-5*3600000).toISOString(),read:true,link:'finance'},
 ];
 
 // ==================== AUTH ====================
@@ -581,13 +581,13 @@ function buildNav(){
   section1.forEach(id=>{
     if(!perms.includes(id))return;
     const item=NAV_ITEMS.find(n=>n.id===id);
-    if(item)html+=`<div class="nav-item" id="nav-${id}" onclick="navigate('${id}')""><span class="nav-icon">${item.icon}</span><span class="nav-label">${item.label}</span></div>`;
+    if(item)html+=`<div class="nav-item" id="nav-${id}" onclick="navigate('${id}')""><span class="nav-icon">${ico(item.icon)}</span><span class="nav-label">${item.label}</span></div>`;
   });
   html+='<div class="nav-divider"></div>';
   section2.forEach(id=>{
     if(!perms.includes(id))return;
     const item=NAV_ITEMS.find(n=>n.id===id);
-    if(item)html+=`<div class="nav-item" id="nav-${id}" onclick="navigate('${id}')""><span class="nav-icon">${item.icon}</span><span class="nav-label">${item.label}</span></div>`;
+    if(item)html+=`<div class="nav-item" id="nav-${id}" onclick="navigate('${id}')""><span class="nav-icon">${ico(item.icon)}</span><span class="nav-label">${item.label}</span></div>`;
   });
   nav.innerHTML=html;
 }
@@ -656,7 +656,7 @@ function closeMobileSidebar(){
 // ==================== TOAST ====================
 const toast={
   show(msg,type='success',dur=3500){
-    const icons={success:'✅',error:'❌',warning:'⚠️',info:'ℹ️'};
+    const icons={success:ico('check-circle-2',15),error:ico('x-circle',15),warning:ico('alert-triangle',15),info:ico('info',15)};
     const el=document.createElement('div');
     el.className=`toast toast-${type}`;
     el.innerHTML=`<span>${icons[type]}</span><span class="toast-msg">${msg}</span><button class="toast-close" onclick="this.parentElement.remove()">✕</button>`;
@@ -767,45 +767,45 @@ function renderDashboard(ca){
   <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
     <button class="btn btn-primary" onclick="openAddMemberModal()">+ Täze Agza</button>
     <button class="btn btn-secondary" onclick="openAddClassModal()">+ Sapak</button>
-    <button class="btn btn-secondary" onclick="navigate('members')" style="color:var(--yellow)">⚠️ Abunasy Gutarýanlar (${expiring})</button>
-    <button class="btn btn-secondary" onclick="navigate('finance')">💰 Maliýe</button>
-    <button class="btn btn-secondary" onclick="exportMembersCSV()">📊 Hasabat</button>
+    <button class="btn btn-secondary" onclick="navigate('members')" style="color:var(--yellow)">${ico('alert-triangle',14)} Abunasy Gutarýanlar (${expiring})</button>
+    <button class="btn btn-secondary" onclick="navigate('finance')">${ico('wallet',14)} Maliýe</button>
+    <button class="btn btn-secondary" onclick="exportMembersCSV()">${ico('bar-chart-3',14)} Hasabat</button>
   </div>
 
   <!-- KPI Cards -->
   <div class="kpi-grid">
     <div class="kpi-card">
-      <div class="kpi-icon">👥</div>
+      <div class="kpi-icon">${ico('users',24)}</div>
       <div class="kpi-val" style="color:var(--cyan)">${totalMembers.toLocaleString()}</div>
       <div class="kpi-sub">Jemi Agzalar</div>
       <span class="kpi-trend trend-up">▲ +${newMembers} bu aý</span>
     </div>
     <div class="kpi-card">
-      <div class="kpi-icon">✅</div>
+      <div class="kpi-icon">${ico('check-circle-2',24)}</div>
       <div class="kpi-val" style="color:var(--green)">${activeMembers}</div>
       <div class="kpi-sub">${pct}% dolulyk</div>
       <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:var(--green)"></div></div>
     </div>
     <div class="kpi-card">
-      <div class="kpi-icon">⚡</div>
+      <div class="kpi-icon">${ico('zap',24)}</div>
       <div class="kpi-val" style="color:var(--orange)">${todayClasses}</div>
       <div class="kpi-sub">Aktiw sapaklar</div>
       <span class="kpi-trend trend-neutral">4 zal işleýär</span>
     </div>
     <div class="kpi-card">
-      <div class="kpi-icon">💰</div>
+      <div class="kpi-icon">${ico('wallet',24)}</div>
       <div class="kpi-val" style="color:var(--red)">${formatTMT(monthIncome)}</div>
       <div class="kpi-sub">Bu Aý Girdeji</div>
       <span class="kpi-trend trend-up">▲ +12%</span>
     </div>
     <div class="kpi-card" onclick="navigate('equipment')" style="cursor:pointer">
-      <div class="kpi-icon">🔧</div>
+      <div class="kpi-icon">${ico('wrench',24)}</div>
       <div class="kpi-val" style="color:var(--yellow)">${needMaint}</div>
       <div class="kpi-sub">Tehniki syna gerek</div>
       <span class="kpi-trend trend-warn">${needMaint>0?'!! Üns gerek':'✓ Tertipde'}</span>
     </div>
     <div class="kpi-card">
-      <div class="kpi-icon">🆕</div>
+      <div class="kpi-icon">${ico('user-plus',24)}</div>
       <div class="kpi-val" style="color:var(--green)">${newMembers}</div>
       <div class="kpi-sub">Täze Agzalar (bu aý)</div>
       <span class="kpi-trend trend-up">▲ +20%</span>
@@ -815,11 +815,11 @@ function renderDashboard(ca){
   <!-- Charts Row -->
   <div class="grid-2" style="margin-bottom:24px">
     <div class="card">
-      <h3 style="margin-bottom:16px;font-size:15px;font-weight:700">💹 Girdeji (12 aý)</h3>
+      <h3 style="margin-bottom:16px;font-size:15px;font-weight:700">${ico('trending-up',15)} Girdeji (12 aý)</h3>
       <canvas id="revenue-chart" height="220"></canvas>
     </div>
     <div class="card">
-      <h3 style="margin-bottom:16px;font-size:15px;font-weight:700">📊 Agza Paýlanmasy</h3>
+      <h3 style="margin-bottom:16px;font-size:15px;font-weight:700">${ico('pie-chart',15)} Agza Paýlanmasy</h3>
       <canvas id="member-chart" height="220"></canvas>
     </div>
   </div>
@@ -827,18 +827,18 @@ function renderDashboard(ca){
   <!-- Gantt + Feed -->
   <div class="grid-2" style="margin-bottom:24px">
     <div class="card">
-      <h3 style="margin-bottom:16px;font-size:15px;font-weight:700">📅 Şu Günüň Tertibi</h3>
+      <h3 style="margin-bottom:16px;font-size:15px;font-weight:700">${ico('calendar',15)} Şu Günüň Tertibi</h3>
       <div id="today-gantt"></div>
     </div>
     <div class="card">
-      <h3 style="margin-bottom:16px;font-size:15px;font-weight:700">⚡ Soňky Işler</h3>
+      <h3 style="margin-bottom:16px;font-size:15px;font-weight:700">${ico('activity',15)} Soňky Işler</h3>
       <div id="activity-feed"></div>
     </div>
   </div>
 
   <!-- Trainer Load -->
   <div class="card">
-    <h3 style="margin-bottom:16px;font-size:15px;font-weight:700">👨‍🏫 Tälimçi Ýükleme Deňleýjisi</h3>
+    <h3 style="margin-bottom:16px;font-size:15px;font-weight:700">${ico('graduation-cap',15)} Tälimçi Ýükleme Deňleýjisi</h3>
     <div id="trainer-load"></div>
   </div>
   `;
@@ -913,10 +913,10 @@ function renderActivityFeed(){
   const feedEl=document.getElementById('activity-feed');
   if(!feedEl)return;
   const notifs=DB.get('notifications').slice(0,6);
-  if(!notifs.length){feedEl.innerHTML='<div class="empty-state"><div class="ei">📭</div><p>Işler ýok</p></div>';return;}
+  if(!notifs.length){feedEl.innerHTML='<div class="empty-state"><div class="ei"><i data-lucide="inbox"></i></div><p>Işler ýok</p></div>';return;}
   feedEl.innerHTML=notifs.map(n=>`
     <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid rgba(239,68,68,.05)">
-      <span style="font-size:18px;flex-shrink:0">${n.icon}</span>
+      <span style="display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:30px;height:30px;background:var(--surface2);border-radius:8px">${ico(n.icon,16)}</span>
       <div style="flex:1">
         <div style="font-size:12px;line-height:1.5">${n.text}</div>
         <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${timeAgo(n.time)}</div>
@@ -936,7 +936,7 @@ function renderTrainerLoad(){
       <div class="load-bar-name">${t.firstName} ${t.lastName.charAt(0)}.</div>
       <div class="load-bar-track"><div class="load-bar-fill" style="width:${pct}%;background:${color}"></div></div>
       <div class="load-bar-pct" style="color:${color}">${pct}%</div>
-      <span style="font-size:13px">${pct>=80?'⚠️':'✅'}</span>
+      <span style="font-size:13px">${pct>=80?ico('alert-triangle',14):ico('check-circle-2',14)}</span>
     </div>`;
   }).join('');
 }
@@ -945,16 +945,16 @@ function renderTrainerLoad(){
 function renderMembers(ca){
   ca.innerHTML=`
   <div class="section-header">
-    <h2>👥 Agza Dolandyrma</h2>
+    <h2>${ico('users',20)} Agza Dolandyrma</h2>
     <div class="actions">
-      <button class="btn btn-secondary btn-sm" onclick="exportMembersCSV()">📤 CSV</button>
-      <button class="btn btn-secondary btn-sm" onclick="exportJSON(DB.get('members'),'members')">📤 JSON</button>
+      <button class="btn btn-secondary btn-sm" onclick="exportMembersCSV()">${ico('upload',13)} CSV</button>
+      <button class="btn btn-secondary btn-sm" onclick="exportJSON(DB.get('members'),'members')">${ico('upload',13)} JSON</button>
       <button class="btn btn-primary" onclick="openAddMemberModal()">+ Täze Agza</button>
     </div>
   </div>
   <div class="card" style="margin-bottom:16px">
     <div class="filter-bar">
-      <input type="text" placeholder="🔍 At, telefon, ID..." id="m-search" oninput="filterMembers()" style="flex:1;min-width:180px"/>
+      <input type="text" placeholder="At, telefon, ID..." id="m-search" oninput="filterMembers()" style="flex:1;min-width:180px"/>
       <select id="m-plan" onchange="filterMembers()">
         <option value="">Abuna (Hemmesi)</option>
         <option value="basic">Başlangyç</option>
@@ -1023,9 +1023,9 @@ function filterMembers(){
       <td>${getSubBadge(m.subscription)}</td>
       <td>
         <div style="display:flex;gap:4px">
-          <button class="btn btn-sm btn-secondary" onclick="viewMember('${m.id}')">👁️</button>
-          <button class="btn btn-sm btn-secondary" onclick="editMember('${m.id}')">✏️</button>
-          <button class="btn btn-sm btn-danger" onclick="deleteMember('${m.id}')">🗑️</button>
+          <button class="btn btn-sm btn-secondary" onclick="viewMember('${m.id}')">${ico('eye',14)}</button>
+          <button class="btn btn-sm btn-secondary" onclick="editMember('${m.id}')">${ico('pencil',14)}</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteMember('${m.id}')">${ico('trash-2',14)}</button>
         </div>
       </td>
     </tr>
@@ -1061,7 +1061,7 @@ function viewMember(id){
       <div style="width:60px;height:60px;border-radius:14px;background:${m.gender==='male'?'rgba(239,68,68,.2)':'rgba(6,182,212,.2)'};display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;flex-shrink:0">${(m.firstName[0]||'')+(m.lastName[0]||'')}</div>
       <div>
         <div style="font-size:18px;font-weight:700">${m.firstName} ${m.lastName}</div>
-        <div style="color:var(--text-muted);font-size:13px">📱 ${m.phone} &nbsp;|&nbsp; ${getGenderIcon(m.gender)} ${calcAge(m.birthDate)} ýaş &nbsp;|&nbsp; 📅 Agza: ${formatDate(m.memberSince)}</div>
+        <div style="color:var(--text-muted);font-size:13px">${ico('phone',13)} ${m.phone} &nbsp;|&nbsp; ${getGenderIcon(m.gender)} ${calcAge(m.birthDate)} ýaş &nbsp;|&nbsp; ${ico('calendar',13)} Agza: ${formatDate(m.memberSince)}</div>
         <div style="margin-top:6px;display:flex;gap:6px">${getPlanBadge(m.subscription?.plan)} ${getSubBadge(m.subscription)}</div>
       </div>
     </div>
@@ -1091,7 +1091,7 @@ function viewMember(id){
           <div class="stat-row"><span class="stat-label">Adres</span><span class="stat-val">${m.address||'—'}</span></div>
           <div class="stat-row"><span class="stat-label">Çeşme</span><span class="stat-val">${{instagram:'Instagram',website:'Saýt',referral:'Maslahat',walk_in:'Özü geldi',phone:'Telefon'}[m.source]||m.source||'—'}</span></div></div>
         </div>
-        ${m.healthNotes?`<div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:12px;margin-top:10px"><span style="color:var(--red);font-weight:600">⚠️ Saglyk belligi:</span> ${m.healthNotes}</div>`:''}
+        ${m.healthNotes?`<div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:12px;margin-top:10px"><span style="color:var(--red);font-weight:600">${ico('alert-triangle',14)} Saglyk belligi:</span> ${m.healthNotes}</div>`:''}
       </div>
       <!-- Sub Tab -->
       <div class="tab-pane" data-pane="sub" data-pane-group="member-detail">
@@ -1123,7 +1123,7 @@ function viewMember(id){
           <div><div style="font-size:22px;font-weight:700;color:var(--orange)">${lastAttend?.date?formatDate(lastAttend.date):'—'}</div><div style="font-size:11px;color:var(--text-muted)">Soňky giriş</div></div>
         </div>
         <h4 style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Gatnaşyk taryhy</h4>
-        ${(m.attendance||[]).slice(-10).reverse().map(a=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(239,68,68,.05)"><span style="font-size:16px">📅</span><div><div style="font-size:13px">${formatDate(a.date)}</div><div style="font-size:11px;color:var(--text-muted)">${a.checkIn||''} — ${a.checkOut||''}</div></div></div>`).join('')||'<p style="color:var(--text-muted)">Gatnaşyk tapylmady</p>'}
+        ${(m.attendance||[]).slice(-10).reverse().map(a=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(239,68,68,.05)"><span style="display:flex;align-items:center;color:var(--text-muted)">${ico('calendar',14)}</span><div><div style="font-size:13px">${formatDate(a.date)}</div><div style="font-size:11px;color:var(--text-muted)">${a.checkIn||''} — ${a.checkOut||''}</div></div></div>`).join('')||'<p style="color:var(--text-muted)">Gatnaşyk tapylmady</p>'}
       </div>
       <!-- Progress Tab -->
       <div class="tab-pane" data-pane="progress" data-pane-group="member-detail">
@@ -1149,11 +1149,11 @@ function viewMember(id){
       <div class="tab-pane" data-pane="trainer" data-pane-group="member-detail">
         ${trainer?`
           <div style="display:flex;align-items:center;gap:14px;padding:16px;background:var(--surface2);border-radius:10px;margin-top:8px">
-            <div style="width:50px;height:50px;border-radius:12px;background:${trainer.color}22;display:flex;align-items:center;justify-content:center;font-size:22px">${trainer.emoji}</div>
+            <div style="width:50px;height:50px;border-radius:12px;background:${trainer.color}22;display:flex;align-items:center;justify-content:center;display:flex;align-items:center;justify-content:center">${ico(trainer.emoji,22)}</div>
             <div>
               <div style="font-weight:700">${trainer.firstName} ${trainer.lastName}</div>
               <div style="font-size:12px;color:var(--text-muted)">${trainer.specialties.join(', ')}</div>
-              <div style="font-size:12px;color:var(--text-muted)">📞 ${trainer.phone}</div>
+              <div style="font-size:12px;color:var(--text-muted)">${ico('phone',12)} ${trainer.phone}</div>
             </div>
           </div>
           <div style="margin-top:14px">${trainer.bio}</div>
@@ -1176,7 +1176,7 @@ function viewMember(id){
   </div>
   <div class="modal-footer">
     <button class="btn btn-ghost" onclick="closeModal()">Ýap</button>
-    <button class="btn btn-secondary" onclick="editMember('${m.id}')">✏️ Düzet</button>
+    <button class="btn btn-secondary" onclick="editMember('${m.id}')">${ico('pencil',14)} Düzet</button>
     <button class="btn btn-primary" onclick="renewSubscriptionModal('${m.id}')">Abunasy Uzat</button>
   </div>
   `,'modal-lg');
@@ -1228,7 +1228,7 @@ function openAddMemberModal(prefill){
   </div>
   <div class="modal-footer">
     <button class="btn btn-ghost" onclick="closeModal()">Ýatyr</button>
-    <button class="btn btn-primary" onclick="saveMember('${prefill?.id||''}')">💾 Sakla</button>
+    <button class="btn btn-primary" onclick="saveMember('${prefill?.id||''}')">${ico('save',14)} Sakla</button>
   </div>
   `,'modal-lg');
 }
@@ -1263,7 +1263,7 @@ function saveMember(existingId){
     const newId='MBR'+String(DB.get('members').length+1).padStart(3,'0');
     DB.add('members',{...data,id:newId,memberSince:startDate,attendance:[],measurements:[],subscribedClasses:[]});
     toast.success('Täze agza goşuldy!');
-    addNotification('member','🆕',`Täze agza ýazyldy — ${fn} ${ln} (${plan})`,'members');
+    addNotification('member','user-plus',`Täze agza ýazyldy — ${fn} ${ln} (${plan})`,'members');
   }
   closeModal();
   if(currentSection==='members')filterMembers();
@@ -1285,7 +1285,7 @@ function renewSubscriptionModal(memberId){
   </div>
   <div class="modal-footer">
     <button class="btn btn-ghost" onclick="closeModal()">Ýatyr</button>
-    <button class="btn btn-primary" onclick="doRenewSubscription('${memberId}')">💳 Uzat we Töleg Ýaz</button>
+    <button class="btn btn-primary" onclick="doRenewSubscription('${memberId}')">${ico('credit-card',14)} Uzat we Töleg Ýaz</button>
   </div>
   `,'modal-sm');
 }
@@ -1301,7 +1301,7 @@ function doRenewSubscription(memberId){
   const m=DB.find('members',memberId);
   DB.add('transactions',{type:'income',category:'subscription',memberId,memberName:`${m.firstName} ${m.lastName}`,amount:price*months,currency:'TMT',paymentMethod:payMethod,reference:`${months} aý ${plan} abuna`,date:start,receivedBy:currentUser.id,notes:''});
   toast.success('Abuna uzadyldy!');
-  addNotification('finance','💰',`Töleg alyndy — ${m.firstName} ${m.lastName} ${formatTMT(price*months)}`,'finance');
+  addNotification('finance','wallet',`Töleg alyndy — ${m.firstName} ${m.lastName} ${formatTMT(price*months)}`,'finance');
   closeModal();
   if(currentSection==='members')filterMembers();
 }
@@ -1345,7 +1345,7 @@ function addPaymentModal(memberId,memberName){
   </div>
   <div class="modal-footer">
     <button class="btn btn-ghost" onclick="closeModal()">Ýatyr</button>
-    <button class="btn btn-primary" onclick="savePayment('${memberId}','${memberName}')">💾 Sakla</button>
+    <button class="btn btn-primary" onclick="savePayment('${memberId}','${memberName}')">${ico('save',14)} Sakla</button>
   </div>
   `,'modal-sm');
 }
@@ -1354,7 +1354,7 @@ function savePayment(memberId,memberName){
   if(!amt){toast.error('Möçberi giriz!');return;}
   DB.add('transactions',{type:'income',category:document.getElementById('pay-cat').value,memberId,memberName,amount:amt,currency:'TMT',paymentMethod:document.getElementById('pay-meth').value,reference:document.getElementById('pay-note').value,date:document.getElementById('pay-date').value,receivedBy:currentUser.id,notes:''});
   toast.success('Töleg ýazyldy!');
-  addNotification('finance','💰',`Töleg alyndy — ${memberName} ${formatTMT(amt)}`,'finance');
+  addNotification('finance','wallet',`Töleg alyndy — ${memberName} ${formatTMT(amt)}`,'finance');
   closeModal();
 }
 
@@ -1365,7 +1365,7 @@ function renderClasses(ca){
   let activeFilter='';
   ca.innerHTML=`
   <div class="section-header">
-    <h2>🏋️ Sapak Dolandyrma</h2>
+    <h2>${ico('dumbbell',20)} Sapak Dolandyrma</h2>
     <button class="btn btn-primary" onclick="openAddClassModal()">+ Täze Sapak</button>
   </div>
   <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
@@ -1392,19 +1392,19 @@ function renderClassGrid(typeFilter){
         <div style="font-weight:700;font-size:14px">${c.name}</div>
         <span class="badge ${c.active?'badge-active':'badge-expired'}">${c.active?'Aktiw':'Ýapyk'}</span>
       </div>
-      <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">📅 ${c.dayOfWeek.map(d=>days[d]).join(' / ')}</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">${ico('calendar',12)} ${c.dayOfWeek.map(d=>days[d]).join(' / ')}</div>
       <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">⏰ ${c.startTime} — ${addMinutes(c.startTime,c.duration)} (${c.duration} min)</div>
-      <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">🏛️ ${c.hallName||'—'}</div>
-      <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">👨‍🏫 ${c.trainerName||'—'}</div>
-      <div style="font-size:12px;margin-bottom:4px">👥 ${c.enrolledMembers?.length||0}/${c.maxCapacity} ýer</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">${ico('building-2',12)} ${c.hallName||'—'}</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">${ico('graduation-cap',12)} ${c.trainerName||'—'}</div>
+      <div style="font-size:12px;margin-bottom:4px">${ico('users',12)} ${c.enrolledMembers?.length||0}/${c.maxCapacity} ýer</div>
       <div class="progress-bar" style="margin-bottom:10px"><div class="progress-fill" style="width:${Math.round((c.enrolledMembers?.length||0)/c.maxCapacity*100)}%;background:${c.color}"></div></div>
       <div style="display:flex;gap:6px;margin-top:10px">
         <button class="btn btn-sm btn-secondary" style="flex:1" onclick="viewClass('${c.id}')">Görmek</button>
-        <button class="btn btn-sm btn-secondary" onclick="editClass('${c.id}')">✏️</button>
-        <button class="btn btn-sm btn-danger" onclick="deleteClass('${c.id}')">🗑️</button>
+        <button class="btn btn-sm btn-secondary" onclick="editClass('${c.id}')">${ico('pencil',14)}</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteClass('${c.id}')">${ico('trash-2',14)}</button>
       </div>
     </div>
-  </div>`).join('')||'<div class="empty-state"><div class="ei">🏋️</div><p>Sapak tapylmady</p></div>';
+  </div>`).join('')||'<div class="empty-state"><div class="ei"><i data-lucide="dumbbell" style="width:48px;height:48px;opacity:.35"></i></div><p>Sapak tapylmady</p></div>';
 }
 function addMinutes(time,mins){
   const[h,m]=time.split(':').map(Number);
@@ -1448,7 +1448,7 @@ function viewClass(id){
       <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:14px">
         <div><div style="font-size:22px;font-weight:700;color:var(--cyan)">${c.totalSessions}</div><div style="font-size:11px;color:var(--text-muted)">Jemi seans</div></div>
         <div><div style="font-size:22px;font-weight:700;color:var(--orange)">${c.avgAttendance}</div><div style="font-size:11px;color:var(--text-muted)">Ort. gatnaşyk</div></div>
-        <div><div style="font-size:22px;font-weight:700;color:var(--yellow)">⭐ ${c.rating}</div><div style="font-size:11px;color:var(--text-muted)">Reýting</div></div>
+        <div><div style="font-size:22px;font-weight:700;color:var(--yellow)">${c.rating}</div><div style="font-size:11px;color:var(--text-muted)">Reýting</div></div>
       </div>
       <div class="progress-bar"><div class="progress-fill" style="width:${Math.round((enrolled.length/c.maxCapacity)*100)}%;background:${c.color}"></div></div>
       <div style="font-size:12px;color:var(--text-muted);margin-top:6px">Dolulyk: ${Math.round((enrolled.length/c.maxCapacity)*100)}%</div>
@@ -1456,7 +1456,7 @@ function viewClass(id){
   </div>
   <div class="modal-footer">
     <button class="btn btn-ghost" onclick="closeModal()">Ýap</button>
-    <button class="btn btn-secondary" onclick="editClass('${c.id}')">✏️ Düzet</button>
+    <button class="btn btn-secondary" onclick="editClass('${c.id}')">${ico('pencil',14)} Düzet</button>
   </div>
   `,'modal-lg');
 }
@@ -1520,7 +1520,7 @@ function openAddClassModal(prefill){
   </div>
   <div class="modal-footer">
     <button class="btn btn-ghost" onclick="closeModal()">Ýatyr</button>
-    <button class="btn btn-primary" onclick="saveClass('${prefill?.id||''}')">💾 Sakla</button>
+    <button class="btn btn-primary" onclick="saveClass('${prefill?.id||''}')">${ico('save',14)} Sakla</button>
   </div>
   `,'modal-lg');
 }
@@ -1550,7 +1550,7 @@ function renderTrainers(ca){
   const trainers=DB.get('trainers');
   ca.innerHTML=`
   <div class="section-header">
-    <h2>👨‍🏫 Tälimçiler</h2>
+    <h2>${ico('graduation-cap',20)} Tälimçiler</h2>
     <button class="btn btn-primary" onclick="openAddTrainerModal()">+ Täze Tälimçi</button>
   </div>
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px">
@@ -1559,10 +1559,10 @@ function renderTrainers(ca){
       const color=pct>=80?'var(--yellow)':pct>=60?'var(--orange)':'var(--green)';
       return`<div class="trainer-card">
         <div class="trainer-card-header" style="background:linear-gradient(135deg,${t.color}22,${t.color}11)">
-          <div class="trainer-avatar-lg" style="background:${t.color}22;color:${t.color}">${t.emoji}</div>
+          <div class="trainer-avatar-lg" style="background:${t.color}22;color:${t.color}">${ico(t.emoji,28)}</div>
           <div style="font-weight:700;font-size:15px">${t.firstName} ${t.lastName}</div>
           <div style="font-size:12px;color:var(--text-muted);margin-top:2px">${t.specialties.join(' · ')}</div>
-          <div style="margin-top:6px">⭐ ${t.avgRating} &nbsp;|&nbsp; ${t.experience} ýyl</div>
+          <div style="margin-top:6px">${ico('star',14)} ${t.avgRating} &nbsp;|&nbsp; ${t.experience} ýyl</div>
         </div>
         <div class="trainer-card-body">
           <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Sapaklar: ${t.assignedClasses.length} | Şahsy: ${t.personalClients.length}/${t.maxPersonalClients}</div>
@@ -1570,8 +1570,8 @@ function renderTrainers(ca){
           <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px">${t.certifications.join(' · ')}</div>
           <div style="display:flex;gap:6px">
             <button class="btn btn-sm btn-secondary" style="flex:1" onclick="viewTrainer('${t.id}')">Profil</button>
-            <button class="btn btn-sm btn-secondary" onclick="editTrainer('${t.id}')">✏️</button>
-            <button class="btn btn-sm btn-danger" onclick="deleteTrainer('${t.id}')">🗑️</button>
+            <button class="btn btn-sm btn-secondary" onclick="editTrainer('${t.id}')">${ico('pencil',14)}</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteTrainer('${t.id}')">${ico('trash-2',14)}</button>
           </div>
         </div>
       </div>`;
@@ -1589,12 +1589,12 @@ function viewTrainer(id){
   <div class="modal-header"><h3>${t.firstName} ${t.lastName}</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
   <div class="modal-body">
     <div style="display:flex;align-items:center;gap:16px;padding:16px;background:var(--surface2);border-radius:10px;margin-bottom:16px">
-      <div style="width:60px;height:60px;border-radius:14px;background:${t.color}22;display:flex;align-items:center;justify-content:center;font-size:28px">${t.emoji}</div>
+      <div style="width:60px;height:60px;border-radius:14px;background:${t.color}22;display:flex;align-items:center;justify-content:center;font-size:28px">${ico(t.emoji,28)}</div>
       <div>
         <div style="font-weight:700;font-size:16px">${t.firstName} ${t.lastName}</div>
         <div style="font-size:12px;color:var(--text-muted)">${t.specialties.join(', ')}</div>
-        <div style="font-size:12px;color:var(--text-muted)">📞 ${t.phone} | ${t.experience} ýyl tejribe</div>
-        <div style="font-size:12px;color:var(--text-muted)">📅 Işe başlan: ${formatDate(t.hireDate)}</div>
+        <div style="font-size:12px;color:var(--text-muted)">${ico('phone',12)} ${t.phone} | ${t.experience} ýyl tejribe</div>
+        <div style="font-size:12px;color:var(--text-muted)">${ico('calendar',12)} Işe başlan: ${formatDate(t.hireDate)}</div>
       </div>
     </div>
     <div class="tabs">
@@ -1608,7 +1608,7 @@ function viewTrainer(id){
       <div class="stat-row"><span class="stat-label">Jynsy</span><span class="stat-val">${t.gender==='male'?'Erkek':'Aýal'}</span></div>
       <div class="stat-row"><span class="stat-label">E-poçta</span><span class="stat-val">${t.email||'—'}</span></div>
       <div class="stat-row"><span class="stat-label">Jemi seans</span><span class="stat-val">${t.totalSessions}</span></div>
-      <div class="stat-row"><span class="stat-label">Reýting</span><span class="stat-val">⭐ ${t.avgRating} (${t.reviewCount} ses)</span></div>
+      <div class="stat-row"><span class="stat-label">Reýting</span><span class="stat-val">${ico('star',14)} ${t.avgRating} (${t.reviewCount} ses)</span></div>
       <h4 style="margin:14px 0 8px;font-size:13px">Sertifikatlar:</h4>
       ${t.certifications.map(c=>`<div class="badge badge-active" style="margin:3px">${c}</div>`).join('')}
     </div>
@@ -1626,7 +1626,7 @@ function viewTrainer(id){
       <div class="stat-row"><span class="stat-label">Jemi bu aý</span><span class="stat-val" style="color:var(--cyan)">${formatTMT(t.salary+t.personalClients.length*200)}</span></div>
     </div>
   </div>
-  <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">Ýap</button><button class="btn btn-secondary" onclick="editTrainer('${t.id}')">✏️ Düzet</button></div>
+  <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">Ýap</button><button class="btn btn-secondary" onclick="editTrainer('${t.id}')">${ico('pencil',14)} Düzet</button></div>
   `,'modal-lg');
 }
 function openAddTrainerModal(prefill){
@@ -1644,12 +1644,12 @@ function openAddTrainerModal(prefill){
     <div class="form-group"><label>Hünärler (vergül bilen)</label><input id="tf-spec" value="${prefill?.specialties?.join(', ')||''}" placeholder="strength, hiit, yoga"/></div>
     <div class="form-group"><label>Bio</label><textarea id="tf-bio" placeholder="Tälimçi barada...">${prefill?.bio||''}</textarea></div>
     <div class="form-group"><label>Sertifikatlar (vergül bilen)</label><input id="tf-certs" value="${prefill?.certifications?.join(', ')||''}" placeholder="NASM-CPT, IPF"/></div>
-    <div class="form-group"><label>Emoji</label><input id="tf-emoji" value="${prefill?.emoji||'💪'}" style="width:60px"/></div>
+    <div class="form-group"><label>Emoji</label><input id="tf-emoji" value="${prefill?.emoji||'dumbbell'}" style="width:60px"/></div>
     <div class="form-group"><label>Reňk</label><input id="tf-color" type="color" value="${prefill?.color||'#EF4444'}"/></div>
   </div>
   <div class="modal-footer">
     <button class="btn btn-ghost" onclick="closeModal()">Ýatyr</button>
-    <button class="btn btn-primary" onclick="saveTrainer('${prefill?.id||''}')">💾 Sakla</button>
+    <button class="btn btn-primary" onclick="saveTrainer('${prefill?.id||''}')">${ico('save',14)} Sakla</button>
   </div>
   `,'modal-lg');
 }
@@ -1663,7 +1663,7 @@ function saveTrainer(existingId){
   const fn=document.getElementById('tf-fn').value.trim();
   const ln=document.getElementById('tf-ln').value.trim();
   if(!fn||!ln){toast.error('At we familýa giriziň!');return;}
-  const data={firstName:fn,lastName:ln,phone:document.getElementById('tf-ph').value,email:document.getElementById('tf-em').value,experience:+document.getElementById('tf-exp').value||1,salary:+document.getElementById('tf-sal').value||3000,specialties:document.getElementById('tf-spec').value.split(',').map(s=>s.trim()).filter(Boolean),bio:document.getElementById('tf-bio').value,certifications:document.getElementById('tf-certs').value.split(',').map(s=>s.trim()).filter(Boolean),emoji:document.getElementById('tf-emoji').value||'💪',color:document.getElementById('tf-color').value,active:true,avgRating:5.0,reviewCount:0,totalSessions:0};
+  const data={firstName:fn,lastName:ln,phone:document.getElementById('tf-ph').value,email:document.getElementById('tf-em').value,experience:+document.getElementById('tf-exp').value||1,salary:+document.getElementById('tf-sal').value||3000,specialties:document.getElementById('tf-spec').value.split(',').map(s=>s.trim()).filter(Boolean),bio:document.getElementById('tf-bio').value,certifications:document.getElementById('tf-certs').value.split(',').map(s=>s.trim()).filter(Boolean),emoji:document.getElementById('tf-emoji').value||'dumbbell',color:document.getElementById('tf-color').value,active:true,avgRating:5.0,reviewCount:0,totalSessions:0};
   if(existingId){DB.update('trainers',existingId,data);toast.success('Tälimçi täzelendi!');}
   else{DB.add('trainers',{...data,assignedClasses:[],personalClients:[],maxPersonalClients:10});toast.success('Täze tälimçi goşuldy!');}
   closeModal();
@@ -1678,13 +1678,13 @@ function renderSchedule(ca){
   const conflicts=detectConflicts(classes);
   ca.innerHTML=`
   <div class="section-header">
-    <h2>📅 Sapak Tertibi</h2>
+    <h2>${ico('calendar',20)} Sapak Tertibi</h2>
     <div class="actions">
-      ${conflicts.length?`<span class="badge badge-expiring">⚠️ ${conflicts.length} çaknyşyk</span>`:''}
+      ${conflicts.length?`<span class="badge badge-expiring">${ico('alert-triangle',12)} ${conflicts.length} çaknyşyk</span>`:''}
       <button class="btn btn-primary" onclick="openAddClassModal()">+ Sapak Goş</button>
     </div>
   </div>
-  ${conflicts.length?`<div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px"><strong>⚠️ Çaknyşyk bar:</strong> ${conflicts.map(c=>`${c.class1.name} & ${c.class2.name}`).join(', ')}</div>`:''}
+  ${conflicts.length?`<div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px"><strong>${ico('alert-triangle',14)} Çaknyşyk bar:</strong> ${conflicts.map(c=>`${c.class1.name} & ${c.class2.name}`).join(', ')}</div>`:''}
   <div style="overflow-x:auto">
     <div class="schedule-grid" id="sch-grid" style="min-width:700px">
       <div class="sch-header">Wagt</div>
@@ -1724,15 +1724,15 @@ function newClassAtSlot(day,time){
 function renderEquipment(ca){
   ca.innerHTML=`
   <div class="section-header">
-    <h2>🔧 Enjamlar</h2>
+    <h2>${ico('wrench',20)} Enjamlar</h2>
     <div class="actions">
-      <button class="btn btn-secondary btn-sm" onclick="showMaintenanceDue()">⚠️ Syna Gerek</button>
+      <button class="btn btn-secondary btn-sm" onclick="showMaintenanceDue()">${ico('alert-triangle',13)} Syna Gerek</button>
       <button class="btn btn-primary" onclick="openAddEquipmentModal()">+ Täze Enjam</button>
     </div>
   </div>
   <div class="card" style="margin-bottom:16px">
     <div class="filter-bar">
-      <input type="text" placeholder="🔍 Gözleg..." id="eq-search" oninput="filterEquipment()" style="flex:1"/>
+      <input type="text" placeholder="Gözleg..." id="eq-search" oninput="filterEquipment()" style="flex:1"/>
       <select id="eq-cat" onchange="filterEquipment()"><option value="">Kategoriýa (Hemmesi)</option><option value="cardio">Kardio</option><option value="strength">Güýç</option><option value="functional">Funksional</option><option value="stretching">Gerim</option></select>
       <select id="eq-status" onchange="filterEquipment()"><option value="">Ýagdaý (Hemmesi)</option><option value="working">Işleýär</option><option value="maintenance">Tehniki syna</option><option value="broken">Näsaz</option><option value="retired">Pensiýa</option></select>
     </div>
@@ -1749,7 +1749,7 @@ function filterEquipment(){
   if(cat)eq=eq.filter(e=>e.category===cat);
   if(status)eq=eq.filter(e=>e.status===status);
   const statusColors={working:'var(--green)',maintenance:'var(--yellow)',broken:'var(--red)',retired:'var(--text-muted)'};
-  const statusLabels={working:'✅ Işleýär',maintenance:'⚠️ Tehniki Syna',broken:'❌ Näsaz',retired:'🔒 Pensiýa'};
+  const statusLabels={working:'Işleýär',maintenance:'Tehniki Syna',broken:'Näsaz',retired:'Pensiýa'};
   const catColors={cardio:'#06B6D4',strength:'#EF4444',functional:'#F97316',stretching:'#10B981',other:'#F59E0B'};
   document.getElementById('eq-grid').innerHTML=eq.map(e=>{
     const daysLeft=daysUntil(e.nextMaintenance);
@@ -1762,18 +1762,18 @@ function filterEquipment(){
           <span style="font-size:11px;font-weight:700;color:${statusColors[e.status]||'var(--text-muted)'}">${statusLabels[e.status]||e.status}</span>
         </div>
         <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">${e.brand||''} ${e.model||''}</div>
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">📍 ${e.location||'—'}</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">${ico('map-pin',12)} ${e.location||'—'}</div>
         <div style="font-size:12px;margin-bottom:2px">Soňky tehniki: ${formatDate(e.lastMaintenance)}</div>
         <div style="font-size:12px;margin-bottom:6px">Indiki: <span style="color:${daysLeft!==null&&daysLeft<=14?'var(--yellow)':'var(--text-muted)'}">${formatDate(e.nextMaintenance)} ${daysLeft!==null?'('+daysLeft+'g)':''}</span></div>
         <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${pct>80?'var(--red)':pct>60?'var(--yellow)':'var(--green)'}"></div></div>
         <div style="display:flex;gap:6px;margin-top:10px">
           <button class="btn btn-sm btn-secondary" style="flex:1" onclick="viewEquipment('${e.id}')">Taryh</button>
-          <button class="btn btn-sm btn-secondary" onclick="editEquipment('${e.id}')">✏️</button>
-          <button class="btn btn-sm btn-danger" onclick="deleteEquipment('${e.id}')">🗑️</button>
+          <button class="btn btn-sm btn-secondary" onclick="editEquipment('${e.id}')">${ico('pencil',14)}</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteEquipment('${e.id}')">${ico('trash-2',14)}</button>
         </div>
       </div>
     </div>`;
-  }).join('')||'<div class="empty-state"><div class="ei">🔧</div><p>Enjam tapylmady</p></div>';
+  }).join('')||'<div class="empty-state"><div class="ei"><i data-lucide="wrench" style="width:48px;height:48px;opacity:.35"></i></div><p>Enjam tapylmady</p></div>';
 }
 function viewEquipment(id){
   const e=DB.find('equipment',id);
@@ -1824,9 +1824,9 @@ function saveMaintenanceRecord(eqId){
 function showMaintenanceDue(){
   const eq=DB.get('equipment').filter(e=>e.status==='maintenance'||e.status==='broken'||(daysUntil(e.nextMaintenance)<=14));
   openModal(`
-  <div class="modal-header"><h3>⚠️ Tehniki Syna Gerek</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+  <div class="modal-header"><h3>${ico('wrench',16)} Tehniki Syna Gerek</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
   <div class="modal-body">
-    ${eq.map(e=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(239,68,68,.08)"><div><div style="font-weight:600">${e.name}</div><div style="font-size:12px;color:var(--text-muted)">${e.location} | Indiki: ${formatDate(e.nextMaintenance)}</div></div><button class="btn btn-sm btn-primary" onclick="addMaintenanceModal('${e.id}')">Belläge</button></div>`).join('')||'<p style="color:var(--green)">✅ Ähli enjamlar tertipde</p>'}
+    ${eq.map(e=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(239,68,68,.08)"><div><div style="font-weight:600">${e.name}</div><div style="font-size:12px;color:var(--text-muted)">${e.location} | Indiki: ${formatDate(e.nextMaintenance)}</div></div><button class="btn btn-sm btn-primary" onclick="addMaintenanceModal('${e.id}')">Belläge</button></div>`).join('')||'<p style="color:var(--green)">${ico('check-circle-2',13)} Ähli enjamlar tertipde</p>'}
   </div>
   <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">Ýap</button></div>
   `,'modal-lg');
@@ -1849,7 +1849,7 @@ function openAddEquipmentModal(prefill){
   </div>
   <div class="modal-footer">
     <button class="btn btn-ghost" onclick="closeModal()">Ýatyr</button>
-    <button class="btn btn-primary" onclick="saveEquipment('${prefill?.id||''}')">💾 Sakla</button>
+    <button class="btn btn-primary" onclick="saveEquipment('${prefill?.id||''}')">${ico('save',14)} Sakla</button>
   </div>
   `,'modal-lg');
 }
@@ -1872,7 +1872,7 @@ function renderNutrition(ca){
   const plans=DB.get('nutrition');
   ca.innerHTML=`
   <div class="section-header">
-    <h2>🥗 Iýmitlenme Bölümi</h2>
+    <h2>${ico('salad',20)} Iýmitlenme Bölümi</h2>
     <button class="btn btn-primary" onclick="openAddNutritionModal()">+ Täze Meýilnama</button>
   </div>
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px">
@@ -1889,13 +1889,13 @@ function renderNutrition(ca){
         <div><div style="font-size:18px;font-weight:700;color:var(--orange)">${p.macros?.carbs}g</div><div style="font-size:10px;color:var(--text-muted)">uglewod</div></div>
         <div><div style="font-size:18px;font-weight:700;color:var(--yellow)">${p.macros?.fat}g</div><div style="font-size:10px;color:var(--text-muted)">ýag</div></div>
       </div>
-      <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">💧 ${p.waterIntake||0} ml/gün | ${p.meals?.length||0} nahar</div>
-      ${p.supplements?.length?`<div style="font-size:11px;color:var(--cyan)">💊 ${p.supplements.join(', ')}</div>`:''}
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">${ico('droplets',12)} ${p.waterIntake||0} ml/gün | ${p.meals?.length||0} nahar</div>
+      ${p.supplements?.length?`<div style="font-size:11px;color:var(--cyan)">${ico('pill',12)} ${p.supplements.join(', ')}</div>`:''}
       <div style="display:flex;gap:6px;margin-top:12px">
         <button class="btn btn-sm btn-secondary" style="flex:1" onclick="viewNutrition('${p.id}')">Görmek</button>
-        <button class="btn btn-sm btn-danger" onclick="deleteNutrition('${p.id}')">🗑️</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteNutrition('${p.id}')">${ico('trash-2',14)}</button>
       </div>
-    </div>`).join('')||'<div class="empty-state"><div class="ei">🥗</div><p>Meýilnama tapylmady</p></div>'}
+    </div>`).join('')||'<div class="empty-state"><div class="ei"><i data-lucide="salad" style="width:48px;height:48px;opacity:.35"></i></div><p>Meýilnama tapylmady</p></div>'}
   </div>`;
 }
 function viewNutrition(id){
@@ -1909,10 +1909,10 @@ function viewNutrition(id){
     </div>
     ${(p.meals||[]).map(m=>`
     <div style="background:var(--surface2);border-radius:10px;padding:14px;margin-bottom:10px">
-      <div style="font-weight:700;margin-bottom:8px">🕐 ${m.time} — ${m.name}</div>
+      <div style="font-weight:700;margin-bottom:8px">${ico('clock',12)} ${m.time} — ${m.name}</div>
       ${(m.foods||[]).map(f=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.05)"><span>${f.name} (${f.amount} ${f.unit})</span><span style="color:var(--text-muted)">${f.cal} kcal | B:${f.p}g U:${f.c}g Ý:${f.f}g</span></div>`).join('')}
     </div>`).join('')}
-    ${p.supplements?.length?`<div style="margin-top:10px"><h4 style="font-size:13px;margin-bottom:6px">💊 Goşundylar:</h4>${p.supplements.map(s=>`<span class="badge badge-active" style="margin:3px">${s}</span>`).join('')}</div>`:''}
+    ${p.supplements?.length?`<div style="margin-top:10px"><h4 style="font-size:13px;margin-bottom:6px">${ico('pill',12)} Goşundylar:</h4>${p.supplements.map(s=>`<span class="badge badge-active" style="margin:3px">${s}</span>`).join('')}</div>`:''}
   </div>
   <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">Ýap</button></div>
   `,'modal-lg');
@@ -1940,7 +1940,7 @@ function openAddNutritionModal(){
   </div>
   <div class="modal-footer">
     <button class="btn btn-ghost" onclick="closeModal()">Ýatyr</button>
-    <button class="btn btn-primary" onclick="saveNutrition()">💾 Sakla</button>
+    <button class="btn btn-primary" onclick="saveNutrition()">${ico('save',14)} Sakla</button>
   </div>
   `,'modal-lg');
 }
@@ -1960,22 +1960,22 @@ function renderFinance(ca){
   const pending=0;
   ca.innerHTML=`
   <div class="section-header">
-    <h2>💰 Maliýe</h2>
+    <h2>${ico('wallet',20)} Maliýe</h2>
     <div class="actions">
-      <button class="btn btn-secondary btn-sm" onclick="exportCSV(DB.get('transactions').map(t=>({ID:t.id,Görnüş:t.type,Kategoriýa:t.category,Agza:t.memberName,Möçber:t.amount,Görnüş2:t.paymentMethod,Sene:t.date,Bellik:t.reference})),'maliýe')">📤 CSV</button>
+      <button class="btn btn-secondary btn-sm" onclick="exportCSV(DB.get('transactions').map(t=>({ID:t.id,Görnüş:t.type,Kategoriýa:t.category,Agza:t.memberName,Möçber:t.amount,Görnüş2:t.paymentMethod,Sene:t.date,Bellik:t.reference})),'maliýe')">${ico('upload',13)} CSV</button>
       <button class="btn btn-primary" onclick="openAddPaymentGeneralModal()">+ Töleg Giriş</button>
     </div>
   </div>
   <div class="finance-summary">
-    <div class="kpi-card"><div class="kpi-icon">📈</div><div class="kpi-val" style="color:var(--green)">${formatTMT(income)}</div><div class="kpi-sub">Giriş (Bu Aý)</div></div>
-    <div class="kpi-card"><div class="kpi-icon">📉</div><div class="kpi-val" style="color:var(--red)">${formatTMT(expense)}</div><div class="kpi-sub">Çykdajy (Bu Aý)</div></div>
-    <div class="kpi-card"><div class="kpi-icon">💰</div><div class="kpi-val" style="color:var(--cyan)">${formatTMT(income-expense)}</div><div class="kpi-sub">Arassa Girdeji</div></div>
+    <div class="kpi-card"><div class="kpi-icon">${ico('trending-up',24)}</div><div class="kpi-val" style="color:var(--green)">${formatTMT(income)}</div><div class="kpi-sub">Giriş (Bu Aý)</div></div>
+    <div class="kpi-card"><div class="kpi-icon">${ico('trending-down',24)}</div><div class="kpi-val" style="color:var(--red)">${formatTMT(expense)}</div><div class="kpi-sub">Çykdajy (Bu Aý)</div></div>
+    <div class="kpi-card"><div class="kpi-icon">${ico('wallet',24)}</div><div class="kpi-val" style="color:var(--cyan)">${formatTMT(income-expense)}</div><div class="kpi-sub">Arassa Girdeji</div></div>
     <div class="kpi-card"><div class="kpi-icon">⏳</div><div class="kpi-val" style="color:var(--yellow)">${formatTMT(pending)}</div><div class="kpi-sub">Alynmaly</div></div>
   </div>
   <!-- Charts -->
   <div class="grid-2" style="margin-bottom:20px">
     <div class="card">
-      <h3 style="margin-bottom:14px;font-size:14px;font-weight:700">📊 Aýlyk Girdeji</h3>
+      <h3 style="margin-bottom:14px;font-size:14px;font-weight:700">${ico('bar-chart-3',14)} Aýlyk Girdeji</h3>
       <canvas id="fin-bar" height="200"></canvas>
     </div>
     <div class="card">
@@ -1986,7 +1986,7 @@ function renderFinance(ca){
   <!-- Transactions -->
   <div class="card">
     <div class="filter-bar" style="margin-bottom:14px">
-      <input type="text" placeholder="🔍 Gözleg..." id="txn-search" oninput="filterTransactions()" style="flex:1"/>
+      <input type="text" placeholder="Gözleg..." id="txn-search" oninput="filterTransactions()" style="flex:1"/>
       <select id="txn-type" onchange="filterTransactions()"><option value="">Hemmesi</option><option value="income">Giriş</option><option value="expense">Çykdajy</option></select>
       <select id="txn-cat" onchange="filterTransactions()"><option value="">Kategoriýa (Hemmesi)</option><option value="subscription">Abuna</option><option value="personal_training">Şahsy tälimçi</option><option value="class">Sapak</option><option value="other">Başga</option></select>
     </div>
@@ -2000,7 +2000,7 @@ function renderFinance(ca){
 
   <!-- Expiring subscriptions -->
   <div class="card" style="margin-top:16px">
-    <h3 style="margin-bottom:14px;font-size:14px;font-weight:700">⚠️ Abunasy Gutarýanlar</h3>
+    <h3 style="margin-bottom:14px;font-size:14px;font-weight:700">${ico('alert-triangle',14)} Abunasy Gutarýanlar</h3>
     <div id="expiring-list"></div>
   </div>`;
 
@@ -2031,7 +2031,7 @@ function filterTransactions(){
   if(!tbody)return;
   tbody.innerHTML=txns.map(t=>`<tr>
     <td style="font-size:12px">${formatDate(t.date)}</td>
-    <td><span class="badge ${t.type==='income'?'badge-active':'badge-expired'}">${t.type==='income'?'📈 Giriş':'📉 Çykdajy'}</span></td>
+    <td><span class="badge ${t.type==='income'?'badge-active':'badge-expired'}">${t.type==='income'?ico('trending-up',13)+' Giriş':ico('trending-down',13)+' Çykdajy'}</span></td>
     <td style="font-size:13px">${t.memberName||'—'}</td>
     <td style="font-weight:700;color:${t.type==='income'?'var(--green)':'var(--red)'}">${t.type==='income'?'+':'−'}${formatTMT(t.amount)}</td>
     <td style="font-size:12px">${payLabels[t.paymentMethod]||t.paymentMethod}</td>
@@ -2042,8 +2042,8 @@ function renderExpiringList(){
   const el=document.getElementById('expiring-list');
   if(!el)return;
   const members=DB.get('members').filter(m=>m.subscription?.active&&daysUntil(m.subscription?.endDate)<=10&&daysUntil(m.subscription?.endDate)>=0).sort((a,b)=>daysUntil(a.subscription.endDate)-daysUntil(b.subscription.endDate));
-  if(!members.length){el.innerHTML='<p style="color:var(--green);font-size:13px">✅ Abunasy gutarýan agza ýok</p>';return;}
-  el.innerHTML=`<div class="table-wrap"><table><thead><tr><th>Agza</th><th>Plan</th><th>Gutarma</th><th>Galýan</th><th>Işler</th></tr></thead><tbody>${members.map(m=>`<tr><td style="font-weight:600">${m.firstName} ${m.lastName}</td><td>${getPlanBadge(m.subscription?.plan)}</td><td>${formatDate(m.subscription.endDate)}</td><td style="color:${daysUntil(m.subscription.endDate)<=3?'var(--red)':'var(--yellow)'}"><strong>${daysUntil(m.subscription.endDate)} gün</strong></td><td><button class="btn btn-sm btn-primary" onclick="renewSubscriptionModal('${m.id}')">💳 Uzat</button></td></tr>`).join('')}</tbody></table></div>`;
+  if(!members.length){el.innerHTML='<p style="color:var(--green);font-size:13px">${ico('check-circle-2',14)} Abunasy gutarýan agza ýok</p>';return;}
+  el.innerHTML=`<div class="table-wrap"><table><thead><tr><th>Agza</th><th>Plan</th><th>Gutarma</th><th>Galýan</th><th>Işler</th></tr></thead><tbody>${members.map(m=>`<tr><td style="font-weight:600">${m.firstName} ${m.lastName}</td><td>${getPlanBadge(m.subscription?.plan)}</td><td>${formatDate(m.subscription.endDate)}</td><td style="color:${daysUntil(m.subscription.endDate)<=3?'var(--red)':'var(--yellow)'}"><strong>${daysUntil(m.subscription.endDate)} gün</strong></td><td><button class="btn btn-sm btn-primary" onclick="renewSubscriptionModal('${m.id}')">${ico('credit-card',14)} Uzat</button></td></tr>`).join('')}</tbody></table></div>`;
 }
 function openAddPaymentGeneralModal(){
   const members=DB.get('members');
@@ -2064,7 +2064,7 @@ function openAddPaymentGeneralModal(){
   </div>
   <div class="modal-footer">
     <button class="btn btn-ghost" onclick="closeModal()">Ýatyr</button>
-    <button class="btn btn-primary" onclick="saveGeneralPayment()">💾 Sakla</button>
+    <button class="btn btn-primary" onclick="saveGeneralPayment()">${ico('save',14)} Sakla</button>
   </div>
   `,'modal-sm');
 }
@@ -2086,17 +2086,17 @@ function renderReports(ca){
   const trainers=DB.get('trainers');
   const months=['Ýan','Few','Mar','Apr','Maý','Iýun','Iýul','Awg','Sen','Okt','Noý','Dek'];
   ca.innerHTML=`
-  <div class="section-header"><h2>📈 Hasabatlar we Analitika</h2></div>
+  <div class="section-header"><h2>${ico('trending-up',20)} Hasabatlar we Analitika</h2></div>
   <!-- Summary cards -->
   <div class="kpi-grid" style="margin-bottom:24px">
-    <div class="kpi-card"><div class="kpi-icon">📊</div><div class="kpi-val" style="color:var(--cyan)">${members.length}</div><div class="kpi-sub">Jemi agzalar</div><div class="kpi-trend trend-up">▲ Bu ýyl</div></div>
-    <div class="kpi-card"><div class="kpi-icon">✅</div><div class="kpi-val" style="color:var(--green)">${members.filter(m=>m.subscription?.active).length}</div><div class="kpi-sub">Aktiw abunalar</div></div>
-    <div class="kpi-card"><div class="kpi-icon">🏋️</div><div class="kpi-val" style="color:var(--orange)">${classes.length}</div><div class="kpi-sub">Aktiw sapaklar</div></div>
+    <div class="kpi-card"><div class="kpi-icon">${ico('bar-chart-3',24)}</div><div class="kpi-val" style="color:var(--cyan)">${members.length}</div><div class="kpi-sub">Jemi agzalar</div><div class="kpi-trend trend-up">▲ Bu ýyl</div></div>
+    <div class="kpi-card"><div class="kpi-icon">${ico('check-circle-2',24)}</div><div class="kpi-val" style="color:var(--green)">${members.filter(m=>m.subscription?.active).length}</div><div class="kpi-sub">Aktiw abunalar</div></div>
+    <div class="kpi-card"><div class="kpi-icon">${ico('dumbbell',24)}</div><div class="kpi-val" style="color:var(--orange)">${classes.length}</div><div class="kpi-sub">Aktiw sapaklar</div></div>
   </div>
   <!-- Charts -->
   <div class="grid-2" style="margin-bottom:20px">
     <div class="card">
-      <h3 style="margin-bottom:14px;font-size:14px;font-weight:700">📊 Agza Ösüşi (6 Aý)</h3>
+      <h3 style="margin-bottom:14px;font-size:14px;font-weight:700">${ico('bar-chart-3',15)} Agza Ösüşi (6 Aý)</h3>
       <canvas id="ret-chart" height="200"></canvas>
     </div>
     <div class="card">
@@ -2106,13 +2106,13 @@ function renderReports(ca){
   </div>
   <div class="grid-2" style="margin-bottom:20px">
     <div class="card">
-      <h3 style="margin-bottom:14px;font-size:14px;font-weight:700">📈 Saklama Koeffisienti</h3>
+      <h3 style="margin-bottom:14px;font-size:14px;font-weight:700">${ico('activity',15)} Saklama Koeffisienti</h3>
       <div style="display:flex;gap:20px;flex-wrap:wrap">
         ${[{l:'3 Aý',v:87},{l:'6 Aý',v:72},{l:'12 Aý',v:58}].map(r=>`<div style="text-align:center"><canvas id="ret${r.l}" width="80" height="80"></canvas><div style="font-size:12px;color:var(--text-muted)">${r.l}</div></div>`).join('')}
       </div>
     </div>
     <div class="card">
-      <h3 style="margin-bottom:14px;font-size:14px;font-weight:700">🏆 Iň Köp Ýazylganlary</h3>
+      <h3 style="margin-bottom:14px;font-size:14px;font-weight:700">${ico('award',15)} Iň Köp Ýazylganlary</h3>
       ${classes.sort((a,b)=>(b.enrolledMembers?.length||0)-(a.enrolledMembers?.length||0)).slice(0,5).map((c,i)=>`<div class="load-bar">
         <div class="load-bar-name">${i+1}. ${c.name.split(' ').slice(0,2).join(' ')}</div>
         <div class="load-bar-track"><div class="load-bar-fill" style="width:${Math.round((c.enrolledMembers?.length||0)/c.maxCapacity*100)}%;background:${c.color}"></div></div>
@@ -2122,7 +2122,7 @@ function renderReports(ca){
   </div>
   <!-- Hasabat dörediji -->
   <div class="card">
-    <h3 style="margin-bottom:16px;font-size:14px;font-weight:700">📋 Hasabat Dörediji</h3>
+    <h3 style="margin-bottom:16px;font-size:14px;font-weight:700">${ico('file-text',15)} Hasabat Dörediji</h3>
     <div class="form-grid-2">
       <div class="form-group"><label>Hasabat görnüşi</label>
         <select id="rpt-type"><option value="members">Agza Hasabaty</option><option value="finance">Maliýe Hasabaty</option><option value="classes">Sapak Hasabaty</option></select>
@@ -2131,7 +2131,7 @@ function renderReports(ca){
         <select id="rpt-fmt"><option value="csv">CSV</option><option value="json">JSON</option></select>
       </div>
     </div>
-    <button class="btn btn-primary" onclick="generateReport()">📊 Hasabat Döreder</button>
+    <button class="btn btn-primary" onclick="generateReport()">${ico('bar-chart-3',14)} Hasabat Döreder</button>
   </div>`;
 
   // Retention bar
@@ -2176,7 +2176,7 @@ function renderNotifications(ca){
   const unread=notifs.filter(n=>!n.read).length;
   ca.innerHTML=`
   <div class="section-header">
-    <h2>🔔 Bildirişler</h2>
+    <h2>${ico('bell',20)} Bildirişler</h2>
     <button class="btn btn-ghost btn-sm" onclick="markAllRead()">Hemmesini okaldy belgile</button>
   </div>
   <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
@@ -2207,7 +2207,7 @@ function filterNotifs(type){
       <div class="notif-time">${timeAgo(n.time)}</div>
     </div>
     ${n.link?`<button class="btn btn-sm btn-ghost" onclick="event.stopPropagation();navigate('${n.link}')">Gör →</button>`:''}
-  </div>`).join('')||'<div class="empty-state"><div class="ei">📭</div><p>Bildiriş ýok</p></div>';
+  </div>`).join('')||'<div class="empty-state"><div class="ei"><i data-lucide="inbox" style="width:48px;height:48px;opacity:.35"></i></div><p>Bildiriş ýok</p></div>';
 }
 function markRead(id){
   DB.update('notifications',id,{read:true});
@@ -2228,12 +2228,12 @@ function addNotification(type,icon,text,link){
 
 // ==================== USERS ====================
 function renderUsers(ca){
-  if(currentUser.role!=='superadmin'){ca.innerHTML='<div class="empty-state"><div class="ei">🔒</div><p>Bu bölüme diňe Baş Admin girip bilýär</p></div>';return;}
+  if(currentUser.role!=='superadmin'){ca.innerHTML='<div class="empty-state"><div class="ei"><i data-lucide="lock" style="width:48px;height:48px;opacity:.35"></i></div><p>Bu bölüme diňe Baş Admin girip bilýär</p></div>';return;}
   const users=DB.get('users');
   const roleLabels={superadmin:'Baş Admin',manager:'Menejer',receptionist:'Kabul Işgäri',trainer:'Tälimçi'};
   ca.innerHTML=`
   <div class="section-header">
-    <h2>👤 Ulanyjylar</h2>
+    <h2>${ico('users',20)} Ulanyjylar</h2>
     <button class="btn btn-primary" onclick="openAddUserModal()">+ Täze Ulanyjy</button>
   </div>
   <div class="card">
@@ -2245,10 +2245,10 @@ function renderUsers(ca){
             <td><div style="display:flex;align-items:center;gap:8px"><div style="width:32px;height:32px;border-radius:8px;background:${u.color}22;color:${u.color};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">${u.avatar}</div><span style="font-weight:600">${u.name}</span></div></td>
             <td style="font-family:'Space Mono',monospace;font-size:12px;color:var(--text-muted)">${u.login}</td>
             <td><span class="badge badge-active">${roleLabels[u.role]||u.role}</span></td>
-            <td><span class="badge badge-active">✅ Aktiw</span></td>
+            <td><span class="badge badge-active">${ico('check-circle-2',12)} Aktiw</span></td>
             <td><div style="display:flex;gap:4px">
-              <button class="btn btn-sm btn-secondary" onclick="editUser(${u.id})">✏️</button>
-              ${u.id!==currentUser.id?`<button class="btn btn-sm btn-danger" onclick="deleteUser(${u.id})">🗑️</button>`:''}
+              <button class="btn btn-sm btn-secondary" onclick="editUser(${u.id})">${ico('pencil',14)}</button>
+              ${u.id!==currentUser.id?`<button class="btn btn-sm btn-danger" onclick="deleteUser(${u.id})">${ico('trash-2',14)}</button>`:''}
             </div></td>
           </tr>`).join('')}
         </tbody>
@@ -2273,7 +2273,7 @@ function openAddUserModal(prefill){
   </div>
   <div class="modal-footer">
     <button class="btn btn-ghost" onclick="closeModal()">Ýatyr</button>
-    <button class="btn btn-primary" onclick="saveUser(${prefill?.id||'null'})">💾 Sakla</button>
+    <button class="btn btn-primary" onclick="saveUser(${prefill?.id||'null'})">${ico('save',14)} Sakla</button>
   </div>
   `,'modal-sm');
 }
@@ -2308,7 +2308,7 @@ function renderSettings(ca){
   const plans=s.plans||[{id:1,name:'Başlangyç',price:180,desc:'Gym + Kardio'},{id:2,name:'Premium',price:300,desc:'Gym + Kardio + Topar sapaklar'},{id:3,name:'Elite',price:600,desc:'Hemmesi + Çäksiz şahsy'}];
   const halls=s.halls||[];
   ca.innerHTML=`
-  <div class="section-header"><h2>⚙️ Ulgam Sazlamalary</h2></div>
+  <div class="section-header"><h2>${ico('settings',20)} Ulgam Sazlamalary</h2></div>
   <div class="tabs">
     <button class="tab-btn active" data-tab="club" data-tab-group="settings" onclick="switchTab('settings','club')">Klub Maglumatlary</button>
     <button class="tab-btn" data-tab="plans" data-tab-group="settings" onclick="switchTab('settings','plans')">Abuna Meýilnamalary</button>
@@ -2326,14 +2326,14 @@ function renderSettings(ca){
       <div class="form-group"><label>Açylyş ýyly</label><input id="st-year" type="number" value="${s.openYear||2019}"/></div>
     </div>
     <div class="form-group"><label>Adres *</label><input id="st-addr" value="${s.address||''}"/></div>
-    <button class="btn btn-primary" onclick="saveClubSettings()">💾 Sakla</button>
+    <button class="btn btn-primary" onclick="saveClubSettings()">${ico('save',14)} Sakla</button>
   </div>
   <!-- Plans -->
   <div class="tab-pane card" data-pane="plans" data-pane-group="settings">
     ${plans.map(p=>`<div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--surface2);border-radius:10px;margin-bottom:10px">
       <div style="flex:1"><div style="font-weight:700">${p.name}</div><div style="font-size:12px;color:var(--text-muted)">${p.desc}</div></div>
       <div style="font-weight:700;color:var(--red);font-size:15px">${p.price} TMT</div>
-      <button class="btn btn-sm btn-secondary" onclick="editPlan(${p.id})">✏️</button>
+      <button class="btn btn-sm btn-secondary" onclick="editPlan(${p.id})">${ico('pencil',14)}</button>
     </div>`).join('')}
     <button class="btn btn-secondary" style="margin-top:8px" onclick="addPlanModal()">+ Täze Plan</button>
   </div>
@@ -2342,7 +2342,7 @@ function renderSettings(ca){
     ${halls.map(h=>`<div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface2);border-radius:8px;margin-bottom:8px">
       <div style="flex:1"><div style="font-weight:600">${h.name}</div><div style="font-size:12px;color:var(--text-muted)">Sig'ym: ${h.capacity||'—'}</div></div>
       <span class="badge ${h.status==='open'?'badge-active':'badge-expired'}">${h.status==='open'?'Açyk':'Ýapyk'}</span>
-      <button class="btn btn-sm btn-secondary" onclick="editHall(${h.id})">✏️</button>
+      <button class="btn btn-sm btn-secondary" onclick="editHall(${h.id})">${ico('pencil',14)}</button>
     </div>`).join('')}
     <button class="btn btn-secondary" style="margin-top:8px" onclick="addHallModal()">+ Täze Zal</button>
   </div>
@@ -2350,10 +2350,10 @@ function renderSettings(ca){
   <div class="tab-pane card" data-pane="data" data-pane-group="settings">
     <h4 style="margin-bottom:14px;font-size:14px">Maglumat Dolandyrma</h4>
     <div style="display:flex;flex-direction:column;gap:10px;max-width:400px">
-      <button class="btn btn-secondary" onclick="exportJSON({members:DB.get('members'),classes:DB.get('classes'),trainers:DB.get('trainers'),equipment:DB.get('equipment'),transactions:DB.get('transactions')},'fitclub_backup')">📤 Ähli Maglumatlary Eksport et (JSON)</button>
-      <button class="btn btn-secondary" onclick="importData()">📥 Maglumatlary Import et (JSON)</button>
-      <button class="btn btn-secondary" onclick="loadDemoDataFresh()">🔄 Demo Maglumatlary Täzeden Ýükle</button>
-      <button class="btn btn-danger" style="margin-top:10px" onclick="clearAllData()">⚠️ Ähli Maglumatlary Pozmak</button>
+      <button class="btn btn-secondary" onclick="exportJSON({members:DB.get('members'),classes:DB.get('classes'),trainers:DB.get('trainers'),equipment:DB.get('equipment'),transactions:DB.get('transactions')},'fitclub_backup')">${ico('upload',14)} Ähli Maglumatlary Eksport et (JSON)</button>
+      <button class="btn btn-secondary" onclick="importData()">${ico('download',14)} Maglumatlary Import et (JSON)</button>
+      <button class="btn btn-secondary" onclick="loadDemoDataFresh()">${ico('refresh-cw',14)} Demo Maglumatlary Täzeden Ýükle</button>
+      <button class="btn btn-danger" style="margin-top:10px" onclick="clearAllData()">${ico('alert-triangle',14)} Ähli Maglumatlary Pozmak</button>
     </div>
     <input type="file" id="import-file" accept=".json" style="display:none" onchange="processImport(this)"/>
   </div>`;
@@ -2400,7 +2400,7 @@ function saveHall(){
   DB.set('settings',{...s,halls});toast.success('Zal goşuldy!');closeModal();renderSettings(document.getElementById('content-area'));
 }
 function clearAllData(){
-  confirmDialog('⚠️ DİKKAT! Ähli maglumatlar (agzalar, sapaklar, maliýe) hemişelik öçüriler! Dowam etmek?',()=>{
+  confirmDialog('DİKKAT! Ähli maglumatlar (agzalar, sapaklar, maliýe) hemişelik öçüriler! Dowam etmek?',()=>{
     confirmDialog('Tassykladyňyzmy? Bu amal yzyna gaýtarylyp bilinmez!',()=>{
       ['members','classes','trainers','equipment','transactions','nutrition','notifications','settings','users'].forEach(k=>localStorage.removeItem('gym_'+k));
       localStorage.removeItem('gym_initialized');
@@ -2438,5 +2438,6 @@ initDemoData();
 checkSession();
 if(typeof lucide!=='undefined')setTimeout(()=>lucide.createIcons(),500);
 </script>
+<script>window.addEventListener("DOMContentLoaded",function(){lucide.createIcons();});</script>
 </body>
 </html>
