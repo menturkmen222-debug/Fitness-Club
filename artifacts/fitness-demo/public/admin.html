@@ -1,0 +1,2442 @@
+<!DOCTYPE html>
+<html lang="tk">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FitClub — Admin Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --red:#EF4444;--red-dark:#B91C1C;--red-rgb:239,68,68;
+  --orange:#F97316;--orange-rgb:249,115,22;
+  --green:#10B981;--green-rgb:16,185,129;
+  --cyan:#06B6D4;--yellow:#F59E0B;
+  --bg:#060608;--bg2:#0C0C10;--sidebar-bg:#0A0A0F;
+  --surface:#111118;--surface2:#1A1A24;
+  --border:rgba(239,68,68,.12);--border-hover:rgba(239,68,68,.35);
+  --text:#F0EEF8;--text-muted:#5A5870;--text-dim:#3A3850;
+  --success:#10B981;--warning:#F59E0B;--danger:#EF4444;--info:#06B6D4;
+  --sidebar-w:248px;
+}
+html,body{height:100%;font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+a{text-decoration:none;color:inherit}
+button{cursor:pointer;font-family:inherit;border:none;outline:none}
+input,select,textarea{font-family:inherit;outline:none}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--border-hover);border-radius:10px}
+
+/* ===== LOGIN ===== */
+#login-screen{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 60% 40%, #1a0505 0%, #060608 70%)}
+.login-glow{position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(239,68,68,.15) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+.login-card{position:relative;width:420px;background:var(--surface);border:1px solid var(--border-hover);border-radius:20px;padding:44px 40px;box-shadow:0 30px 80px rgba(0,0,0,.7),0 0 60px rgba(239,68,68,.1)}
+.login-logo{text-align:center;margin-bottom:32px}
+.login-logo .icon{width:64px;height:64px;background:linear-gradient(135deg,var(--red),var(--orange));border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:28px}
+.login-logo h1{font-size:26px;font-weight:800;letter-spacing:-0.5px}
+.login-logo p{color:var(--text-muted);font-size:13px;margin-top:4px}
+.form-field{margin-bottom:16px}
+.form-field label{display:block;font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.form-field input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--text);font-size:14px;transition:.2s}
+.form-field input:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(239,68,68,.12)}
+.login-remember{display:flex;align-items:center;gap:8px;margin-bottom:20px;color:var(--text-muted);font-size:13px;cursor:pointer}
+.login-remember input[type=checkbox]{width:16px;height:16px;accent-color:var(--red)}
+.btn-login{width:100%;padding:14px;background:linear-gradient(135deg,var(--red),var(--orange));border-radius:10px;color:#fff;font-size:15px;font-weight:700;letter-spacing:.3px;transition:.2s}
+.btn-login:hover{opacity:.9;transform:translateY(-1px)}
+.btn-login:active{transform:translateY(0)}
+.login-error{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:10px 14px;color:var(--red);font-size:13px;margin-bottom:14px;display:none}
+.login-hints{margin-top:20px;padding-top:18px;border-top:1px solid var(--border)}
+.login-hints p{font-size:11px;color:var(--text-dim);margin-bottom:6px;font-family:'Space Mono',monospace}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.shake{animation:shake .4s ease}
+
+/* ===== LAYOUT ===== */
+#app{display:none;height:100vh;overflow:hidden}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:var(--sidebar-w);background:var(--sidebar-bg);border-right:1px solid var(--border);display:flex;flex-direction:column;transition:.3s;z-index:50;overflow:hidden}
+.sidebar.collapsed{width:60px}
+.sidebar-logo{padding:20px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);flex-shrink:0}
+.sidebar-logo .logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--red),var(--orange));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.sidebar-logo .logo-text{overflow:hidden;white-space:nowrap;transition:.2s}
+.sidebar-logo .logo-text h2{font-size:16px;font-weight:800;letter-spacing:-.3px}
+.sidebar-logo .logo-text p{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px}
+.sidebar-user{padding:14px 12px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);flex-shrink:0}
+.user-avatar{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.user-info{overflow:hidden;white-space:nowrap;transition:.2s}
+.user-info .name{font-size:13px;font-weight:600}
+.user-info .role{font-size:11px;color:var(--text-muted)}
+.sidebar-nav{flex:1;overflow-y:auto;padding:8px 0}
+.nav-section{padding:6px 12px 2px;font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;overflow:hidden;white-space:nowrap}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;margin:1px 8px;border-radius:10px;cursor:pointer;transition:.2s;position:relative;white-space:nowrap;overflow:hidden}
+.nav-item .nav-icon{width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;transition:.2s}
+.nav-item .nav-label{font-size:13px;font-weight:500;overflow:hidden;transition:.2s}
+.nav-item:hover{background:rgba(239,68,68,.07)}
+.nav-item:hover .nav-icon{transform:scale(1.1)}
+.nav-item.active{background:linear-gradient(90deg,rgba(239,68,68,.15),rgba(249,115,22,.08));border-left:3px solid var(--red)}
+.nav-item.active .nav-label{color:var(--red);font-weight:600}
+.nav-item.active .nav-icon{color:var(--red)}
+.nav-divider{height:1px;background:var(--border);margin:6px 12px}
+.sidebar-footer{padding:12px;border-top:1px solid var(--border);flex-shrink:0}
+.sidebar-toggle{position:absolute;right:-12px;top:50%;transform:translateY(-50%);width:24px;height:24px;background:var(--surface);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;z-index:10;transition:.3s;color:var(--text-muted)}
+.sidebar-toggle:hover{background:var(--surface2);color:var(--text)}
+.sidebar.collapsed .logo-text,.sidebar.collapsed .user-info,.sidebar.collapsed .nav-label,.sidebar.collapsed .nav-section{opacity:0;width:0;pointer-events:none}
+.main-content{margin-left:var(--sidebar-w);height:100vh;display:flex;flex-direction:column;transition:.3s;overflow:hidden}
+.main-content.collapsed{margin-left:60px}
+.topbar{height:58px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:16px;flex-shrink:0;position:sticky;top:0;z-index:40}
+.topbar-title{flex:1}
+.topbar-title h2{font-size:17px;font-weight:700}
+.topbar-title p{font-size:12px;color:var(--text-muted)}
+.topbar-search{flex:0 0 260px;position:relative}
+.topbar-search input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px 8px 36px;color:var(--text);font-size:13px}
+.topbar-search .search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:14px}
+.topbar-actions{display:flex;align-items:center;gap:10px}
+.notif-btn{width:36px;height:36px;background:var(--surface2);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;border:1px solid var(--border)}
+.notif-badge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;background:var(--red);border-radius:10px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px}
+.topbar-avatar{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;cursor:pointer}
+.content{flex:1;overflow-y:auto;padding:24px}
+.section{display:none}
+.section.active{display:block}
+
+/* ===== CARDS & GRID ===== */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;transition:.25s}
+.card:hover{border-color:var(--border-hover);box-shadow:0 6px 30px rgba(0,0,0,.4),0 0 20px rgba(var(--red-rgb),.06)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;transition:.25s;cursor:pointer}
+.kpi-card:hover{border-color:var(--border-hover);transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.3)}
+.kpi-icon{font-size:24px;margin-bottom:10px}
+.kpi-val{font-size:28px;font-weight:800;letter-spacing:-.5px;line-height:1}
+.kpi-sub{font-size:12px;color:var(--text-muted);margin-top:4px}
+.kpi-trend{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;margin-top:8px}
+.trend-up{background:rgba(16,185,129,.12);color:var(--green)}
+.trend-down{background:rgba(239,68,68,.12);color:var(--red)}
+.trend-warn{background:rgba(245,158,11,.12);color:var(--yellow)}
+.trend-neutral{background:rgba(6,182,212,.12);color:var(--cyan)}
+.progress-bar{height:4px;background:var(--surface2);border-radius:4px;margin-top:8px;overflow:hidden}
+.progress-fill{height:100%;border-radius:4px;transition:.5s}
+
+/* ===== BUTTONS ===== */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;transition:.2s;cursor:pointer}
+.btn-primary{background:linear-gradient(135deg,var(--red),var(--orange));color:#fff}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-secondary{background:var(--surface2);border:1px solid var(--border);color:var(--text)}
+.btn-secondary:hover{border-color:var(--border-hover);background:var(--surface)}
+.btn-ghost{background:transparent;color:var(--text-muted)}
+.btn-ghost:hover{color:var(--text);background:var(--surface2)}
+.btn-danger{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:var(--red)}
+.btn-danger:hover{background:rgba(239,68,68,.25)}
+.btn-success{background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);color:var(--green)}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-icon{width:32px;height:32px;padding:0;justify-content:center;flex-shrink:0}
+
+/* ===== BADGES ===== */
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.badge-active{color:var(--green);background:rgba(16,185,129,.12)}
+.badge-expiring{color:var(--yellow);background:rgba(245,158,11,.12)}
+.badge-expired{color:var(--red);background:rgba(239,68,68,.12)}
+.badge-paused{color:var(--cyan);background:rgba(6,182,212,.12)}
+.badge-cancelled{color:var(--text-muted);background:rgba(90,88,112,.12)}
+.badge-basic{color:var(--cyan);background:rgba(6,182,212,.12)}
+.badge-premium{color:var(--red);background:rgba(239,68,68,.12)}
+.badge-elite{color:var(--yellow);background:rgba(245,158,11,.12)}
+
+/* ===== TABLE ===== */
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse}
+thead th{padding:11px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);white-space:nowrap}
+tbody td{padding:12px 14px;border-bottom:1px solid rgba(239,68,68,.05);vertical-align:middle;font-size:13px}
+tbody tr:hover{background:rgba(239,68,68,.03)}
+tbody tr:last-child td{border-bottom:none}
+
+/* ===== FILTER BAR ===== */
+.filter-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.filter-bar input,.filter-bar select{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px}
+.filter-bar select{cursor:pointer}
+.filter-bar input:focus,.filter-bar select:focus{border-color:var(--red)}
+.filter-bar .spacer{flex:1}
+
+/* ===== MODAL ===== */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.modal{background:var(--surface);border:1px solid var(--border-hover);border-radius:16px;width:100%;max-width:680px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.modal-lg{max-width:900px}
+.modal-xl{max-width:1100px}
+.modal-sm{max-width:440px}
+.modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-header h3{font-size:16px;font-weight:700}
+.modal-close{width:28px;height:28px;background:var(--surface2);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);font-size:16px}
+.modal-close:hover{color:var(--text);background:var(--border-hover)}
+.modal-body{flex:1;overflow-y:auto;padding:24px}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-shrink:0}
+
+/* ===== TABS ===== */
+.tabs{display:flex;gap:4px;background:var(--surface2);border-radius:10px;padding:4px;margin-bottom:20px;flex-wrap:wrap}
+.tab-btn{padding:7px 14px;border-radius:7px;font-size:13px;font-weight:500;color:var(--text-muted);cursor:pointer;transition:.2s;border:none;background:transparent}
+.tab-btn.active{background:var(--surface);color:var(--text);font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+/* ===== FORMS ===== */
+.form-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.form-group input,.form-group select,.form-group textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:13px;transition:.2s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--red);box-shadow:0 0 0 2px rgba(239,68,68,.1)}
+.form-group textarea{min-height:80px;resize:vertical}
+.form-group select option{background:var(--surface2)}
+.form-section-title{font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:16px}
+.checkbox-group{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px}
+.checkbox-group input{width:16px;height:16px;accent-color:var(--red)}
+.radio-group{display:flex;gap:12px;flex-wrap:wrap}
+.radio-btn{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;transition:.2s}
+.radio-btn:hover{border-color:var(--border-hover)}
+.radio-btn input{accent-color:var(--red)}
+
+/* ===== SECTION HEADER ===== */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px}
+.section-header h2{font-size:20px;font-weight:800}
+.section-header .actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ===== TOAST ===== */
+#toast-container{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;min-width:280px;max-width:380px;box-shadow:0 8px 30px rgba(0,0,0,.4);animation:slideIn .3s ease}
+.toast-success{border-color:rgba(16,185,129,.4)}
+.toast-error{border-color:rgba(239,68,68,.4)}
+.toast-warning{border-color:rgba(245,158,11,.4)}
+.toast-info{border-color:rgba(6,182,212,.4)}
+.toast-msg{flex:1;font-size:13px}
+.toast-close{background:transparent;color:var(--text-muted);font-size:16px;padding:0 2px}
+.toast-close:hover{color:var(--text)}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast-exit{animation:slideOut .3s ease forwards}
+@keyframes slideOut{to{transform:translateX(100%);opacity:0}}
+
+/* ===== GANTT ===== */
+.gantt-wrap{overflow-x:auto}
+.gantt-grid{display:grid;min-width:700px}
+.gantt-header{display:grid;grid-template-columns:100px 1fr;gap:0;border-bottom:1px solid var(--border)}
+.gantt-hours{display:flex;padding-left:0}
+.gantt-hour{flex:1;font-size:10px;color:var(--text-muted);text-align:center;padding:4px 0;font-family:'Space Mono',monospace}
+.gantt-row{display:grid;grid-template-columns:100px 1fr;border-bottom:1px solid rgba(239,68,68,.05);min-height:44px;align-items:center}
+.gantt-label{font-size:12px;color:var(--text-muted);padding:8px 10px;font-weight:600}
+.gantt-track{position:relative;height:100%;min-height:44px}
+.gantt-now{position:absolute;top:0;bottom:0;width:2px;background:var(--red);z-index:5;opacity:.8}
+.gantt-block{position:absolute;top:6px;bottom:6px;border-radius:6px;display:flex;align-items:center;padding:0 8px;font-size:11px;font-weight:600;cursor:pointer;overflow:hidden;white-space:nowrap;transition:.2s;z-index:2}
+.gantt-block:hover{opacity:.85;transform:scaleY(1.05)}
+
+/* ===== TRAINER CARD ===== */
+.trainer-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:.25s}
+.trainer-card:hover{border-color:var(--border-hover);transform:translateY(-2px)}
+.trainer-card-header{padding:20px;text-align:center}
+.trainer-avatar-lg{width:72px;height:72px;border-radius:16px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700}
+.trainer-card-body{padding:0 16px 16px}
+
+/* ===== CLASS CARD ===== */
+.class-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:.25s}
+.class-card:hover{border-color:var(--border-hover);transform:translateY(-2px)}
+.class-card-header{height:6px}
+.class-card-body{padding:16px}
+
+/* ===== SCHEDULE ===== */
+.schedule-grid{display:grid;grid-template-columns:70px repeat(7,1fr);gap:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;min-width:700px}
+.sch-header{background:var(--surface2);padding:10px 8px;text-align:center;font-size:12px;font-weight:700;border-bottom:1px solid var(--border);border-right:1px solid var(--border)}
+.sch-time{background:var(--surface2);padding:8px 6px;text-align:center;font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;border-bottom:1px solid rgba(239,68,68,.05);border-right:1px solid var(--border);display:flex;align-items:center;justify-content:center}
+.sch-cell{padding:3px;border-bottom:1px solid rgba(239,68,68,.05);border-right:1px solid var(--border);min-height:40px;cursor:pointer;transition:.15s}
+.sch-cell:hover{background:rgba(239,68,68,.04)}
+.sch-event{border-radius:5px;padding:3px 6px;font-size:10px;font-weight:600;cursor:pointer;margin:1px;overflow:hidden}
+.sch-event:hover{opacity:.85}
+
+/* ===== HEATMAP ===== */
+.heatmap{display:flex;gap:3px}
+.heatmap-col{display:flex;flex-direction:column;gap:3px}
+.heatmap-cell{width:12px;height:12px;border-radius:2px;cursor:pointer}
+.heatmap-cell[data-v="0"]{background:var(--surface2)}
+.heatmap-cell[data-v="1"]{background:rgba(239,68,68,.25)}
+.heatmap-cell[data-v="2"]{background:rgba(239,68,68,.5)}
+.heatmap-cell[data-v="3"]{background:rgba(239,68,68,.75)}
+.heatmap-cell[data-v="4"]{background:var(--red)}
+
+/* ===== EQUIPMENT ===== */
+.eq-status-working{color:var(--green)}
+.eq-status-maintenance{color:var(--yellow)}
+.eq-status-broken{color:var(--red)}
+.eq-status-retired{color:var(--text-muted)}
+
+/* ===== FINANCE ===== */
+.finance-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+
+/* ===== NOTIFICATION ===== */
+.notif-item{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);transition:.2s;cursor:pointer}
+.notif-item:hover{background:rgba(239,68,68,.04)}
+.notif-item.unread{background:rgba(239,68,68,.03)}
+.notif-dot{width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:5px}
+.notif-dot.read{background:transparent}
+.notif-content{flex:1}
+.notif-text{font-size:13px;margin-bottom:3px}
+.notif-time{font-size:11px;color:var(--text-muted)}
+
+/* ===== LOADER BARS ===== */
+.load-bar{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.load-bar-name{width:120px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.load-bar-track{flex:1;height:6px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.load-bar-fill{height:100%;border-radius:4px;transition:.5s}
+.load-bar-pct{width:40px;font-size:12px;text-align:right;font-family:'Space Mono',monospace}
+
+/* ===== MOBILE ===== */
+.sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:49;display:none}
+.sidebar-overlay.show{display:block}
+.hamburger{display:none;width:36px;height:36px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;align-items:center;justify-content:center;cursor:pointer}
+@media(max-width:900px){
+  .sidebar{left:-248px}
+  .sidebar.mobile-open{left:0;box-shadow:4px 0 30px rgba(0,0,0,.5)}
+  .main-content{margin-left:0 !important}
+  .hamburger{display:flex}
+  .topbar-search{flex:1}
+  .kpi-grid,.grid-3,.grid-4,.finance-summary{grid-template-columns:1fr 1fr}
+  .form-grid-2{grid-template-columns:1fr}
+  .modal{width:100%;height:100%;max-height:100vh;border-radius:0;margin:0}
+}
+@media(max-width:550px){
+  .kpi-grid,.finance-summary{grid-template-columns:1fr}
+  .content{padding:14px}
+}
+
+/* Misc */
+.empty-state{text-align:center;padding:60px 20px;color:var(--text-muted)}
+.empty-state .ei{font-size:48px;margin-bottom:12px}
+.stat-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(239,68,68,.05)}
+.stat-row:last-child{border-bottom:none}
+.stat-label{color:var(--text-muted);font-size:13px;flex:1}
+.stat-val{font-size:13px;font-weight:600}
+</style>
+</head>
+<body>
+<div id="toast-container"></div>
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeMobileSidebar()"></div>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-glow"></div>
+  <div class="login-card" id="login-card">
+    <div class="login-logo">
+      <div class="icon">💪</div>
+      <h1>FitClub Admin</h1>
+      <p>Dolandyryş Ulgamy</p>
+    </div>
+    <div class="login-error" id="login-error">Ýalňyş login ýa-da parol!</div>
+    <div class="form-field">
+      <label>Login</label>
+      <input type="text" id="login-user" placeholder="login..." autocomplete="username"/>
+    </div>
+    <div class="form-field">
+      <label>Parol</label>
+      <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <label class="login-remember"><input type="checkbox" id="login-remember"/> Meni ýatla</label>
+    <button class="btn-login" onclick="doLogin()">Giriş</button>
+    <div class="login-hints">
+      <p>admin / admin123 — Baş Admin</p>
+      <p>menejer / menejer123 — Menejer</p>
+      <p>talimci / talimci123 — Tälimçi</p>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="sidebar" id="sidebar">
+    <div style="position:relative">
+      <div class="sidebar-logo">
+        <div class="logo-icon">💪</div>
+        <div class="logo-text">
+          <h2>FitClub</h2>
+          <p>Admin Panel</p>
+        </div>
+      </div>
+      <div class="sidebar-toggle" onclick="toggleSidebar()" id="sidebar-toggle">◀</div>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="sidebar-avatar">BA</div>
+      <div class="user-info">
+        <div class="name" id="sidebar-name">Baş Admin</div>
+        <div class="role" id="sidebar-role">Superadmin</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+    <div class="sidebar-footer">
+      <div class="nav-item" onclick="doLogout()" style="margin:0">
+        <span class="nav-icon">🚪</span>
+        <span class="nav-label">Çykmak</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-content" id="main-content">
+    <div class="topbar">
+      <div class="hamburger" onclick="openMobileSidebar()">☰</div>
+      <div class="topbar-title">
+        <h2 id="page-title">Dolandyryş Tagtasy</h2>
+        <p id="page-sub">Fitnes Klubynyň Dolandyryşy</p>
+      </div>
+      <div class="topbar-search">
+        <span class="search-icon">🔍</span>
+        <input type="text" placeholder="Gözleg..." id="global-search" oninput="globalSearch(this.value)"/>
+      </div>
+      <div class="topbar-actions">
+        <div class="notif-btn" onclick="navigate('notifications')">
+          🔔<span class="notif-badge" id="notif-count">0</span>
+        </div>
+        <div class="topbar-avatar" id="topbar-avatar" style="background:#EF4444">BA</div>
+      </div>
+    </div>
+    <div class="content" id="content-area">
+      <!-- Sections injected here -->
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== DATA ====================
+const DEFAULT_USERS = [
+  {id:1,name:'Baş Admin',login:'admin',password:'admin123',role:'superadmin',avatar:'BA',color:'#EF4444'},
+  {id:2,name:'Menejer',login:'menejer',password:'menejer123',role:'manager',avatar:'MN',color:'#F97316'},
+  {id:3,name:'Administrator',login:'admin2',password:'admin456',role:'receptionist',avatar:'AD',color:'#06B6D4'},
+  {id:4,name:'Tälimçi',login:'talimci',password:'talimci123',role:'trainer',avatar:'TL',color:'#10B981'}
+];
+const PERMISSIONS={
+  superadmin:['dashboard','members','classes','trainers','schedule','equipment','finance','reports','nutrition','notifications','settings','users'],
+  manager:['dashboard','members','classes','trainers','schedule','equipment','finance','reports','nutrition','notifications','settings'],
+  receptionist:['dashboard','members','classes','schedule','notifications'],
+  trainer:['dashboard','classes','schedule','notifications']
+};
+const NAV_ITEMS=[
+  {id:'dashboard',icon:'📊',label:'Dolandyryş Tagtasy'},
+  {id:'members',icon:'👥',label:'Agza Dolandyrma'},
+  {id:'classes',icon:'🏋️',label:'Sapak Dolandyrma'},
+  {id:'trainers',icon:'👨‍🏫',label:'Tälimçiler'},
+  {id:'schedule',icon:'📅',label:'Sapak Tertibi'},
+  {id:'equipment',icon:'🔧',label:'Enjamlar'},
+  {id:'nutrition',icon:'🥗',label:'Iýmitlenme'},
+  {id:'finance',icon:'💰',label:'Maliýe'},
+  {id:'reports',icon:'📈',label:'Hasabatlar'},
+  {id:'notifications',icon:'🔔',label:'Bildirişler'},
+  {id:'users',icon:'👤',label:'Ulanyjylar'},
+  {id:'settings',icon:'⚙️',label:'Sazlamalar'}
+];
+
+const DB={
+  get:(k)=>{try{return JSON.parse(localStorage.getItem('gym_'+k))||[];}catch{return [];}},
+  set:(k,d)=>localStorage.setItem('gym_'+k,JSON.stringify(d)),
+  add:(k,item)=>{const l=DB.get(k);const ni={...item,id:'ID-'+Date.now()+Math.random().toString(36).substr(2,4),createdAt:new Date().toISOString()};l.push(ni);DB.set(k,l);return ni;},
+  update:(k,id,patch)=>{const l=DB.get(k).map(i=>i.id===id?{...i,...patch,updatedAt:new Date().toISOString()}:i);DB.set(k,l);return l;},
+  remove:(k,id)=>{const l=DB.get(k).filter(i=>i.id!==id);DB.set(k,l);return l;},
+  find:(k,id)=>DB.get(k).find(i=>i.id===id),
+  count:(k,fn)=>fn?DB.get(k).filter(fn).length:DB.get(k).length,
+};
+
+// ==================== DEMO DATA ====================
+function initDemoData(){
+  if(localStorage.getItem('gym_initialized'))return;
+  DB.set('members',DEMO_MEMBERS);
+  DB.set('classes',DEMO_CLASSES);
+  DB.set('trainers',DEMO_TRAINERS);
+  DB.set('equipment',DEMO_EQUIPMENT);
+  DB.set('transactions',DEMO_TRANSACTIONS);
+  DB.set('nutrition',DEMO_NUTRITION);
+  DB.set('users',DEFAULT_USERS);
+  DB.set('settings',{clubName:'FitClub Aşgabat',city:'Aşgabat',phone:'+993 12 345678',address:'Bitarap Türkmenistan köçesi 123',openYear:2019,plans:[{id:1,name:'Başlangyç',price:180,desc:'Gym + Kardio'},{id:2,name:'Premium',price:300,desc:'Gym + Kardio + Topar sapaklar + SPA'},{id:3,name:'Elite',price:600,desc:'Hemmesi + Çäksiz şahsy tälimçi'}],halls:[{id:1,name:'Kardio Zaly',capacity:20,status:'open'},{id:2,name:'Güýç Zaly',capacity:15,status:'open'},{id:3,name:'Ýoga Zaly',capacity:12,status:'open'},{id:4,name:'Boks Zaly',capacity:10,status:'open'}]});
+  DB.set('notifications',DEMO_NOTIFICATIONS);
+  localStorage.setItem('gym_initialized','true');
+}
+
+const DEMO_MEMBERS=[
+  {id:'MBR001',firstName:'Oraz',lastName:'Nurlyýew',phone:'+993 65 123456',email:'oraz@mail.com',birthDate:'1995-04-15',gender:'male',address:'Aşgabat',height:178,weight:82,fitnessGoal:'muscle',healthNotes:'Bili az agyrýar',memberSince:'2023-03-10',subscription:{plan:'premium',startDate:'2025-01-01',endDate:'2025-12-31',active:true,autoRenew:false,price:300,paymentType:'monthly'},personalTrainer:'TRN001',attendance:[{date:'2025-04-01',checkIn:'07:12',checkOut:'08:45'},{date:'2025-04-03',checkIn:'18:20',checkOut:'19:55'},{date:'2025-04-05',checkIn:'07:05',checkOut:'08:50'}],measurements:[{date:'2025-01-01',weight:88,bodyFat:22,muscle:64},{date:'2025-04-01',weight:82,bodyFat:17,muscle:69}],subscribedClasses:['CLS001','CLS003'],source:'instagram',notes:'',createdAt:'2023-03-10T09:00:00'},
+  {id:'MBR002',firstName:'Maýa',lastName:'Gurbanova',phone:'+993 62 234567',email:'maya@mail.com',birthDate:'1998-07-22',gender:'female',address:'Aşgabat',height:165,weight:58,fitnessGoal:'weight_loss',healthNotes:'',memberSince:'2024-01-15',subscription:{plan:'elite',startDate:'2025-01-01',endDate:'2025-12-31',active:true,autoRenew:true,price:600,paymentType:'monthly'},personalTrainer:'TRN002',attendance:[{date:'2025-04-02',checkIn:'09:00',checkOut:'10:30'},{date:'2025-04-04',checkIn:'09:05',checkOut:'10:35'},{date:'2025-04-05',checkIn:'09:00',checkOut:'10:30'}],measurements:[{date:'2025-01-01',weight:65,bodyFat:28,muscle:38},{date:'2025-04-01',weight:58,bodyFat:22,muscle:40}],subscribedClasses:['CLS002','CLS004'],source:'website',notes:'',createdAt:'2024-01-15T10:00:00'},
+  {id:'MBR003',firstName:'Serdar',lastName:'Aşyrow',phone:'+993 63 345678',email:'',birthDate:'1990-11-30',gender:'male',address:'Aşgabat',height:182,weight:90,fitnessGoal:'general',healthNotes:'',memberSince:'2024-06-01',subscription:{plan:'basic',startDate:'2025-04-01',endDate:'2025-04-30',active:true,autoRenew:false,price:180,paymentType:'monthly'},personalTrainer:null,attendance:[{date:'2025-04-01',checkIn:'18:00',checkOut:'19:30'}],measurements:[],subscribedClasses:[],source:'walk_in',notes:'',createdAt:'2024-06-01T11:00:00'},
+  {id:'MBR004',firstName:'Maral',lastName:'Hojaýewa',phone:'+993 64 456789',email:'maral@mail.com',birthDate:'1997-02-14',gender:'female',address:'Aşgabat',height:168,weight:62,fitnessGoal:'endurance',healthNotes:'',memberSince:'2023-09-20',subscription:{plan:'premium',startDate:'2025-01-01',endDate:'2025-07-07',active:true,autoRenew:false,price:300,paymentType:'monthly'},personalTrainer:'TRN003',attendance:[{date:'2025-04-03',checkIn:'06:55',checkOut:'08:10'},{date:'2025-04-05',checkIn:'07:00',checkOut:'08:05'}],measurements:[{date:'2025-01-01',weight:68,bodyFat:25,muscle:42},{date:'2025-04-01',weight:62,bodyFat:20,muscle:44}],subscribedClasses:['CLS001','CLS002'],source:'referral',notes:'',createdAt:'2023-09-20T09:00:00'},
+  {id:'MBR005',firstName:'Baýram',lastName:'Nurmedow',phone:'+993 65 567890',email:'',birthDate:'1993-08-05',gender:'male',address:'Aşgabat',height:175,weight:78,fitnessGoal:'muscle',healthNotes:'',memberSince:'2025-01-10',subscription:{plan:'basic',startDate:'2025-04-01',endDate:'2025-04-10',active:true,autoRenew:false,price:180,paymentType:'monthly'},personalTrainer:null,attendance:[],measurements:[],subscribedClasses:[],source:'phone',notes:'',createdAt:'2025-01-10T14:00:00'},
+  {id:'MBR006',firstName:'Ogulgerek',lastName:'Meredowa',phone:'+993 62 678901',email:'ogul@mail.com',birthDate:'2000-03-18',gender:'female',address:'Aşgabat',height:162,weight:55,fitnessGoal:'general',healthNotes:'',memberSince:'2025-04-01',subscription:{plan:'premium',startDate:'2025-04-01',endDate:'2025-09-30',active:true,autoRenew:false,price:300,paymentType:'monthly'},personalTrainer:null,attendance:[{date:'2025-04-04',checkIn:'10:00',checkOut:'11:20'}],measurements:[],subscribedClasses:['CLS002'],source:'instagram',notes:'',createdAt:'2025-04-01T09:00:00'},
+  {id:'MBR007',firstName:'Arslan',lastName:'Durdyýew',phone:'+993 63 789012',email:'',birthDate:'1988-12-25',gender:'male',address:'Aşgabat',height:185,weight:95,fitnessGoal:'sport_prep',healthNotes:'Dyz operasiýasy geçiren',memberSince:'2024-03-01',subscription:{plan:'elite',startDate:'2025-01-01',endDate:'2025-12-31',active:true,autoRenew:true,price:600,paymentType:'annual'},personalTrainer:'TRN001',attendance:[{date:'2025-04-02',checkIn:'07:00',checkOut:'09:00'},{date:'2025-04-04',checkIn:'07:05',checkOut:'09:10'}],measurements:[{date:'2025-01-01',weight:100,bodyFat:20,muscle:78},{date:'2025-04-01',weight:95,bodyFat:16,muscle:80}],subscribedClasses:['CLS003'],source:'referral',notes:'',createdAt:'2024-03-01T08:00:00'},
+  {id:'MBR008',firstName:'Leýla',lastName:'Myradowa',phone:'+993 64 890123',email:'leyla@mail.com',birthDate:'1996-06-10',gender:'female',address:'Aşgabat',height:170,weight:60,fitnessGoal:'weight_loss',healthNotes:'',memberSince:'2024-07-15',subscription:{plan:'basic',startDate:'2024-10-01',endDate:'2025-01-01',active:false,autoRenew:false,price:180,paymentType:'monthly'},personalTrainer:null,attendance:[],measurements:[],subscribedClasses:[],source:'walk_in',notes:'',createdAt:'2024-07-15T15:00:00'},
+  {id:'MBR009',firstName:'Döwlet',lastName:'Annagurbanow',phone:'+993 65 901234',email:'',birthDate:'1991-09-03',gender:'male',address:'Aşgabat',height:180,weight:85,fitnessGoal:'muscle',healthNotes:'',memberSince:'2025-02-01',subscription:{plan:'premium',startDate:'2025-02-01',endDate:'2025-07-31',active:true,autoRenew:false,price:300,paymentType:'monthly'},personalTrainer:'TRN001',attendance:[{date:'2025-04-01',checkIn:'19:00',checkOut:'20:30'},{date:'2025-04-03',checkIn:'19:05',checkOut:'20:25'}],measurements:[],subscribedClasses:['CLS001','CLS003'],source:'instagram',notes:'',createdAt:'2025-02-01T10:00:00'},
+  {id:'MBR010',firstName:'Aýna',lastName:'Berdiýewa',phone:'+993 62 012345',email:'ayna@mail.com',birthDate:'1999-01-20',gender:'female',address:'Aşgabat',height:163,weight:52,fitnessGoal:'general',healthNotes:'',memberSince:'2025-03-15',subscription:{plan:'premium',startDate:'2025-03-15',endDate:'2025-09-15',active:true,autoRenew:true,price:300,paymentType:'monthly'},personalTrainer:null,attendance:[{date:'2025-04-02',checkIn:'18:00',checkOut:'19:30'},{date:'2025-04-04',checkIn:'18:05',checkOut:'19:25'},{date:'2025-04-05',checkIn:'18:00',checkOut:'19:30'}],measurements:[],subscribedClasses:['CLS002','CLS004'],source:'instagram',notes:'',createdAt:'2025-03-15T11:00:00'},
+  {id:'MBR011',firstName:'Güýç',lastName:'Ataýew',phone:'+993 63 123450',email:'',birthDate:'1985-05-15',gender:'male',address:'Aşgabat',height:183,weight:98,fitnessGoal:'muscle',healthNotes:'Ýokary gan basyşy',memberSince:'2023-01-10',subscription:{plan:'elite',startDate:'2025-01-01',endDate:'2025-12-31',active:true,autoRenew:true,price:600,paymentType:'annual'},personalTrainer:'TRN001',attendance:[{date:'2025-04-01',checkIn:'06:55',checkOut:'08:30'},{date:'2025-04-03',checkIn:'07:00',checkOut:'08:35'},{date:'2025-04-05',checkIn:'06:58',checkOut:'08:32'}],measurements:[{date:'2025-01-01',weight:105,bodyFat:18,muscle:85},{date:'2025-04-01',weight:98,bodyFat:14,muscle:88}],subscribedClasses:['CLS003'],source:'referral',notes:'',createdAt:'2023-01-10T08:00:00'},
+  {id:'MBR012',firstName:'Nurgül',lastName:'Ýylmaz',phone:'+993 64 234501',email:'nurgul@mail.com',birthDate:'2001-08-28',gender:'female',address:'Aşgabat',height:160,weight:50,fitnessGoal:'weight_loss',healthNotes:'',memberSince:'2025-01-20',subscription:{plan:'basic',startDate:'2025-01-20',endDate:'2025-07-20',active:true,autoRenew:false,price:180,paymentType:'monthly'},personalTrainer:null,attendance:[{date:'2025-04-04',checkIn:'09:30',checkOut:'10:45'}],measurements:[],subscribedClasses:['CLS002'],source:'instagram',notes:'',createdAt:'2025-01-20T09:00:00'},
+];
+
+const DEMO_TRAINERS=[
+  {id:'TRN001',firstName:'Merdan',lastName:'Hydyrow',phone:'+993 65 111222',email:'merdan@gym.tm',birthDate:'1990-08-22',gender:'male',specialties:['strength','powerlifting','hiit'],bio:'Milli çempion, 11 ýyl tejribe. Güýç we powerlifting hünärmen.',certifications:['NASM-CPT','IPF Powerlifting'],experience:11,hireDate:'2020-05-01',salary:3500,assignedClasses:['CLS001','CLS003'],personalClients:['MBR001','MBR007','MBR009','MBR011'],maxPersonalClients:8,totalSessions:520,avgRating:4.9,reviewCount:87,active:true,leaveUntil:null,notes:'',color:'#EF4444',emoji:'🏋️'},
+  {id:'TRN002',firstName:'Aýgül',lastName:'Annaýewa',phone:'+993 62 222333',email:'aygul@gym.tm',birthDate:'1993-03-15',gender:'female',specialties:['yoga','pilates','cardio'],bio:'Sertifisirli ýoga mugallymy. 8 ýyl tejribe.',certifications:['RYT-500','NASM'],experience:8,hireDate:'2021-02-01',salary:3000,assignedClasses:['CLS002','CLS004'],personalClients:['MBR002','MBR006'],maxPersonalClients:10,totalSessions:380,avgRating:4.8,reviewCount:65,active:true,leaveUntil:null,notes:'',color:'#06B6D4',emoji:'🧘'},
+  {id:'TRN003',firstName:'Serdar',lastName:'Durdyýew',phone:'+993 63 333444',email:'serdar@gym.tm',birthDate:'1988-11-08',gender:'male',specialties:['boxing','mma','cardio'],bio:'Boks we MMA tälimçisi. 14 ýyl tejribe.',certifications:['Boxing Coach Lvl 3'],experience:14,hireDate:'2019-09-01',salary:3200,assignedClasses:['CLS005','CLS006'],personalClients:['MBR004'],maxPersonalClients:11,totalSessions:620,avgRating:4.7,reviewCount:103,active:true,leaveUntil:null,notes:'',color:'#F97316',emoji:'🥊'},
+  {id:'TRN004',firstName:'Leýli',lastName:'Annaberdiýewa',phone:'+993 64 444555',email:'leyli@gym.tm',birthDate:'1995-06-20',gender:'female',specialties:['zumba','dance','cardio'],bio:'Zumba we tans tälimçisi. 6 ýyl tejribe.',certifications:['Zumba Instructor'],experience:6,hireDate:'2022-03-01',salary:2800,assignedClasses:['CLS007','CLS008'],personalClients:['MBR010','MBR012'],maxPersonalClients:8,totalSessions:245,avgRating:4.9,reviewCount:52,active:true,leaveUntil:null,notes:'',color:'#10B981',emoji:'💃'},
+];
+
+const DEMO_CLASSES=[
+  {id:'CLS001',name:'Irki HIIT Topary',type:'hiit',description:'Ýokary intensiwli aralyk türgenleşigi.',dayOfWeek:[1,3,5],startTime:'07:00',duration:60,hallId:1,hallName:'Kardio Zaly',trainerId:'TRN001',trainerName:'Merdan Hydyrow',maxCapacity:15,enrolledMembers:['MBR001','MBR004','MBR007','MBR009','MBR011'],waitingList:[],isFree:true,extraPrice:0,active:true,level:'intermediate',color:'#EF4444',totalSessions:48,avgAttendance:11.2,rating:4.8,createdAt:'2024-01-15'},
+  {id:'CLS002',name:'Irki Ertir Ýogasy',type:'yoga',description:'Ýumşak ýoga sapagy. Başlangyçlar üçin amatly.',dayOfWeek:[1,2,3,4,5],startTime:'09:00',duration:60,hallId:3,hallName:'Ýoga Zaly',trainerId:'TRN002',trainerName:'Aýgül Annaýewa',maxCapacity:12,enrolledMembers:['MBR002','MBR006','MBR010','MBR012'],waitingList:[],isFree:true,extraPrice:0,active:true,level:'beginner',color:'#06B6D4',totalSessions:62,avgAttendance:8.5,rating:4.9,createdAt:'2024-01-10'},
+  {id:'CLS003',name:'Güýç Türgenleşigi',type:'strength',description:'Myşsa ösdürmek üçin güýç türgenleşigi.',dayOfWeek:[1,3,5],startTime:'18:00',duration:75,hallId:2,hallName:'Güýç Zaly',trainerId:'TRN001',trainerName:'Merdan Hydyrow',maxCapacity:10,enrolledMembers:['MBR001','MBR007','MBR009','MBR011'],waitingList:[],isFree:true,extraPrice:0,active:true,level:'intermediate',color:'#F97316',totalSessions:45,avgAttendance:7.8,rating:4.8,createdAt:'2024-02-01'},
+  {id:'CLS004',name:'Pilates',type:'pilates',description:'Beden duruşy we güýçlenme üçin pilates.',dayOfWeek:[2,4],startTime:'10:00',duration:60,hallId:3,hallName:'Ýoga Zaly',trainerId:'TRN002',trainerName:'Aýgül Annaýewa',maxCapacity:12,enrolledMembers:['MBR002','MBR010'],waitingList:[],isFree:true,extraPrice:0,active:true,level:'all',color:'#10B981',totalSessions:30,avgAttendance:6.0,rating:4.7,createdAt:'2024-03-01'},
+  {id:'CLS005',name:'Boks Başlangyç',type:'boxing',description:'Boks tehnikasy we kardio.',dayOfWeek:[2,4],startTime:'18:00',duration:60,hallId:4,hallName:'Boks Zaly',trainerId:'TRN003',trainerName:'Serdar Durdyýew',maxCapacity:10,enrolledMembers:['MBR004'],waitingList:[],isFree:true,extraPrice:0,active:true,level:'beginner',color:'#F59E0B',totalSessions:28,avgAttendance:5.5,rating:4.7,createdAt:'2024-04-01'},
+  {id:'CLS006',name:'MMA Sapagy',type:'boxing',description:'Dürli söweş sungatynyň utgaşmasy.',dayOfWeek:[1,3],startTime:'19:30',duration:90,hallId:4,hallName:'Boks Zaly',trainerId:'TRN003',trainerName:'Serdar Durdyýew',maxCapacity:8,enrolledMembers:[],waitingList:[],isFree:false,extraPrice:50,active:true,level:'advanced',color:'#EF4444',totalSessions:20,avgAttendance:5.0,rating:4.6,createdAt:'2024-05-01'},
+  {id:'CLS007',name:'Zumba Partisi',type:'zumba',description:'Gyzykly tans we fitnes.',dayOfWeek:[2,5,6],startTime:'19:00',duration:60,hallId:3,hallName:'Ýoga Zaly',trainerId:'TRN004',trainerName:'Leýli Annaberdiýewa',maxCapacity:15,enrolledMembers:['MBR006','MBR010','MBR012'],waitingList:[],isFree:true,extraPrice:0,active:true,level:'all',color:'#EC4899',totalSessions:35,avgAttendance:10.2,rating:4.9,createdAt:'2024-04-15'},
+  {id:'CLS008',name:'Kardio Blast',type:'cardio',description:'Ýokary intensiwli kardio.',dayOfWeek:[1,3,5],startTime:'20:00',duration:45,hallId:1,hallName:'Kardio Zaly',trainerId:'TRN004',trainerName:'Leýli Annaberdiýewa',maxCapacity:20,enrolledMembers:['MBR002','MBR006'],waitingList:[],isFree:true,extraPrice:0,active:true,level:'intermediate',color:'#8B5CF6',totalSessions:40,avgAttendance:12.0,rating:4.7,createdAt:'2024-03-20'},
+];
+
+const DEMO_EQUIPMENT=[
+  {id:'EQ001',name:'Ylgaw ýodajygy №1',category:'cardio',brand:'Life Fitness',model:'T5 Track+',serialNumber:'LF-T5-001',purchaseDate:'2023-06-15',purchasePrice:8500,location:'Kardio Zaly',status:'working',lastMaintenance:'2025-02-01',nextMaintenance:'2025-08-01',maintenanceInterval:90,maintenanceCost:150,dailyUsageHours:8,totalHours:3650,maintenanceHistory:[{date:'2025-02-01',type:'routine',cost:150,note:'Ýag çalyndy',tech:'Tehniki topary'}],notes:''},
+  {id:'EQ002',name:'Ylgaw ýodajygy №2',category:'cardio',brand:'Life Fitness',model:'T5 Track+',serialNumber:'LF-T5-002',purchaseDate:'2023-06-15',purchasePrice:8500,location:'Kardio Zaly',status:'maintenance',lastMaintenance:'2024-12-01',nextMaintenance:'2025-03-01',maintenanceInterval:90,maintenanceCost:150,dailyUsageHours:8,totalHours:3500,maintenanceHistory:[],notes:'Bant çalşylmaly'},
+  {id:'EQ003',name:'Welosiped №1',category:'cardio',brand:'Technogym',model:'Bike',serialNumber:'TG-B-001',purchaseDate:'2023-08-01',purchasePrice:3200,location:'Kardio Zaly',status:'working',lastMaintenance:'2025-03-01',nextMaintenance:'2025-09-01',maintenanceInterval:90,maintenanceCost:80,dailyUsageHours:6,totalHours:2800,maintenanceHistory:[],notes:''},
+  {id:'EQ004',name:'Eliptik №1',category:'cardio',brand:'Precor',model:'EFX',serialNumber:'PRE-EFX-001',purchaseDate:'2022-10-01',purchasePrice:5500,location:'Kardio Zaly',status:'broken',lastMaintenance:'2025-01-01',nextMaintenance:'2025-07-01',maintenanceInterval:90,maintenanceCost:120,dailyUsageHours:7,totalHours:5200,maintenanceHistory:[],notes:'Elektronika näsazlygy — abatlaýyş garaşylýar'},
+  {id:'EQ005',name:'Güýç Stansiýasy №1',category:'strength',brand:'Hammer Strength',model:'MTS',serialNumber:'HS-MTS-001',purchaseDate:'2022-05-01',purchasePrice:12000,location:'Güýç Zaly',status:'working',lastMaintenance:'2025-01-15',nextMaintenance:'2025-07-15',maintenanceInterval:180,maintenanceCost:200,dailyUsageHours:9,totalHours:7200,maintenanceHistory:[],notes:''},
+  {id:'EQ006',name:'Çekiş Platformasy',category:'strength',brand:'Rogue',model:'Pull-up Rig',serialNumber:'RG-PR-001',purchaseDate:'2023-01-01',purchasePrice:4500,location:'Güýç Zaly',status:'working',lastMaintenance:'2024-10-01',nextMaintenance:'2025-04-01',maintenanceInterval:180,maintenanceCost:50,dailyUsageHours:10,totalHours:5000,maintenanceHistory:[],notes:''},
+  {id:'EQ007',name:'Agram Bloklar (Set)',category:'strength',brand:'Eleiko',model:'Olympic Set',serialNumber:'EL-OL-001',purchaseDate:'2022-01-01',purchasePrice:3000,location:'Güýç Zaly',status:'working',lastMaintenance:'2024-06-01',nextMaintenance:'2025-06-01',maintenanceInterval:365,maintenanceCost:30,dailyUsageHours:12,totalHours:10000,maintenanceHistory:[],notes:''},
+  {id:'EQ008',name:'Boks Haltasy №1',category:'functional',brand:'Fairtex',model:'HB6',serialNumber:'FT-HB6-001',purchaseDate:'2023-03-01',purchasePrice:800,location:'Boks Zaly',status:'working',lastMaintenance:'2025-01-01',nextMaintenance:'2025-07-01',maintenanceInterval:180,maintenanceCost:20,dailyUsageHours:5,totalHours:2400,maintenanceHistory:[],notes:''},
+];
+
+const DEMO_TRANSACTIONS=[
+  {id:'PAY001',type:'income',category:'subscription',memberId:'MBR001',memberName:'Oraz Nurlyýew',amount:300,currency:'TMT',paymentMethod:'cash',reference:'Aprel 2025 Premium abuna',date:'2025-04-01',receivedBy:1,notes:'',createdAt:'2025-04-01T09:15:00'},
+  {id:'PAY002',type:'income',category:'subscription',memberId:'MBR002',memberName:'Maýa Gurbanova',amount:600,currency:'TMT',paymentMethod:'transfer',reference:'Aprel 2025 Elite abuna',date:'2025-04-01',receivedBy:1,notes:'',createdAt:'2025-04-01T09:30:00'},
+  {id:'PAY003',type:'income',category:'subscription',memberId:'MBR003',memberName:'Serdar Aşyrow',amount:180,currency:'TMT',paymentMethod:'cash',reference:'Aprel 2025 Başlangyç',date:'2025-04-01',receivedBy:2,notes:'',createdAt:'2025-04-01T10:00:00'},
+  {id:'PAY004',type:'income',category:'subscription',memberId:'MBR004',memberName:'Maral Hojaýewa',amount:300,currency:'TMT',paymentMethod:'card',reference:'Aprel 2025 Premium',date:'2025-04-02',receivedBy:1,notes:'',createdAt:'2025-04-02T09:00:00'},
+  {id:'PAY005',type:'income',category:'subscription',memberId:'MBR006',memberName:'Ogulgerek Meredowa',amount:300,currency:'TMT',paymentMethod:'cash',reference:'Aprel 2025 Premium',date:'2025-04-01',receivedBy:2,notes:'',createdAt:'2025-04-01T11:00:00'},
+  {id:'PAY006',type:'income',category:'subscription',memberId:'MBR007',memberName:'Arslan Durdyýew',amount:600,currency:'TMT',paymentMethod:'transfer',reference:'Aprel 2025 Elite',date:'2025-04-01',receivedBy:1,notes:'',createdAt:'2025-04-01T09:45:00'},
+  {id:'PAY007',type:'income',category:'subscription',memberId:'MBR009',memberName:'Döwlet Annagurbanow',amount:300,currency:'TMT',paymentMethod:'cash',reference:'Aprel 2025 Premium',date:'2025-04-01',receivedBy:2,notes:'',createdAt:'2025-04-01T12:00:00'},
+  {id:'PAY008',type:'income',category:'subscription',memberId:'MBR010',memberName:'Aýna Berdiýewa',amount:300,currency:'TMT',paymentMethod:'card',reference:'Aprel 2025 Premium',date:'2025-04-02',receivedBy:1,notes:'',createdAt:'2025-04-02T10:00:00'},
+  {id:'PAY009',type:'income',category:'subscription',memberId:'MBR011',memberName:'Güýç Ataýew',amount:600,currency:'TMT',paymentMethod:'transfer',reference:'Aprel 2025 Elite',date:'2025-04-01',receivedBy:1,notes:'',createdAt:'2025-04-01T09:50:00'},
+  {id:'PAY010',type:'income',category:'subscription',memberId:'MBR012',memberName:'Nurgül Ýylmaz',amount:180,currency:'TMT',paymentMethod:'cash',reference:'Aprel 2025 Başlangyç',date:'2025-04-03',receivedBy:2,notes:'',createdAt:'2025-04-03T09:00:00'},
+  {id:'PAY011',type:'expense',category:'other',memberId:null,memberName:'',amount:1500,currency:'TMT',paymentMethod:'transfer',reference:'Aprel kommunal tölegleri',date:'2025-04-01',receivedBy:1,notes:'',createdAt:'2025-04-01T13:00:00'},
+  {id:'PAY012',type:'expense',category:'other',memberId:null,memberName:'',amount:800,currency:'TMT',paymentMethod:'cash',reference:'Enjam çalyşmak çykdajysy',date:'2025-04-03',receivedBy:1,notes:'',createdAt:'2025-04-03T14:00:00'},
+  {id:'PAY013',type:'income',category:'personal_training',memberId:'MBR001',memberName:'Oraz Nurlyýew',amount:400,currency:'TMT',paymentMethod:'cash',reference:'Şahsy tälimçilik — Aprel',date:'2025-04-04',receivedBy:1,notes:'',createdAt:'2025-04-04T09:00:00'},
+  {id:'PAY014',type:'income',category:'personal_training',memberId:'MBR007',memberName:'Arslan Durdyýew',amount:400,currency:'TMT',paymentMethod:'card',reference:'Şahsy tälimçilik — Aprel',date:'2025-04-04',receivedBy:1,notes:'',createdAt:'2025-04-04T09:30:00'},
+  {id:'PAY015',type:'income',category:'subscription',memberId:'MBR005',memberName:'Baýram Nurmedow',amount:180,currency:'TMT',paymentMethod:'cash',reference:'Aprel 2025 Başlangyç',date:'2025-04-01',receivedBy:2,notes:'',createdAt:'2025-04-01T14:00:00'},
+];
+
+const DEMO_NUTRITION=[
+  {id:'NUT001',name:'Myşsa Ösdürmek — Erkek (75-85 kg)',goal:'muscle',gender:'male',weightRange:{min:75,max:85},dailyCalories:3200,macros:{protein:160,carbs:380,fat:85},meals:[{time:'07:00',name:'Irdenki nahar',foods:[{name:'Ýumurtga (haşlama)',amount:3,unit:'sany',cal:234,p:19,c:3,f:15},{name:'Owsýan ýarmasy',amount:80,unit:'g',cal:300,p:10,c:54,f:5}]},{time:'13:00',name:'Günorta nahar',foods:[{name:'Towuk döşi',amount:200,unit:'g',cal:330,p:62,c:0,f:7},{name:'Tüwi',amount:150,unit:'g',cal:195,p:4,c:43,f:0}]}],waterIntake:3500,supplements:['Kreatin 5g','Protein shake'],notes:''},
+  {id:'NUT002',name:'Agram Azaltmak — Aýal (60-70 kg)',goal:'weight_loss',gender:'female',weightRange:{min:60,max:70},dailyCalories:1600,macros:{protein:120,carbs:150,fat:55},meals:[{time:'08:00',name:'Irdenki nahar',foods:[{name:'Ýumurtga',amount:2,unit:'sany',cal:156,p:13,c:2,f:10},{name:'Gök salat',amount:100,unit:'g',cal:20,p:2,c:3,f:0}]},{time:'13:00',name:'Günorta nahar',foods:[{name:'Balyk',amount:150,unit:'g',cal:165,p:35,c:0,f:3}]}],waterIntake:2500,supplements:['Multivitamin'],notes:''},
+];
+
+const DEMO_NOTIFICATIONS=[
+  {id:'N001',type:'member',icon:'🆕',text:'Täze agza ýazyldy — Ogulgerek Meredowa (Premium)',time:new Date(Date.now()-2*60000).toISOString(),read:false,link:'members'},
+  {id:'N002',type:'finance',icon:'💰',text:'Töleg alyndy — Maýa Gurbanova 600 TMT',time:new Date(Date.now()-18*60000).toISOString(),read:false,link:'finance'},
+  {id:'N003',type:'member',icon:'⚠️',text:'Abunasy gutarýar — Maral Hojaýewa (2 günde)',time:new Date(Date.now()-60*60000).toISOString(),read:false,link:'members'},
+  {id:'N004',type:'equipment',icon:'🔧',text:'Tehniki syna gerek — Ylgaw ýodajygy №2',time:new Date(Date.now()-2*3600000).toISOString(),read:false,link:'equipment'},
+  {id:'N005',type:'member',icon:'⚠️',text:'Abunasy gutarýar — Baýram Nurmedow (5 günde)',time:new Date(Date.now()-3*3600000).toISOString(),read:true,link:'members'},
+  {id:'N006',type:'class',icon:'📅',text:'Şu gün sapak bar — HIIT 07:00 (5 ýazylgy)',time:new Date(Date.now()-4*3600000).toISOString(),read:true,link:'schedule'},
+  {id:'N007',type:'finance',icon:'💰',text:'Töleg alyndy — Oraz Nurlyýew 700 TMT (abuna + şahsy)',time:new Date(Date.now()-5*3600000).toISOString(),read:true,link:'finance'},
+];
+
+// ==================== AUTH ====================
+let currentUser=null;
+function doLogin(){
+  const login=document.getElementById('login-user').value.trim();
+  const pass=document.getElementById('login-pass').value;
+  const remember=document.getElementById('login-remember').checked;
+  const users=DB.get('users').length?DB.get('users'):DEFAULT_USERS;
+  const u=users.find(x=>x.login===login&&x.password===pass);
+  if(!u){
+    const err=document.getElementById('login-error');
+    err.style.display='block';
+    const card=document.getElementById('login-card');
+    card.classList.add('shake');
+    setTimeout(()=>card.classList.remove('shake'),400);
+    return;
+  }
+  currentUser=u;
+  if(remember)localStorage.setItem('gym_session',JSON.stringify(u));
+  launchApp();
+}
+function doLogout(){
+  currentUser=null;
+  localStorage.removeItem('gym_session');
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('login-user').value='';
+  document.getElementById('login-pass').value='';
+  document.getElementById('login-error').style.display='none';
+}
+function checkSession(){
+  const s=localStorage.getItem('gym_session');
+  if(s){try{currentUser=JSON.parse(s);launchApp();return;}catch{}}
+}
+
+// ==================== APP LAUNCH ====================
+function launchApp(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  buildNav();
+  updateTopbar();
+  navigate('dashboard');
+}
+function buildNav(){
+  const perms=PERMISSIONS[currentUser.role]||[];
+  const nav=document.getElementById('sidebar-nav');
+  nav.innerHTML='';
+  const section1=['dashboard','members','classes','trainers','schedule','equipment','nutrition','finance','reports'];
+  const section2=['notifications','users','settings'];
+  let html='';
+  section1.forEach(id=>{
+    if(!perms.includes(id))return;
+    const item=NAV_ITEMS.find(n=>n.id===id);
+    if(item)html+=`<div class="nav-item" id="nav-${id}" onclick="navigate('${id}')""><span class="nav-icon">${item.icon}</span><span class="nav-label">${item.label}</span></div>`;
+  });
+  html+='<div class="nav-divider"></div>';
+  section2.forEach(id=>{
+    if(!perms.includes(id))return;
+    const item=NAV_ITEMS.find(n=>n.id===id);
+    if(item)html+=`<div class="nav-item" id="nav-${id}" onclick="navigate('${id}')""><span class="nav-icon">${item.icon}</span><span class="nav-label">${item.label}</span></div>`;
+  });
+  nav.innerHTML=html;
+}
+function updateTopbar(){
+  document.getElementById('sidebar-avatar').textContent=currentUser.avatar;
+  document.getElementById('sidebar-avatar').style.background=currentUser.color;
+  document.getElementById('sidebar-name').textContent=currentUser.name;
+  const roleMap={superadmin:'Baş Admin',manager:'Menejer',receptionist:'Kabul Işgäri',trainer:'Tälimçi'};
+  document.getElementById('sidebar-role').textContent=roleMap[currentUser.role]||currentUser.role;
+  document.getElementById('topbar-avatar').textContent=currentUser.avatar;
+  document.getElementById('topbar-avatar').style.background=currentUser.color;
+  updateNotifCount();
+}
+function updateNotifCount(){
+  const n=DB.get('notifications').filter(x=>!x.read).length;
+  document.getElementById('notif-count').textContent=n;
+}
+
+// ==================== NAVIGATION ====================
+let currentSection='';
+function navigate(id){
+  const perms=PERMISSIONS[currentUser.role]||[];
+  if(!perms.includes(id)){toast.warning('Bu bölüme rugsat ýok');return;}
+  currentSection=id;
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  const nav=document.getElementById('nav-'+id);
+  if(nav)nav.classList.add('active');
+  const titles={dashboard:'Dolandyryş Tagtasy',members:'Agza Dolandyrma',classes:'Sapak Dolandyrma',trainers:'Tälimçiler',schedule:'Sapak Tertibi',equipment:'Enjamlar',nutrition:'Iýmitlenme',finance:'Maliýe',reports:'Hasabatlar',notifications:'Bildirişler',users:'Ulanyjylar',settings:'Sazlamalar'};
+  document.getElementById('page-title').textContent=titles[id]||id;
+  document.getElementById('page-sub').textContent='FitClub Aşgabat';
+  renderSection(id);
+  closeMobileSidebar();
+}
+function renderSection(id){
+  const ca=document.getElementById('content-area');
+  const fns={
+    dashboard:renderDashboard,members:renderMembers,classes:renderClasses,
+    trainers:renderTrainers,schedule:renderSchedule,equipment:renderEquipment,
+    nutrition:renderNutrition,finance:renderFinance,reports:renderReports,
+    notifications:renderNotifications,users:renderUsers,settings:renderSettings
+  };
+  ca.innerHTML='';
+  if(fns[id])fns[id](ca);
+}
+
+// ==================== SIDEBAR TOGGLE ====================
+let sidebarCollapsed=false;
+function toggleSidebar(){
+  sidebarCollapsed=!sidebarCollapsed;
+  const sb=document.getElementById('sidebar');
+  const mc=document.getElementById('main-content');
+  const tg=document.getElementById('sidebar-toggle');
+  sb.classList.toggle('collapsed',sidebarCollapsed);
+  mc.classList.toggle('collapsed',sidebarCollapsed);
+  tg.textContent=sidebarCollapsed?'▶':'◀';
+}
+function openMobileSidebar(){
+  document.getElementById('sidebar').classList.add('mobile-open');
+  document.getElementById('sidebar-overlay').classList.add('show');
+}
+function closeMobileSidebar(){
+  document.getElementById('sidebar').classList.remove('mobile-open');
+  document.getElementById('sidebar-overlay').classList.remove('show');
+}
+
+// ==================== TOAST ====================
+const toast={
+  show(msg,type='success',dur=3500){
+    const icons={success:'✅',error:'❌',warning:'⚠️',info:'ℹ️'};
+    const el=document.createElement('div');
+    el.className=`toast toast-${type}`;
+    el.innerHTML=`<span>${icons[type]}</span><span class="toast-msg">${msg}</span><button class="toast-close" onclick="this.parentElement.remove()">✕</button>`;
+    document.getElementById('toast-container').appendChild(el);
+    setTimeout(()=>el.classList.add('toast-exit'),dur);
+    setTimeout(()=>el.remove(),dur+350);
+  },
+  success:(m)=>toast.show(m,'success'),
+  error:(m)=>toast.show(m,'error'),
+  warning:(m)=>toast.show(m,'warning'),
+  info:(m)=>toast.show(m,'info'),
+};
+
+// ==================== MODAL ====================
+function openModal(html,size=''){
+  closeModal();
+  const ov=document.createElement('div');
+  ov.className='modal-overlay';
+  ov.id='modal-overlay';
+  ov.innerHTML=`<div class="modal ${size}" id="modal-box">${html}</div>`;
+  ov.addEventListener('click',e=>{if(e.target===ov)closeModal();});
+  document.body.appendChild(ov);
+}
+function closeModal(){
+  const ov=document.getElementById('modal-overlay');
+  if(ov)ov.remove();
+}
+function confirmDialog(msg,onYes,danger=false){
+  openModal(`
+    <div class="modal-header"><h3>Tassyklarsynyzmy?</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+    <div class="modal-body"><p style="font-size:14px;line-height:1.6">${msg}</p></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Ýok</button>
+      <button class="btn ${danger?'btn-danger':'btn-primary'}" onclick="(${onYes.toString()})();closeModal()">${danger?'Hawa, Öçür':'Hawa'}</button>
+    </div>
+  `,'modal-sm');
+}
+
+// ==================== HELPERS ====================
+function formatDate(d){if(!d)return'—';try{return new Date(d).toLocaleDateString('ru-RU');}catch{return d;}}
+function daysUntil(d){if(!d)return null;return Math.ceil((new Date(d)-new Date())/(1000*60*60*24));}
+function formatTMT(n){return(Number(n)||0).toLocaleString()+' TMT';}
+function timeAgo(iso){
+  if(!iso)return'';
+  const d=Math.floor((Date.now()-new Date(iso))/1000);
+  if(d<60)return d+'s öň';
+  if(d<3600)return Math.floor(d/60)+' min öň';
+  if(d<86400)return Math.floor(d/3600)+' sag öň';
+  return Math.floor(d/86400)+' gün öň';
+}
+function getSubBadge(sub){
+  if(!sub)return'<span class="badge badge-cancelled">Ýok</span>';
+  if(!sub.active)return'<span class="badge badge-expired">Gutaran</span>';
+  const days=daysUntil(sub.endDate);
+  if(days!==null&&days<=7)return`<span class="badge badge-expiring">Gutarýar (${days}g)</span>`;
+  return'<span class="badge badge-active">Aktiw</span>';
+}
+function getPlanBadge(plan){
+  const m={basic:'badge-basic',premium:'badge-premium',elite:'badge-elite'};
+  const l={basic:'Başlangyç',premium:'Premium',elite:'Elite'};
+  return`<span class="badge ${m[plan]||'badge-basic'}">${l[plan]||plan}</span>`;
+}
+function getGenderIcon(g){return g==='male'?'♂️':'♀️';}
+function calcAge(bd){if(!bd)return'';const d=new Date();const b=new Date(bd);return Math.floor((d-b)/(365.25*24*3600*1000));}
+function exportCSV(data,filename){
+  if(!data.length){toast.warning('Maglumat ýok');return;}
+  const h=Object.keys(data[0]);
+  const rows=data.map(r=>h.map(k=>`"${(r[k]??'').toString().replace(/"/g,'""')}"`).join(','));
+  const csv=[h.join(','),...rows].join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+  a.download=filename+'.csv';a.click();
+}
+function exportJSON(data,filename){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+  a.download=filename+'.json';a.click();
+}
+function globalSearch(val){
+  if(!val||val.length<2)return;
+}
+function switchTab(group,id){
+  document.querySelectorAll(`[data-tab-group="${group}"]`).forEach(el=>{
+    el.classList.toggle('active',el.dataset.tab===id);
+  });
+  document.querySelectorAll(`[data-pane-group="${group}"]`).forEach(el=>{
+    el.classList.toggle('active',el.dataset.pane===id);
+  });
+}
+
+// ==================== DASHBOARD ====================
+function renderDashboard(ca){
+  const members=DB.get('members');
+  const classes=DB.get('classes');
+  const equipment=DB.get('equipment');
+  const transactions=DB.get('transactions');
+  const activeMembers=members.filter(m=>m.subscription?.active).length;
+  const totalMembers=members.length;
+  const todayClasses=classes.filter(c=>c.active).length;
+  const monthIncome=transactions.filter(t=>t.type==='income').reduce((a,t)=>a+t.amount,0);
+  const needMaint=equipment.filter(e=>e.status==='maintenance'||e.status==='broken').length;
+  const newMembers=members.filter(m=>{const d=new Date(m.createdAt);const n=new Date();return d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear();}).length;
+  const expiring=members.filter(m=>m.subscription?.active&&daysUntil(m.subscription?.endDate)<=7&&daysUntil(m.subscription?.endDate)>=0).length;
+  const pct=totalMembers?Math.round(activeMembers/totalMembers*100):0;
+
+  ca.innerHTML=`
+  <!-- Quick Actions -->
+  <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
+    <button class="btn btn-primary" onclick="openAddMemberModal()">+ Täze Agza</button>
+    <button class="btn btn-secondary" onclick="openAddClassModal()">+ Sapak</button>
+    <button class="btn btn-secondary" onclick="navigate('members')" style="color:var(--yellow)">⚠️ Abunasy Gutarýanlar (${expiring})</button>
+    <button class="btn btn-secondary" onclick="navigate('finance')">💰 Maliýe</button>
+    <button class="btn btn-secondary" onclick="exportMembersCSV()">📊 Hasabat</button>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon">👥</div>
+      <div class="kpi-val" style="color:var(--cyan)">${totalMembers.toLocaleString()}</div>
+      <div class="kpi-sub">Jemi Agzalar</div>
+      <span class="kpi-trend trend-up">▲ +${newMembers} bu aý</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">✅</div>
+      <div class="kpi-val" style="color:var(--green)">${activeMembers}</div>
+      <div class="kpi-sub">${pct}% dolulyk</div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:var(--green)"></div></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">⚡</div>
+      <div class="kpi-val" style="color:var(--orange)">${todayClasses}</div>
+      <div class="kpi-sub">Aktiw sapaklar</div>
+      <span class="kpi-trend trend-neutral">4 zal işleýär</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">💰</div>
+      <div class="kpi-val" style="color:var(--red)">${formatTMT(monthIncome)}</div>
+      <div class="kpi-sub">Bu Aý Girdeji</div>
+      <span class="kpi-trend trend-up">▲ +12%</span>
+    </div>
+    <div class="kpi-card" onclick="navigate('equipment')" style="cursor:pointer">
+      <div class="kpi-icon">🔧</div>
+      <div class="kpi-val" style="color:var(--yellow)">${needMaint}</div>
+      <div class="kpi-sub">Tehniki syna gerek</div>
+      <span class="kpi-trend trend-warn">${needMaint>0?'!! Üns gerek':'✓ Tertipde'}</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">🆕</div>
+      <div class="kpi-val" style="color:var(--green)">${newMembers}</div>
+      <div class="kpi-sub">Täze Agzalar (bu aý)</div>
+      <span class="kpi-trend trend-up">▲ +20%</span>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="grid-2" style="margin-bottom:24px">
+    <div class="card">
+      <h3 style="margin-bottom:16px;font-size:15px;font-weight:700">💹 Girdeji (12 aý)</h3>
+      <canvas id="revenue-chart" height="220"></canvas>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:16px;font-size:15px;font-weight:700">📊 Agza Paýlanmasy</h3>
+      <canvas id="member-chart" height="220"></canvas>
+    </div>
+  </div>
+
+  <!-- Gantt + Feed -->
+  <div class="grid-2" style="margin-bottom:24px">
+    <div class="card">
+      <h3 style="margin-bottom:16px;font-size:15px;font-weight:700">📅 Şu Günüň Tertibi</h3>
+      <div id="today-gantt"></div>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:16px;font-size:15px;font-weight:700">⚡ Soňky Işler</h3>
+      <div id="activity-feed"></div>
+    </div>
+  </div>
+
+  <!-- Trainer Load -->
+  <div class="card">
+    <h3 style="margin-bottom:16px;font-size:15px;font-weight:700">👨‍🏫 Tälimçi Ýükleme Deňleýjisi</h3>
+    <div id="trainer-load"></div>
+  </div>
+  `;
+
+  // Revenue Chart
+  const months=['Ýan','Few','Mar','Apr','Maý','Iýun','Iýul','Awg','Sen','Okt','Noý','Dek'];
+  const now=new Date();
+  const rLabels=[],rData=[],rSubs=[];
+  for(let i=11;i>=0;i--){
+    const m=new Date(now.getFullYear(),now.getMonth()-i,1);
+    rLabels.push(months[m.getMonth()]);
+    rData.push(Math.round(40000+Math.random()*60000));
+    rSubs.push(Math.round(300+Math.random()*200));
+  }
+  new Chart(document.getElementById('revenue-chart'),{type:'line',data:{labels:rLabels,datasets:[{label:'Girdeji (TMT)',data:rData,borderColor:'#EF4444',backgroundColor:'rgba(239,68,68,.07)',borderWidth:2.5,tension:.4,fill:true,pointBackgroundColor:'#EF4444',pointRadius:3,pointHoverRadius:6,yAxisID:'y'},{label:'Agza sany',data:rSubs,borderColor:'#06B6D4',backgroundColor:'transparent',borderWidth:2,tension:.4,pointRadius:2,yAxisID:'y2'}]},options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#F0EEF8',font:{size:11}}},tooltip:{backgroundColor:'#1A1A24',borderColor:'rgba(239,68,68,.3)',borderWidth:1}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5A5870',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5A5870',font:{size:10},callback:v=>v.toLocaleString()+'₸'}},y2:{position:'right',grid:{display:false},ticks:{color:'#5A5870',font:{size:10}}}}}});
+
+  // Member Doughnut
+  const basic=members.filter(m=>m.subscription?.plan==='basic'&&m.subscription?.active).length;
+  const premium=members.filter(m=>m.subscription?.plan==='premium'&&m.subscription?.active).length;
+  const elite=members.filter(m=>m.subscription?.plan==='elite'&&m.subscription?.active).length;
+  const inactive=members.filter(m=>!m.subscription?.active).length;
+  new Chart(document.getElementById('member-chart'),{type:'doughnut',data:{labels:['Başlangyç','Premium','Elite','Aktiw däl'],datasets:[{data:[basic,premium,elite,inactive],backgroundColor:['#06B6D4','#EF4444','#F59E0B','#3A3850'],borderWidth:0,hoverOffset:6}]},options:{cutout:'72%',plugins:{legend:{position:'bottom',labels:{color:'#F0EEF8',padding:14,font:{size:11}}}}}});
+
+  // Today Gantt
+  renderTodayGantt();
+  renderActivityFeed();
+  renderTrainerLoad();
+}
+
+function renderTodayGantt(){
+  const ganttEl=document.getElementById('today-gantt');
+  if(!ganttEl)return;
+  const classes=DB.get('classes').filter(c=>c.active);
+  const halls=['Kardio Zaly','Güýç Zaly','Ýoga Zaly','Boks Zaly'];
+  const startH=6,endH=23,totalH=endH-startH;
+  const now=new Date();
+  const nowPct=((now.getHours()+now.getMinutes()/60-startH)/totalH)*100;
+
+  const hourLabels=[];
+  for(let h=startH;h<=endH;h+=2)hourLabels.push(h<10?'0'+h+':00':h+':00');
+
+  let html=`<div class="gantt-wrap"><div class="gantt-grid">
+    <div class="gantt-header">
+      <div style="padding:4px 10px;font-size:10px;color:var(--text-muted)">ZAL</div>
+      <div style="position:relative;padding:4px 0">
+        <div style="display:flex">${hourLabels.map(h=>`<div style="flex:1;font-size:9px;color:var(--text-muted);text-align:center;font-family:'Space Mono',monospace">${h}</div>`).join('')}</div>
+      </div>
+    </div>`;
+
+  halls.forEach(hall=>{
+    const hallClasses=classes.filter(c=>c.hallName===hall);
+    const today=new Date().getDay();
+    const todayClasses=hallClasses.filter(c=>c.dayOfWeek.includes(today));
+    html+=`<div class="gantt-row">
+      <div class="gantt-label">${hall.replace(' Zaly','')}</div>
+      <div class="gantt-track">
+        ${nowPct>0&&nowPct<100?`<div class="gantt-now" style="left:${nowPct}%"></div>`:''}
+        ${todayClasses.map(c=>{
+          const [sh,sm]=c.startTime.split(':').map(Number);
+          const startPct=((sh+sm/60-startH)/totalH)*100;
+          const widthPct=(c.duration/60/totalH)*100;
+          return`<div class="gantt-block" style="left:${startPct}%;width:${widthPct}%;background:${c.color}22;border:1px solid ${c.color}66;color:${c.color}" title="${c.name} | ${c.trainerName} | ${c.enrolledMembers.length}/${c.maxCapacity}">${c.startTime} ${c.name.split(' ')[0]}</div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  });
+  html+='</div></div>';
+  ganttEl.innerHTML=html;
+}
+
+function renderActivityFeed(){
+  const feedEl=document.getElementById('activity-feed');
+  if(!feedEl)return;
+  const notifs=DB.get('notifications').slice(0,6);
+  if(!notifs.length){feedEl.innerHTML='<div class="empty-state"><div class="ei">📭</div><p>Işler ýok</p></div>';return;}
+  feedEl.innerHTML=notifs.map(n=>`
+    <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid rgba(239,68,68,.05)">
+      <span style="font-size:18px;flex-shrink:0">${n.icon}</span>
+      <div style="flex:1">
+        <div style="font-size:12px;line-height:1.5">${n.text}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${timeAgo(n.time)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderTrainerLoad(){
+  const el=document.getElementById('trainer-load');
+  if(!el)return;
+  const trainers=DB.get('trainers');
+  el.innerHTML=trainers.map(t=>{
+    const pct=Math.round(t.personalClients.length/t.maxPersonalClients*100);
+    const color=pct>=80?'var(--yellow)':pct>=60?'var(--orange)':'var(--green)';
+    return`<div class="load-bar">
+      <div class="load-bar-name">${t.firstName} ${t.lastName.charAt(0)}.</div>
+      <div class="load-bar-track"><div class="load-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+      <div class="load-bar-pct" style="color:${color}">${pct}%</div>
+      <span style="font-size:13px">${pct>=80?'⚠️':'✅'}</span>
+    </div>`;
+  }).join('');
+}
+
+// ==================== MEMBERS ====================
+function renderMembers(ca){
+  ca.innerHTML=`
+  <div class="section-header">
+    <h2>👥 Agza Dolandyrma</h2>
+    <div class="actions">
+      <button class="btn btn-secondary btn-sm" onclick="exportMembersCSV()">📤 CSV</button>
+      <button class="btn btn-secondary btn-sm" onclick="exportJSON(DB.get('members'),'members')">📤 JSON</button>
+      <button class="btn btn-primary" onclick="openAddMemberModal()">+ Täze Agza</button>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="filter-bar">
+      <input type="text" placeholder="🔍 At, telefon, ID..." id="m-search" oninput="filterMembers()" style="flex:1;min-width:180px"/>
+      <select id="m-plan" onchange="filterMembers()">
+        <option value="">Abuna (Hemmesi)</option>
+        <option value="basic">Başlangyç</option>
+        <option value="premium">Premium</option>
+        <option value="elite">Elite</option>
+      </select>
+      <select id="m-status" onchange="filterMembers()">
+        <option value="">Ýagdaý (Hemmesi)</option>
+        <option value="active">Aktiw</option>
+        <option value="expiring">Gutarýar (7g)</option>
+        <option value="expired">Gutaran</option>
+      </select>
+      <select id="m-goal" onchange="filterMembers()">
+        <option value="">Maksat (Hemmesi)</option>
+        <option value="muscle">Myşsa</option>
+        <option value="weight_loss">Agram</option>
+        <option value="endurance">Çydamlylyk</option>
+        <option value="general">Umumy</option>
+      </select>
+    </div>
+  </div>
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Agza</th><th>ID</th><th>Abuna</th><th>Gutarma</th><th>Tälimçi</th><th>Ýagdaý</th><th>Işler</th></tr></thead>
+        <tbody id="members-tbody"></tbody>
+      </table>
+    </div>
+    <div id="members-count" style="padding:10px 14px;font-size:12px;color:var(--text-muted)"></div>
+  </div>`;
+  filterMembers();
+}
+
+function filterMembers(){
+  const search=(document.getElementById('m-search')?.value||'').toLowerCase();
+  const plan=document.getElementById('m-plan')?.value||'';
+  const status=document.getElementById('m-status')?.value||'';
+  const goal=document.getElementById('m-goal')?.value||'';
+  let members=DB.get('members');
+  if(search)members=members.filter(m=>(m.firstName+' '+m.lastName+m.phone+m.id).toLowerCase().includes(search));
+  if(plan)members=members.filter(m=>m.subscription?.plan===plan);
+  if(goal)members=members.filter(m=>m.fitnessGoal===goal);
+  if(status==='active')members=members.filter(m=>m.subscription?.active&&(daysUntil(m.subscription?.endDate)||999)>7);
+  if(status==='expiring')members=members.filter(m=>m.subscription?.active&&daysUntil(m.subscription?.endDate)<=7&&daysUntil(m.subscription?.endDate)>=0);
+  if(status==='expired')members=members.filter(m=>!m.subscription?.active);
+  const tbody=document.getElementById('members-tbody');
+  if(!tbody)return;
+  const trainers=DB.get('trainers');
+  const getTrainer=(tid)=>{const t=trainers.find(x=>x.id===tid);return t?t.firstName+' '+t.lastName.charAt(0)+'.':'—';};
+  tbody.innerHTML=members.map((m,i)=>`
+    <tr>
+      <td style="color:var(--text-muted)">${i+1}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:34px;height:34px;border-radius:8px;background:${m.gender==='male'?'rgba(239,68,68,.15)':'rgba(6,182,212,.15)'};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">${(m.firstName[0]||'')+(m.lastName[0]||'')}</div>
+          <div>
+            <div style="font-weight:600">${m.firstName} ${m.lastName}</div>
+            <div style="font-size:11px;color:var(--text-muted)">${m.phone}</div>
+          </div>
+        </div>
+      </td>
+      <td><span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted)">${m.id}</span></td>
+      <td>${getPlanBadge(m.subscription?.plan)}</td>
+      <td style="font-size:12px">${m.subscription?.endDate?formatDate(m.subscription.endDate):'—'}</td>
+      <td style="font-size:12px;color:var(--text-muted)">${getTrainer(m.personalTrainer)}</td>
+      <td>${getSubBadge(m.subscription)}</td>
+      <td>
+        <div style="display:flex;gap:4px">
+          <button class="btn btn-sm btn-secondary" onclick="viewMember('${m.id}')">👁️</button>
+          <button class="btn btn-sm btn-secondary" onclick="editMember('${m.id}')">✏️</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteMember('${m.id}')">🗑️</button>
+        </div>
+      </td>
+    </tr>
+  `).join('')||'<tr><td colspan="8" class="empty-state">Agza tapylmady</td></tr>';
+  document.getElementById('members-count').textContent=`Jemi: ${members.length} agza`;
+}
+
+function exportMembersCSV(){
+  const d=DB.get('members').map(m=>({ID:m.id,At:m.firstName,Familyýa:m.lastName,Telefon:m.phone,Abuna:m.subscription?.plan||'',Başlangyç:m.subscription?.startDate||'',Gutarma:m.subscription?.endDate||'',Aktiw:m.subscription?.active?'Hawa':'Ýok',Maksat:m.fitnessGoal||'',Agza_bolany:m.memberSince}));
+  exportCSV(d,'agzalar_'+new Date().toISOString().slice(0,10));
+}
+
+function viewMember(id){
+  const m=DB.find('members',id);
+  if(!m)return;
+  const trainers=DB.get('trainers');
+  const trainer=trainers.find(t=>t.id===m.personalTrainer);
+  const lastAttend=m.attendance?.slice(-1)[0];
+  const totalAttend=m.attendance?.length||0;
+  const latestMeas=m.measurements?.slice(-1)[0];
+
+  openModal(`
+  <div class="modal-header">
+    <div>
+      <h3>${m.firstName} ${m.lastName}</h3>
+      <div style="font-size:12px;color:var(--text-muted);font-family:'Space Mono',monospace">${m.id}</div>
+    </div>
+    <div class="modal-close" onclick="closeModal()">✕</div>
+  </div>
+  <div class="modal-body" style="padding:0">
+    <!-- Profile header -->
+    <div style="background:var(--surface2);padding:20px 24px;display:flex;align-items:center;gap:16px;border-bottom:1px solid var(--border)">
+      <div style="width:60px;height:60px;border-radius:14px;background:${m.gender==='male'?'rgba(239,68,68,.2)':'rgba(6,182,212,.2)'};display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;flex-shrink:0">${(m.firstName[0]||'')+(m.lastName[0]||'')}</div>
+      <div>
+        <div style="font-size:18px;font-weight:700">${m.firstName} ${m.lastName}</div>
+        <div style="color:var(--text-muted);font-size:13px">📱 ${m.phone} &nbsp;|&nbsp; ${getGenderIcon(m.gender)} ${calcAge(m.birthDate)} ýaş &nbsp;|&nbsp; 📅 Agza: ${formatDate(m.memberSince)}</div>
+        <div style="margin-top:6px;display:flex;gap:6px">${getPlanBadge(m.subscription?.plan)} ${getSubBadge(m.subscription)}</div>
+      </div>
+    </div>
+    <!-- Tabs -->
+    <div style="padding:16px 24px 0">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="info" data-tab-group="member-detail" onclick="switchTab('member-detail','info')">Şahsy</button>
+        <button class="tab-btn" data-tab="sub" data-tab-group="member-detail" onclick="switchTab('member-detail','sub')">Abuna</button>
+        <button class="tab-btn" data-tab="attend" data-tab-group="member-detail" onclick="switchTab('member-detail','attend')">Gatnaşyk</button>
+        <button class="tab-btn" data-tab="progress" data-tab-group="member-detail" onclick="switchTab('member-detail','progress')">Ösüş</button>
+        <button class="tab-btn" data-tab="trainer" data-tab-group="member-detail" onclick="switchTab('member-detail','trainer')">Tälimçi</button>
+        <button class="tab-btn" data-tab="account" data-tab-group="member-detail" onclick="switchTab('member-detail','account')">Hasap</button>
+      </div>
+    </div>
+    <div style="padding:0 24px 24px">
+      <!-- Info Tab -->
+      <div class="tab-pane active" data-pane="info" data-pane-group="member-detail">
+        <div class="form-grid-2" style="margin-top:8px">
+          <div><div class="stat-row"><span class="stat-label">At</span><span class="stat-val">${m.firstName}</span></div>
+          <div class="stat-row"><span class="stat-label">Familiýa</span><span class="stat-val">${m.lastName}</span></div>
+          <div class="stat-row"><span class="stat-label">Telefon</span><span class="stat-val">${m.phone}</span></div>
+          <div class="stat-row"><span class="stat-label">E-poçta</span><span class="stat-val">${m.email||'—'}</span></div>
+          <div class="stat-row"><span class="stat-label">Jynsy</span><span class="stat-val">${m.gender==='male'?'Erkek':'Aýal'}</span></div></div>
+          <div><div class="stat-row"><span class="stat-label">Boy</span><span class="stat-val">${m.height||'—'} sm</span></div>
+          <div class="stat-row"><span class="stat-label">Agram</span><span class="stat-val">${m.weight||'—'} kg</span></div>
+          <div class="stat-row"><span class="stat-label">Maksat</span><span class="stat-val">${{muscle:'Myşsa',weight_loss:'Agram azaltmak',endurance:'Çydamlylyk',general:'Umumy saglyk',sport_prep:'Sport taýýarlyk'}[m.fitnessGoal]||m.fitnessGoal||'—'}</span></div>
+          <div class="stat-row"><span class="stat-label">Adres</span><span class="stat-val">${m.address||'—'}</span></div>
+          <div class="stat-row"><span class="stat-label">Çeşme</span><span class="stat-val">${{instagram:'Instagram',website:'Saýt',referral:'Maslahat',walk_in:'Özü geldi',phone:'Telefon'}[m.source]||m.source||'—'}</span></div></div>
+        </div>
+        ${m.healthNotes?`<div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:12px;margin-top:10px"><span style="color:var(--red);font-weight:600">⚠️ Saglyk belligi:</span> ${m.healthNotes}</div>`:''}
+      </div>
+      <!-- Sub Tab -->
+      <div class="tab-pane" data-pane="sub" data-pane-group="member-detail">
+        ${m.subscription?`
+        <div style="margin-top:8px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div>${getPlanBadge(m.subscription.plan)} ${getSubBadge(m.subscription)}</div>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-sm btn-primary" onclick="renewSubscriptionModal('${m.id}')">Uzat</button>
+            </div>
+          </div>
+          <div class="stat-row"><span class="stat-label">Plan</span><span class="stat-val">${{basic:'Başlangyç',premium:'Premium',elite:'Elite'}[m.subscription.plan]||m.subscription.plan}</span></div>
+          <div class="stat-row"><span class="stat-label">Başlangyç</span><span class="stat-val">${formatDate(m.subscription.startDate)}</span></div>
+          <div class="stat-row"><span class="stat-label">Gutarma</span><span class="stat-val">${formatDate(m.subscription.endDate)}</span></div>
+          <div class="stat-row"><span class="stat-label">Baha</span><span class="stat-val">${m.subscription.price} TMT/aý</span></div>
+          <div class="stat-row"><span class="stat-label">Galýan gün</span><span class="stat-val">${daysUntil(m.subscription.endDate)} gün</span></div>
+          ${m.subscription.endDate?`<div class="progress-bar" style="margin-top:10px"><div class="progress-fill" style="width:${Math.min(100,Math.max(0,100-daysUntil(m.subscription.endDate)/180*100))}%;background:var(--red)"></div></div>`:''}
+        </div>`:'<p style="color:var(--text-muted);margin-top:10px">Abuna ýok</p>'}
+        <h4 style="margin:18px 0 10px;font-size:13px;color:var(--text-muted)">TÖLEG TARYHY</h4>
+        <div class="table-wrap"><table><thead><tr><th>Sene</th><th>Möçber</th><th>Görnüş</th><th>Bellik</th></tr></thead><tbody>
+          ${DB.get('transactions').filter(t=>t.memberId===m.id).slice(0,6).map(t=>`<tr><td>${formatDate(t.date)}</td><td style="color:var(--green)">${formatTMT(t.amount)}</td><td>${{cash:'Nagt',transfer:'Geçiriş',card:'Kart'}[t.paymentMethod]||t.paymentMethod}</td><td style="font-size:11px;color:var(--text-muted)">${t.reference}</td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:16px">Töleg tapylmady</td></tr>'}
+        </tbody></table></div>
+      </div>
+      <!-- Attend Tab -->
+      <div class="tab-pane" data-pane="attend" data-pane-group="member-detail">
+        <div style="display:flex;gap:20px;margin:10px 0 16px;flex-wrap:wrap">
+          <div><div style="font-size:22px;font-weight:700;color:var(--cyan)">${totalAttend}</div><div style="font-size:11px;color:var(--text-muted)">Jemi giriş</div></div>
+          <div><div style="font-size:22px;font-weight:700;color:var(--green)">${m.attendance?.filter(a=>new Date(a.date).getMonth()===new Date().getMonth()).length||0}</div><div style="font-size:11px;color:var(--text-muted)">Bu aý</div></div>
+          <div><div style="font-size:22px;font-weight:700;color:var(--orange)">${lastAttend?.date?formatDate(lastAttend.date):'—'}</div><div style="font-size:11px;color:var(--text-muted)">Soňky giriş</div></div>
+        </div>
+        <h4 style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Gatnaşyk taryhy</h4>
+        ${(m.attendance||[]).slice(-10).reverse().map(a=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(239,68,68,.05)"><span style="font-size:16px">📅</span><div><div style="font-size:13px">${formatDate(a.date)}</div><div style="font-size:11px;color:var(--text-muted)">${a.checkIn||''} — ${a.checkOut||''}</div></div></div>`).join('')||'<p style="color:var(--text-muted)">Gatnaşyk tapylmady</p>'}
+      </div>
+      <!-- Progress Tab -->
+      <div class="tab-pane" data-pane="progress" data-pane-group="member-detail">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <h4 style="font-size:14px">Saglyk ölçegleri</h4>
+          <button class="btn btn-sm btn-primary" onclick="addMeasurementModal('${m.id}')">+ Ölçeg</button>
+        </div>
+        ${m.measurements?.length?`
+          <div class="form-grid-2">
+            ${['weight','bodyFat','muscle'].map(key=>{
+              const vals=m.measurements.map(x=>x[key]).filter(v=>v!=null);
+              const first=vals[0],last=vals[vals.length-1];
+              const diff=first!=null&&last!=null?+(last-first).toFixed(1):null;
+              const labels={weight:'Agram (kg)',bodyFat:'Ýag % ',muscle:'Myşsa (kg)'};
+              const good=(key==='weight'&&diff<0)||(key==='bodyFat'&&diff<0)||(key==='muscle'&&diff>0);
+              return`<div class="stat-row"><span class="stat-label">${labels[key]}</span><span class="stat-val">${first??'—'} → ${last??'—'} <span style="color:${diff!==null?(good?'var(--green)':'var(--red)'):'var(--text-muted)'}">${diff!=null?(diff>0?'+':'')+diff:''}</span></span></div>`;
+            }).join('')}
+          </div>
+          <canvas id="progress-chart" height="180" style="margin-top:14px"></canvas>
+        `:'<p style="color:var(--text-muted);margin-top:10px">Ölçeg girizilmedi</p>'}
+      </div>
+      <!-- Trainer Tab -->
+      <div class="tab-pane" data-pane="trainer" data-pane-group="member-detail">
+        ${trainer?`
+          <div style="display:flex;align-items:center;gap:14px;padding:16px;background:var(--surface2);border-radius:10px;margin-top:8px">
+            <div style="width:50px;height:50px;border-radius:12px;background:${trainer.color}22;display:flex;align-items:center;justify-content:center;font-size:22px">${trainer.emoji}</div>
+            <div>
+              <div style="font-weight:700">${trainer.firstName} ${trainer.lastName}</div>
+              <div style="font-size:12px;color:var(--text-muted)">${trainer.specialties.join(', ')}</div>
+              <div style="font-size:12px;color:var(--text-muted)">📞 ${trainer.phone}</div>
+            </div>
+          </div>
+          <div style="margin-top:14px">${trainer.bio}</div>
+        `:`<div style="padding:20px;text-align:center;color:var(--text-muted)">Şahsy tälimçi ýok<br><button class="btn btn-primary" style="margin-top:12px" onclick="assignTrainer('${m.id}')">Tälimçi bellemek</button></div>`}
+      </div>
+      <!-- Account Tab -->
+      <div class="tab-pane" data-pane="account" data-pane-group="member-detail">
+        <div style="margin-top:8px">
+          ${['income','expense'].map(type=>{
+            const total=DB.get('transactions').filter(t=>t.memberId===m.id&&t.type===type).reduce((a,t)=>a+t.amount,0);
+            return`<div class="stat-row"><span class="stat-label">${type==='income'?'Jemi tölenilen':'Çykdajy'}</span><span class="stat-val" style="color:${type==='income'?'var(--green)':'var(--red)'}">${formatTMT(total)}</span></div>`;
+          }).join('')}
+          <div class="stat-row"><span class="stat-label">Bonus nokatlary</span><span class="stat-val">${DB.get('transactions').filter(t=>t.memberId===m.id&&t.type==='income').reduce((a,t)=>a+Math.floor(t.amount/10),0)} pkt</span></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:16px">
+          <button class="btn btn-primary" onclick="addPaymentModal('${m.id}','${m.firstName} ${m.lastName}')">+ Töleg Giriş</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeModal()">Ýap</button>
+    <button class="btn btn-secondary" onclick="editMember('${m.id}')">✏️ Düzet</button>
+    <button class="btn btn-primary" onclick="renewSubscriptionModal('${m.id}')">Abunasy Uzat</button>
+  </div>
+  `,'modal-lg');
+
+  // Progress chart
+  if(m.measurements?.length>1){
+    setTimeout(()=>{
+      const ctx=document.getElementById('progress-chart');
+      if(!ctx)return;
+      new Chart(ctx,{type:'line',data:{labels:m.measurements.map(x=>formatDate(x.date)),datasets:[{label:'Agram',data:m.measurements.map(x=>x.weight),borderColor:'#EF4444',tension:.4,pointRadius:4},{label:'Myşsa',data:m.measurements.map(x=>x.muscle),borderColor:'#10B981',tension:.4,pointRadius:4},{label:'Ýag%',data:m.measurements.map(x=>x.bodyFat),borderColor:'#F59E0B',tension:.4,pointRadius:4}]},options:{responsive:true,plugins:{legend:{labels:{color:'#F0EEF8',font:{size:11}}}},scales:{x:{ticks:{color:'#5A5870'}},y:{ticks:{color:'#5A5870'}}}}});
+    },100);
+  }
+}
+
+function openAddMemberModal(prefill){
+  const trainers=DB.get('trainers');
+  const plans=DB.get('settings')?.plans||[{id:1,name:'Başlangyç',price:180},{id:2,name:'Premium',price:300},{id:3,name:'Elite',price:600}];
+  openModal(`
+  <div class="modal-header"><h3>${prefill?'Agzany Düzetmek':'Täze Agza Goşmak'}</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+  <div class="modal-body">
+    <div class="form-section-title">Şahsy Maglumat</div>
+    <div class="form-grid-2">
+      <div class="form-group"><label>At *</label><input id="mf-fn" value="${prefill?.firstName||''}" placeholder="At"/></div>
+      <div class="form-group"><label>Familiýa *</label><input id="mf-ln" value="${prefill?.lastName||''}" placeholder="Familiýa"/></div>
+      <div class="form-group"><label>Telefon *</label><input id="mf-ph" value="${prefill?.phone||''}" placeholder="+993 65 xxxxxx"/></div>
+      <div class="form-group"><label>E-poçta</label><input id="mf-em" type="email" value="${prefill?.email||''}" placeholder="email@mail.com"/></div>
+      <div class="form-group"><label>Doglan güni</label><input id="mf-bd" type="date" value="${prefill?.birthDate||''}"/></div>
+      <div class="form-group"><label>Jynsy</label><select id="mf-gen"><option value="male" ${prefill?.gender==='male'?'selected':''}>Erkek</option><option value="female" ${prefill?.gender==='female'?'selected':''}>Aýal</option></select></div>
+    </div>
+    <div class="form-group"><label>Adres</label><input id="mf-addr" value="${prefill?.address||''}" placeholder="Şäher, köçe..."/></div>
+    <div class="form-section-title">Fiziki Maglumat</div>
+    <div class="form-grid-2">
+      <div class="form-group"><label>Boy (sm)</label><input id="mf-ht" type="number" value="${prefill?.height||''}" placeholder="175"/></div>
+      <div class="form-group"><label>Agram (kg)</label><input id="mf-wt" type="number" value="${prefill?.weight||''}" placeholder="75"/></div>
+    </div>
+    <div class="form-group"><label>Maksat *</label><select id="mf-goal"><option value="muscle" ${prefill?.fitnessGoal==='muscle'?'selected':''}>Myşsa ösdürmek</option><option value="weight_loss" ${prefill?.fitnessGoal==='weight_loss'?'selected':''}>Agram azaltmak</option><option value="endurance" ${prefill?.fitnessGoal==='endurance'?'selected':''}>Çydamlylyk</option><option value="general" ${prefill?.fitnessGoal==='general'?'selected':''}>Umumy saglyk</option><option value="sport_prep" ${prefill?.fitnessGoal==='sport_prep'?'selected':''}>Sport taýýarlyk</option></select></div>
+    <div class="form-group"><label>Saglyk bellikleri</label><textarea id="mf-health" placeholder="Ýaralanmalar, çäklendirmeler...">${prefill?.healthNotes||''}</textarea></div>
+    <div class="form-section-title">Abuna</div>
+    <div class="form-grid-2">
+      <div class="form-group"><label>Plan *</label><select id="mf-plan" onchange="updatePlanPrice()">${plans.map(p=>`<option value="${p.name.toLowerCase()}" data-price="${p.price}" ${prefill?.subscription?.plan===p.name.toLowerCase()?'selected':''}>${p.name} — ${p.price} TMT</option>`).join('')}</select></div>
+      <div class="form-group"><label>Töleg görnüşi *</label><select id="mf-pay"><option value="cash">Nagt</option><option value="transfer">Bank geçiriş</option><option value="card">Kart</option></select></div>
+    </div>
+    <div class="form-grid-2">
+      <div class="form-group"><label>Başlangyç senesi</label><input id="mf-start" type="date" value="${new Date().toISOString().slice(0,10)}"/></div>
+      <div class="form-group"><label>Tälimçi</label><select id="mf-trainer"><option value="">Ýok</option>${trainers.map(t=>`<option value="${t.id}" ${prefill?.personalTrainer===t.id?'selected':''}>${t.firstName} ${t.lastName}</option>`).join('')}</select></div>
+    </div>
+    <div class="form-group"><label>Nähili tapdy</label><select id="mf-source"><option value="instagram" ${prefill?.source==='instagram'?'selected':''}>Instagram</option><option value="website" ${prefill?.source==='website'?'selected':''}>Saýt</option><option value="referral" ${prefill?.source==='referral'?'selected':''}>Maslahat</option><option value="walk_in" ${prefill?.source==='walk_in'?'selected':''}>Özü geldi</option><option value="phone" ${prefill?.source==='phone'?'selected':''}>Telefon</option></select></div>
+    <div class="form-group"><label>Içerki bellik</label><textarea id="mf-notes" placeholder="Diňe admin üçin...">${prefill?.notes||''}</textarea></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeModal()">Ýatyr</button>
+    <button class="btn btn-primary" onclick="saveMember('${prefill?.id||''}')">💾 Sakla</button>
+  </div>
+  `,'modal-lg');
+}
+
+function editMember(id){
+  const m=DB.find('members',id);
+  if(m)openAddMemberModal(m);
+}
+function deleteMember(id){
+  const m=DB.find('members',id);
+  if(!m)return;
+  confirmDialog(`"${m.firstName} ${m.lastName}" agzasyny öçürmek isleýärsiňizmi?`,()=>{
+    DB.remove('members',id);
+    toast.success('Agza öçürildi');
+    filterMembers();
+  },true);
+}
+function saveMember(existingId){
+  const fn=document.getElementById('mf-fn').value.trim();
+  const ln=document.getElementById('mf-ln').value.trim();
+  const ph=document.getElementById('mf-ph').value.trim();
+  if(!fn||!ln||!ph){toast.error('Hökmany meýdanlary dolduryň!');return;}
+  const plan=document.getElementById('mf-plan').value;
+  const planPrices={başlangyç:180,premium:300,elite:600};
+  const startDate=document.getElementById('mf-start').value||new Date().toISOString().slice(0,10);
+  const endDate=new Date(new Date(startDate).setMonth(new Date(startDate).getMonth()+1)).toISOString().slice(0,10);
+  const data={firstName:fn,lastName:ln,phone:ph,email:document.getElementById('mf-em').value,birthDate:document.getElementById('mf-bd').value,gender:document.getElementById('mf-gen').value,address:document.getElementById('mf-addr').value,height:+document.getElementById('mf-ht').value||null,weight:+document.getElementById('mf-wt').value||null,fitnessGoal:document.getElementById('mf-goal').value,healthNotes:document.getElementById('mf-health').value,subscription:{plan,startDate,endDate,active:true,price:planPrices[plan]||180,paymentType:'monthly'},personalTrainer:document.getElementById('mf-trainer').value||null,source:document.getElementById('mf-source').value,notes:document.getElementById('mf-notes').value};
+  if(existingId){
+    DB.update('members',existingId,data);
+    toast.success('Agza maglumatlary täzelendi!');
+  } else {
+    const newId='MBR'+String(DB.get('members').length+1).padStart(3,'0');
+    DB.add('members',{...data,id:newId,memberSince:startDate,attendance:[],measurements:[],subscribedClasses:[]});
+    toast.success('Täze agza goşuldy!');
+    addNotification('member','🆕',`Täze agza ýazyldy — ${fn} ${ln} (${plan})`,'members');
+  }
+  closeModal();
+  if(currentSection==='members')filterMembers();
+  if(currentSection==='dashboard')renderSection('dashboard');
+}
+function renewSubscriptionModal(memberId){
+  const m=DB.find('members',memberId);
+  if(!m)return;
+  const plans=[{name:'Başlangyç',price:180},{name:'Premium',price:300},{name:'Elite',price:600}];
+  openModal(`
+  <div class="modal-header"><h3>Abunany Uzat — ${m.firstName} ${m.lastName}</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+  <div class="modal-body">
+    <div class="form-group"><label>Plan *</label><select id="ren-plan">${plans.map(p=>`<option value="${p.name.toLowerCase()}" data-price="${p.price}" ${m.subscription?.plan===p.name.toLowerCase()?'selected':''}>${p.name} — ${p.price} TMT/aý</option>`).join('')}</select></div>
+    <div class="form-grid-2">
+      <div class="form-group"><label>Başlangyç senesi</label><input id="ren-start" type="date" value="${new Date().toISOString().slice(0,10)}"/></div>
+      <div class="form-group"><label>Möhleti (aý)</label><select id="ren-months"><option value="1">1 aý</option><option value="3">3 aý</option><option value="6">6 aý</option><option value="12">12 aý</option></select></div>
+    </div>
+    <div class="form-group"><label>Töleg görnüşi</label><select id="ren-pay"><option value="cash">Nagt</option><option value="transfer">Geçiriş</option><option value="card">Kart</option></select></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeModal()">Ýatyr</button>
+    <button class="btn btn-primary" onclick="doRenewSubscription('${memberId}')">💳 Uzat we Töleg Ýaz</button>
+  </div>
+  `,'modal-sm');
+}
+function doRenewSubscription(memberId){
+  const plan=document.getElementById('ren-plan').value;
+  const months=+document.getElementById('ren-months').value||1;
+  const start=document.getElementById('ren-start').value;
+  const payMethod=document.getElementById('ren-pay').value;
+  const prices={başlangyç:180,premium:300,elite:600};
+  const price=prices[plan]||180;
+  const endDate=new Date(new Date(start).setMonth(new Date(start).getMonth()+months)).toISOString().slice(0,10);
+  DB.update('members',memberId,{subscription:{plan,startDate:start,endDate,active:true,price,paymentType:'monthly'}});
+  const m=DB.find('members',memberId);
+  DB.add('transactions',{type:'income',category:'subscription',memberId,memberName:`${m.firstName} ${m.lastName}`,amount:price*months,currency:'TMT',paymentMethod:payMethod,reference:`${months} aý ${plan} abuna`,date:start,receivedBy:currentUser.id,notes:''});
+  toast.success('Abuna uzadyldy!');
+  addNotification('finance','💰',`Töleg alyndy — ${m.firstName} ${m.lastName} ${formatTMT(price*months)}`,'finance');
+  closeModal();
+  if(currentSection==='members')filterMembers();
+}
+function addMeasurementModal(memberId){
+  openModal(`
+  <div class="modal-header"><h3>Täze Ölçeg Giriş</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+  <div class="modal-body">
+    <div class="form-group"><label>Sene</label><input id="ms-date" type="date" value="${new Date().toISOString().slice(0,10)}"/></div>
+    <div class="form-grid-2">
+      <div class="form-group"><label>Agram (kg)</label><input id="ms-wt" type="number" step="0.1" placeholder="82"/></div>
+      <div class="form-group"><label>Ýag % </label><input id="ms-bf" type="number" step="0.1" placeholder="18"/></div>
+    </div>
+    <div class="form-group"><label>Myşsa (kg)</label><input id="ms-mu" type="number" step="0.1" placeholder="65"/></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeModal()">Ýatyr</button>
+    <button class="btn btn-primary" onclick="saveMeasurement('${memberId}')">Sakla</button>
+  </div>
+  `,'modal-sm');
+}
+function saveMeasurement(memberId){
+  const m=DB.find('members',memberId);
+  if(!m)return;
+  const entry={date:document.getElementById('ms-date').value,weight:+document.getElementById('ms-wt').value||null,bodyFat:+document.getElementById('ms-bf').value||null,muscle:+document.getElementById('ms-mu').value||null};
+  const meas=[...(m.measurements||[]),entry];
+  DB.update('members',memberId,{measurements:meas});
+  toast.success('Ölçeg girizildi!');
+  closeModal();
+}
+function addPaymentModal(memberId,memberName){
+  openModal(`
+  <div class="modal-header"><h3>Töleg Giriş — ${memberName}</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+  <div class="modal-body">
+    <div class="form-group"><label>Möçber (TMT) *</label><input id="pay-amt" type="number" placeholder="300"/></div>
+    <div class="form-grid-2">
+      <div class="form-group"><label>Görnüş *</label><select id="pay-meth"><option value="cash">Nagt</option><option value="transfer">Geçiriş</option><option value="card">Kart</option></select></div>
+      <div class="form-group"><label>Kategoriýa</label><select id="pay-cat"><option value="subscription">Abuna</option><option value="class">Sapak</option><option value="personal_training">Şahsy tälimçi</option><option value="other">Başga</option></select></div>
+    </div>
+    <div class="form-group"><label>Sene</label><input id="pay-date" type="date" value="${new Date().toISOString().slice(0,10)}"/></div>
+    <div class="form-group"><label>Bellik</label><input id="pay-note" placeholder="Amalat belgisi ýa-da bellik..."/></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeModal()">Ýatyr</button>
+    <button class="btn btn-primary" onclick="savePayment('${memberId}','${memberName}')">💾 Sakla</button>
+  </div>
+  `,'modal-sm');
+}
+function savePayment(memberId,memberName){
+  const amt=+document.getElementById('pay-amt').value;
+  if(!amt){toast.error('Möçberi giriz!');return;}
+  DB.add('transactions',{type:'income',category:document.getElementById('pay-cat').value,memberId,memberName,amount:amt,currency:'TMT',paymentMethod:document.getElementById('pay-meth').value,reference:document.getElementById('pay-note').value,date:document.getElementById('pay-date').value,receivedBy:currentUser.id,notes:''});
+  toast.success('Töleg ýazyldy!');
+  addNotification('finance','💰',`Töleg alyndy — ${memberName} ${formatTMT(amt)}`,'finance');
+  closeModal();
+}
+
+// ==================== CLASSES ====================
+function renderClasses(ca){
+  const classes=DB.get('classes');
+  const types=['hiit','yoga','boxing','strength','cardio','pilates','zumba','aqua'];
+  let activeFilter='';
+  ca.innerHTML=`
+  <div class="section-header">
+    <h2>🏋️ Sapak Dolandyrma</h2>
+    <button class="btn btn-primary" onclick="openAddClassModal()">+ Täze Sapak</button>
+  </div>
+  <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
+    <button class="btn btn-primary btn-sm" onclick="filterClasses('')">Hemmesi</button>
+    ${types.map(t=>`<button class="btn btn-secondary btn-sm" onclick="filterClasses('${t}')">${t.toUpperCase()}</button>`).join('')}
+  </div>
+  <div id="classes-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px"></div>`;
+  renderClassGrid('');
+}
+function filterClasses(type){
+  document.querySelectorAll('[onclick^="filterClasses"]').forEach(b=>b.classList.remove('btn-primary'));
+  event?.target?.classList.add('btn-primary');
+  renderClassGrid(type);
+}
+function renderClassGrid(typeFilter){
+  let classes=DB.get('classes');
+  if(typeFilter)classes=classes.filter(c=>c.type===typeFilter);
+  const days=['Ýek','Duş','Sal','Çar','Per','Ann','Şen'];
+  document.getElementById('classes-grid').innerHTML=classes.map(c=>`
+  <div class="class-card">
+    <div class="class-card-header" style="background:${c.color}"></div>
+    <div class="class-card-body">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px">
+        <div style="font-weight:700;font-size:14px">${c.name}</div>
+        <span class="badge ${c.active?'badge-active':'badge-expired'}">${c.active?'Aktiw':'Ýapyk'}</span>
+      </div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">📅 ${c.dayOfWeek.map(d=>days[d]).join(' / ')}</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">⏰ ${c.startTime} — ${addMinutes(c.startTime,c.duration)} (${c.duration} min)</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">🏛️ ${c.hallName||'—'}</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">👨‍🏫 ${c.trainerName||'—'}</div>
+      <div style="font-size:12px;margin-bottom:4px">👥 ${c.enrolledMembers?.length||0}/${c.maxCapacity} ýer</div>
+      <div class="progress-bar" style="margin-bottom:10px"><div class="progress-fill" style="width:${Math.round((c.enrolledMembers?.length||0)/c.maxCapacity*100)}%;background:${c.color}"></div></div>
+      <div style="display:flex;gap:6px;margin-top:10px">
+        <button class="btn btn-sm btn-secondary" style="flex:1" onclick="viewClass('${c.id}')">Görmek</button>
+        <button class="btn btn-sm btn-secondary" onclick="editClass('${c.id}')">✏️</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteClass('${c.id}')">🗑️</button>
+      </div>
+    </div>
+  </div>`).join('')||'<div class="empty-state"><div class="ei">🏋️</div><p>Sapak tapylmady</p></div>';
+}
+function addMinutes(time,mins){
+  const[h,m]=time.split(':').map(Number);
+  const total=h*60+m+mins;
+  return String(Math.floor(total/60)%24).padStart(2,'0')+':'+String(total%60).padStart(2,'0');
+}
+function viewClass(id){
+  const c=DB.find('classes',id);
+  if(!c)return;
+  const members=DB.get('members');
+  const enrolled=c.enrolledMembers?.map(mid=>members.find(m=>m.id===mid)).filter(Boolean)||[];
+  const days=['Ýek','Duş','Sal','Çar','Per','Ann','Şen'];
+  openModal(`
+  <div class="modal-header"><h3>${c.name}</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+  <div class="modal-body">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="info" data-tab-group="cls-detail" onclick="switchTab('cls-detail','info')">Maglumat</button>
+      <button class="tab-btn" data-tab="enrolled" data-tab-group="cls-detail" onclick="switchTab('cls-detail','enrolled')">Ýazylmaklar (${enrolled.length})</button>
+      <button class="tab-btn" data-tab="stats" data-tab-group="cls-detail" onclick="switchTab('cls-detail','stats')">Statistika</button>
+    </div>
+    <div class="tab-pane active" data-pane="info" data-pane-group="cls-detail">
+      <div style="display:flex;gap:8px;margin-bottom:12px"><div style="width:12px;height:12px;border-radius:3px;background:${c.color};margin-top:2px"></div><span>${c.type?.toUpperCase()}</span></div>
+      <p style="color:var(--text-muted);margin-bottom:14px">${c.description||''}</p>
+      <div class="stat-row"><span class="stat-label">Günler</span><span class="stat-val">${c.dayOfWeek.map(d=>days[d]).join(', ')}</span></div>
+      <div class="stat-row"><span class="stat-label">Wagt</span><span class="stat-val">${c.startTime} — ${addMinutes(c.startTime,c.duration)} (${c.duration} min)</span></div>
+      <div class="stat-row"><span class="stat-label">Zal</span><span class="stat-val">${c.hallName}</span></div>
+      <div class="stat-row"><span class="stat-label">Tälimçi</span><span class="stat-val">${c.trainerName}</span></div>
+      <div class="stat-row"><span class="stat-label">Sig'ym</span><span class="stat-val">${enrolled.length}/${c.maxCapacity}</span></div>
+      <div class="stat-row"><span class="stat-label">Goşmaça töleg</span><span class="stat-val">${c.extraPrice?c.extraPrice+' TMT':'Mugt'}</span></div>
+    </div>
+    <div class="tab-pane" data-pane="enrolled" data-pane-group="cls-detail">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <span style="color:var(--text-muted);font-size:13px">Ýazylganlar: ${enrolled.length}/${c.maxCapacity} (${c.maxCapacity-enrolled.length} ýer bar)</span>
+        <button class="btn btn-sm btn-primary" onclick="enrollMemberModal('${c.id}')">+ Agza Goş</button>
+      </div>
+      <div class="table-wrap"><table><thead><tr><th>Agza</th><th>Abuna</th><th>Işler</th></tr></thead><tbody>
+        ${enrolled.map(m=>`<tr><td><span style="font-weight:600">${m.firstName} ${m.lastName}</span></td><td>${getPlanBadge(m.subscription?.plan)}</td><td><button class="btn btn-sm btn-danger" onclick="unenrollMember('${c.id}','${m.id}')">Çykar</button></td></tr>`).join('')||'<tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:16px">Ýazylgan agza ýok</td></tr>'}
+      </tbody></table></div>
+    </div>
+    <div class="tab-pane" data-pane="stats" data-pane-group="cls-detail">
+      <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:14px">
+        <div><div style="font-size:22px;font-weight:700;color:var(--cyan)">${c.totalSessions}</div><div style="font-size:11px;color:var(--text-muted)">Jemi seans</div></div>
+        <div><div style="font-size:22px;font-weight:700;color:var(--orange)">${c.avgAttendance}</div><div style="font-size:11px;color:var(--text-muted)">Ort. gatnaşyk</div></div>
+        <div><div style="font-size:22px;font-weight:700;color:var(--yellow)">⭐ ${c.rating}</div><div style="font-size:11px;color:var(--text-muted)">Reýting</div></div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${Math.round((enrolled.length/c.maxCapacity)*100)}%;background:${c.color}"></div></div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:6px">Dolulyk: ${Math.round((enrolled.length/c.maxCapacity)*100)}%</div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeModal()">Ýap</button>
+    <button class="btn btn-secondary" onclick="editClass('${c.id}')">✏️ Düzet</button>
+  </div>
+  `,'modal-lg');
+}
+function enrollMemberModal(classId){
+  const cls=DB.find('classes',classId);
+  if(!cls)return;
+  const members=DB.get('members').filter(m=>!cls.enrolledMembers?.includes(m.id));
+  openModal(`
+  <div class="modal-header"><h3>Agza Goşmak</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+  <div class="modal-body">
+    <div class="form-group"><label>Agzany saýla</label>
+      <select id="enroll-member"><option value="">Saýla...</option>${members.map(m=>`<option value="${m.id}">${m.firstName} ${m.lastName}</option>`).join('')}</select>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeModal()">Ýatyr</button>
+    <button class="btn btn-primary" onclick="doEnroll('${classId}')">Goş</button>
+  </div>
+  `,'modal-sm');
+}
+function doEnroll(classId){
+  const mid=document.getElementById('enroll-member').value;
+  if(!mid){toast.error('Agzany saýla!');return;}
+  const cls=DB.find('classes',classId);
+  if(!cls)return;
+  const enrolled=[...(cls.enrolledMembers||[]),mid];
+  DB.update('classes',classId,{enrolledMembers:enrolled});
+  toast.success('Agza sapaga goşuldy!');
+  closeModal();
+  viewClass(classId);
+}
+function unenrollMember(classId,memberId){
+  const cls=DB.find('classes',classId);
+  if(!cls)return;
+  const enrolled=(cls.enrolledMembers||[]).filter(id=>id!==memberId);
+  DB.update('classes',classId,{enrolledMembers:enrolled});
+  toast.info('Agza sapakdan çykaryldy');
+  closeModal();
+  viewClass(classId);
+}
+function openAddClassModal(prefill){
+  const trainers=DB.get('trainers');
+  const halls=(DB.get('settings')?.halls)||[{id:1,name:'Kardio Zaly'},{id:2,name:'Güýç Zaly'},{id:3,name:'Ýoga Zaly'},{id:4,name:'Boks Zaly'}];
+  const days=['Ýekşenbe','Duşenbe','Sişenbe','Çarşenbe','Penşenbe','Anna','Şenbe'];
+  openModal(`
+  <div class="modal-header"><h3>${prefill?'Sapak Düzetmek':'Täze Sapak Goşmak'}</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+  <div class="modal-body">
+    <div class="form-grid-2">
+      <div class="form-group"><label>Sapak ady *</label><input id="cf-name" value="${prefill?.name||''}" placeholder="Ady..."/></div>
+      <div class="form-group"><label>Görnüşi *</label><select id="cf-type"><option value="hiit">HIIT</option><option value="yoga">Ýoga</option><option value="boxing">Boks</option><option value="strength">Güýç</option><option value="cardio">Kardio</option><option value="pilates">Pilates</option><option value="zumba">Zumba</option><option value="aqua">Aqua</option></select></div>
+      <div class="form-group"><label>Derejesi</label><select id="cf-level"><option value="all">Hemmesi</option><option value="beginner">Başlangyç</option><option value="intermediate">Orta</option><option value="advanced">Ýokary</option></select></div>
+      <div class="form-group"><label>Zal *</label><select id="cf-hall">${halls.map(h=>`<option value="${h.id}" data-name="${h.name}" ${prefill?.hallId===h.id?'selected':''}>${h.name}</option>`).join('')}</select></div>
+      <div class="form-group"><label>Tälimçi *</label><select id="cf-trainer">${trainers.map(t=>`<option value="${t.id}" ${prefill?.trainerId===t.id?'selected':''}>${t.firstName} ${t.lastName}</option>`).join('')}</select></div>
+      <div class="form-group"><label>Iň köp agza *</label><input id="cf-cap" type="number" value="${prefill?.maxCapacity||15}" min="1"/></div>
+      <div class="form-group"><label>Başlangyç wagty *</label><input id="cf-time" type="time" value="${prefill?.startTime||'07:00'}"/></div>
+      <div class="form-group"><label>Dowamlylygy (min) *</label><input id="cf-dur" type="number" value="${prefill?.duration||60}" min="15"/></div>
+    </div>
+    <div class="form-group"><label>Hepde günleri *</label><div style="display:flex;gap:6px;flex-wrap:wrap">${days.map((d,i)=>`<label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;background:var(--surface2);padding:4px 10px;border-radius:6px;border:1px solid var(--border)"><input type="checkbox" value="${i}" ${prefill?.dayOfWeek?.includes(i)?'checked':''} name="cf-days"/> ${d.slice(0,3)}</label>`).join('')}</div></div>
+    <div class="form-group"><label>Açyklama</label><textarea id="cf-desc" placeholder="Sapak barada...">${prefill?.description||''}</textarea></div>
+    <div class="form-group"><label>Reňk</label><input id="cf-color" type="color" value="${prefill?.color||'#EF4444'}"/></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeModal()">Ýatyr</button>
+    <button class="btn btn-primary" onclick="saveClass('${prefill?.id||''}')">💾 Sakla</button>
+  </div>
+  `,'modal-lg');
+}
+function editClass(id){const c=DB.find('classes',id);if(c)openAddClassModal(c);}
+function deleteClass(id){
+  const c=DB.find('classes',id);
+  if(!c)return;
+  confirmDialog(`"${c.name}" sapagyny öçürmek isleýärsiňizmi?`,()=>{DB.remove('classes',id);toast.success('Sapak öçürildi');renderClasses(document.getElementById('content-area'));},true);
+}
+function saveClass(existingId){
+  const name=document.getElementById('cf-name').value.trim();
+  if(!name){toast.error('Sapak adyny giriziň!');return;}
+  const daysChecked=[...document.querySelectorAll('[name="cf-days"]:checked')].map(x=>+x.value);
+  const hallSel=document.getElementById('cf-hall');
+  const trainerSel=document.getElementById('cf-trainer');
+  const trainers=DB.get('trainers');
+  const trainer=trainers.find(t=>t.id===trainerSel.value);
+  const data={name,type:document.getElementById('cf-type').value,description:document.getElementById('cf-desc').value,dayOfWeek:daysChecked,startTime:document.getElementById('cf-time').value,duration:+document.getElementById('cf-dur').value||60,hallId:+document.getElementById('cf-hall').value,hallName:hallSel.options[hallSel.selectedIndex].dataset.name,trainerId:trainerSel.value,trainerName:trainer?trainer.firstName+' '+trainer.lastName:'',maxCapacity:+document.getElementById('cf-cap').value||15,level:document.getElementById('cf-level').value,color:document.getElementById('cf-color').value,active:true,isFree:true,extraPrice:0};
+  if(existingId){DB.update('classes',existingId,data);toast.success('Sapak täzelendi!');}
+  else{DB.add('classes',{...data,enrolledMembers:[],totalSessions:0,avgAttendance:0,rating:5.0});toast.success('Täze sapak goşuldy!');}
+  closeModal();
+  if(currentSection==='classes')renderClasses(document.getElementById('content-area'));
+}
+
+// ==================== TRAINERS ====================
+function renderTrainers(ca){
+  const trainers=DB.get('trainers');
+  ca.innerHTML=`
+  <div class="section-header">
+    <h2>👨‍🏫 Tälimçiler</h2>
+    <button class="btn btn-primary" onclick="openAddTrainerModal()">+ Täze Tälimçi</button>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px">
+    ${trainers.map(t=>{
+      const pct=Math.round(t.personalClients.length/t.maxPersonalClients*100);
+      const color=pct>=80?'var(--yellow)':pct>=60?'var(--orange)':'var(--green)';
+      return`<div class="trainer-card">
+        <div class="trainer-card-header" style="background:linear-gradient(135deg,${t.color}22,${t.color}11)">
+          <div class="trainer-avatar-lg" style="background:${t.color}22;color:${t.color}">${t.emoji}</div>
+          <div style="font-weight:700;font-size:15px">${t.firstName} ${t.lastName}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px">${t.specialties.join(' · ')}</div>
+          <div style="margin-top:6px">⭐ ${t.avgRating} &nbsp;|&nbsp; ${t.experience} ýyl</div>
+        </div>
+        <div class="trainer-card-body">
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Sapaklar: ${t.assignedClasses.length} | Şahsy: ${t.personalClients.length}/${t.maxPersonalClients}</div>
+          <div class="progress-bar" style="margin-bottom:8px"><div class="progress-fill" style="width:${pct}%;background:${color}"></div></div>
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px">${t.certifications.join(' · ')}</div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-sm btn-secondary" style="flex:1" onclick="viewTrainer('${t.id}')">Profil</button>
+            <button class="btn btn-sm btn-secondary" onclick="editTrainer('${t.id}')">✏️</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteTrainer('${t.id}')">🗑️</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+function viewTrainer(id){
+  const t=DB.find('trainers',id);
+  if(!t)return;
+  const members=DB.get('members');
+  const classes=DB.get('classes');
+  const clients=t.personalClients.map(mid=>members.find(m=>m.id===mid)).filter(Boolean);
+  const trainerClasses=t.assignedClasses.map(cid=>classes.find(c=>c.id===cid)).filter(Boolean);
+  openModal(`
+  <div class="modal-header"><h3>${t.firstName} ${t.lastName}</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+  <div class="modal-body">
+    <div style="display:flex;align-items:center;gap:16px;padding:16px;background:var(--surface2);border-radius:10px;margin-bottom:16px">
+      <div style="width:60px;height:60px;border-radius:14px;background:${t.color}22;display:flex;align-items:center;justify-content:center;font-size:28px">${t.emoji}</div>
+      <div>
+        <div style="font-weight:700;font-size:16px">${t.firstName} ${t.lastName}</div>
+        <div style="font-size:12px;color:var(--text-muted)">${t.specialties.join(', ')}</div>
+        <div style="font-size:12px;color:var(--text-muted)">📞 ${t.phone} | ${t.experience} ýyl tejribe</div>
+        <div style="font-size:12px;color:var(--text-muted)">📅 Işe başlan: ${formatDate(t.hireDate)}</div>
+      </div>
+    </div>
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="bio" data-tab-group="tr-detail" onclick="switchTab('tr-detail','bio')">Maglumat</button>
+      <button class="tab-btn" data-tab="clients" data-tab-group="tr-detail" onclick="switchTab('tr-detail','clients')">Müşderiler (${clients.length})</button>
+      <button class="tab-btn" data-tab="classes" data-tab-group="tr-detail" onclick="switchTab('tr-detail','classes')">Sapaklar</button>
+      <button class="tab-btn" data-tab="finance" data-tab-group="tr-detail" onclick="switchTab('tr-detail','finance')">Maliýe</button>
+    </div>
+    <div class="tab-pane active" data-pane="bio" data-pane-group="tr-detail">
+      <p style="color:var(--text-muted);margin-bottom:14px">${t.bio}</p>
+      <div class="stat-row"><span class="stat-label">Jynsy</span><span class="stat-val">${t.gender==='male'?'Erkek':'Aýal'}</span></div>
+      <div class="stat-row"><span class="stat-label">E-poçta</span><span class="stat-val">${t.email||'—'}</span></div>
+      <div class="stat-row"><span class="stat-label">Jemi seans</span><span class="stat-val">${t.totalSessions}</span></div>
+      <div class="stat-row"><span class="stat-label">Reýting</span><span class="stat-val">⭐ ${t.avgRating} (${t.reviewCount} ses)</span></div>
+      <h4 style="margin:14px 0 8px;font-size:13px">Sertifikatlar:</h4>
+      ${t.certifications.map(c=>`<div class="badge badge-active" style="margin:3px">${c}</div>`).join('')}
+    </div>
+    <div class="tab-pane" data-pane="clients" data-pane-group="tr-detail">
+      ${clients.length?`<div class="table-wrap"><table><thead><tr><th>Agza</th><th>Abuna</th><th>Telefon</th></tr></thead><tbody>
+        ${clients.map(m=>`<tr><td style="font-weight:600">${m.firstName} ${m.lastName}</td><td>${getPlanBadge(m.subscription?.plan)}</td><td style="color:var(--text-muted)">${m.phone}</td></tr>`).join('')}
+      </tbody></table></div>`:'<p style="color:var(--text-muted)">Şahsy müşderi ýok</p>'}
+    </div>
+    <div class="tab-pane" data-pane="classes" data-pane-group="tr-detail">
+      ${trainerClasses.map(c=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(239,68,68,.05)"><div style="width:8px;height:8px;border-radius:50%;background:${c.color};flex-shrink:0"></div><div><div style="font-weight:600">${c.name}</div><div style="font-size:12px;color:var(--text-muted)">${c.startTime} | ${c.hallName} | ${c.enrolledMembers?.length||0}/${c.maxCapacity}</div></div></div>`).join('')||'<p style="color:var(--text-muted)">Sapak ýok</p>'}
+    </div>
+    <div class="tab-pane" data-pane="finance" data-pane-group="tr-detail">
+      <div class="stat-row"><span class="stat-label">Esasy aýlyk</span><span class="stat-val">${formatTMT(t.salary)}</span></div>
+      <div class="stat-row"><span class="stat-label">Şahsy tälimçilik</span><span class="stat-val" style="color:var(--green)">+${formatTMT(t.personalClients.length*200)}</span></div>
+      <div class="stat-row"><span class="stat-label">Jemi bu aý</span><span class="stat-val" style="color:var(--cyan)">${formatTMT(t.salary+t.personalClients.length*200)}</span></div>
+    </div>
+  </div>
+  <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">Ýap</button><button class="btn btn-secondary" onclick="editTrainer('${t.id}')">✏️ Düzet</button></div>
+  `,'modal-lg');
+}
+function openAddTrainerModal(prefill){
+  openModal(`
+  <div class="modal-header"><h3>${prefill?'Tälimçi Düzetmek':'Täze Tälimçi'}</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+  <div class="modal-body">
+    <div class="form-grid-2">
+      <div class="form-group"><label>At *</label><input id="tf-fn" value="${prefill?.firstName||''}" placeholder="At"/></div>
+      <div class="form-group"><label>Familiýa *</label><input id="tf-ln" value="${prefill?.lastName||''}" placeholder="Familiýa"/></div>
+      <div class="form-group"><label>Telefon</label><input id="tf-ph" value="${prefill?.phone||''}" placeholder="+993 65..."/></div>
+      <div class="form-group"><label>E-poçta</label><input id="tf-em" value="${prefill?.email||''}" placeholder="email@gym.tm"/></div>
+      <div class="form-group"><label>Tejribe (ýyl)</label><input id="tf-exp" type="number" value="${prefill?.experience||1}"/></div>
+      <div class="form-group"><label>Aýlyk (TMT)</label><input id="tf-sal" type="number" value="${prefill?.salary||3000}"/></div>
+    </div>
+    <div class="form-group"><label>Hünärler (vergül bilen)</label><input id="tf-spec" value="${prefill?.specialties?.join(', ')||''}" placeholder="strength, hiit, yoga"/></div>
+    <div class="form-group"><label>Bio</label><textarea id="tf-bio" placeholder="Tälimçi barada...">${prefill?.bio||''}</textarea></div>
+    <div class="form-group"><label>Sertifikatlar (vergül bilen)</label><input id="tf-certs" value="${prefill?.certifications?.join(', ')||''}" placeholder="NASM-CPT, IPF"/></div>
+    <div class="form-group"><label>Emoji</label><input id="tf-emoji" value="${prefill?.emoji||'💪'}" style="width:60px"/></div>
+    <div class="form-group"><label>Reňk</label><input id="tf-color" type="color" value="${prefill?.color||'#EF4444'}"/></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeModal()">Ýatyr</button>
+    <button class="btn btn-primary" onclick="saveTrainer('${prefill?.id||''}')">💾 Sakla</button>
+  </div>
+  `,'modal-lg');
+}
+function editTrainer(id){const t=DB.find('trainers',id);if(t)openAddTrainerModal(t);}
+function deleteTrainer(id){
+  const t=DB.find('trainers',id);
+  if(!t)return;
+  confirmDialog(`"${t.firstName} ${t.lastName}" tälimçini öçürmek?`,()=>{DB.remove('trainers',id);toast.success('Tälimçi öçürildi');renderTrainers(document.getElementById('content-area'));},true);
+}
+function saveTrainer(existingId){
+  const fn=document.getElementById('tf-fn').value.trim();
+  const ln=document.getElementById('tf-ln').value.trim();
+  if(!fn||!ln){toast.error('At we familýa giriziň!');return;}
+  const data={firstName:fn,lastName:ln,phone:document.getElementById('tf-ph').value,email:document.getElementById('tf-em').value,experience:+document.getElementById('tf-exp').value||1,salary:+document.getElementById('tf-sal').value||3000,specialties:document.getElementById('tf-spec').value.split(',').map(s=>s.trim()).filter(Boolean),bio:document.getElementById('tf-bio').value,certifications:document.getElementById('tf-certs').value.split(',').map(s=>s.trim()).filter(Boolean),emoji:document.getElementById('tf-emoji').value||'💪',color:document.getElementById('tf-color').value,active:true,avgRating:5.0,reviewCount:0,totalSessions:0};
+  if(existingId){DB.update('trainers',existingId,data);toast.success('Tälimçi täzelendi!');}
+  else{DB.add('trainers',{...data,assignedClasses:[],personalClients:[],maxPersonalClients:10});toast.success('Täze tälimçi goşuldy!');}
+  closeModal();
+  renderTrainers(document.getElementById('content-area'));
+}
+
+// ==================== SCHEDULE ====================
+function renderSchedule(ca){
+  const classes=DB.get('classes').filter(c=>c.active);
+  const days=['Ýek','Duş','Sal','Çar','Per','Ann','Şen'];
+  const hours=[];for(let h=6;h<=22;h++)hours.push(h<10?'0'+h+':00':h+':00');
+  const conflicts=detectConflicts(classes);
+  ca.innerHTML=`
+  <div class="section-header">
+    <h2>📅 Sapak Tertibi</h2>
+    <div class="actions">
+      ${conflicts.length?`<span class="badge badge-expiring">⚠️ ${conflicts.length} çaknyşyk</span>`:''}
+      <button class="btn btn-primary" onclick="openAddClassModal()">+ Sapak Goş</button>
+    </div>
+  </div>
+  ${conflicts.length?`<div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px"><strong>⚠️ Çaknyşyk bar:</strong> ${conflicts.map(c=>`${c.class1.name} & ${c.class2.name}`).join(', ')}</div>`:''}
+  <div style="overflow-x:auto">
+    <div class="schedule-grid" id="sch-grid" style="min-width:700px">
+      <div class="sch-header">Wagt</div>
+      ${days.map(d=>`<div class="sch-header">${d}</div>`).join('')}
+      ${hours.map(hr=>{
+        const h=parseInt(hr);
+        return`<div class="sch-time">${hr}</div>${days.map((_,di)=>{
+          const slotClasses=classes.filter(c=>c.dayOfWeek.includes(di)&&parseInt(c.startTime)===h);
+          return`<div class="sch-cell" onclick="newClassAtSlot(${di},'${hr}')">${slotClasses.map(c=>`<div class="sch-event" style="background:${c.color}33;border-left:2px solid ${c.color};color:${c.color}" onclick="event.stopPropagation();viewClass('${c.id}')" title="${c.name} | ${c.trainerName}">${c.name.split(' ').slice(0,2).join(' ')}</div>`).join('')}</div>`;
+        }).join('')}`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+function detectConflicts(classes){
+  const conflicts=[];
+  classes.forEach((c1,i)=>{
+    classes.forEach((c2,j)=>{
+      if(i>=j)return;
+      if(c1.hallId!==c2.hallId)return;
+      const shared=c1.dayOfWeek.filter(d=>c2.dayOfWeek.includes(d));
+      if(!shared.length)return;
+      const[h1,m1]=c1.startTime.split(':').map(Number);
+      const[h2,m2]=c2.startTime.split(':').map(Number);
+      const s1=h1*60+m1,e1=s1+c1.duration;
+      const s2=h2*60+m2,e2=s2+c2.duration;
+      if(s1<e2&&e1>s2)conflicts.push({class1:c1,class2:c2,days:shared});
+    });
+  });
+  return conflicts;
+}
+function newClassAtSlot(day,time){
+  openAddClassModal({dayOfWeek:[day],startTime:time});
+}
+
+// ==================== EQUIPMENT ====================
+function renderEquipment(ca){
+  ca.innerHTML=`
+  <div class="section-header">
+    <h2>🔧 Enjamlar</h2>
+    <div class="actions">
+      <button class="btn btn-secondary btn-sm" onclick="showMaintenanceDue()">⚠️ Syna Gerek</button>
+      <button class="btn btn-primary" onclick="openAddEquipmentModal()">+ Täze Enjam</button>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="filter-bar">
+      <input type="text" placeholder="🔍 Gözleg..." id="eq-search" oninput="filterEquipment()" style="flex:1"/>
+      <select id="eq-cat" onchange="filterEquipment()"><option value="">Kategoriýa (Hemmesi)</option><option value="cardio">Kardio</option><option value="strength">Güýç</option><option value="functional">Funksional</option><option value="stretching">Gerim</option></select>
+      <select id="eq-status" onchange="filterEquipment()"><option value="">Ýagdaý (Hemmesi)</option><option value="working">Işleýär</option><option value="maintenance">Tehniki syna</option><option value="broken">Näsaz</option><option value="retired">Pensiýa</option></select>
+    </div>
+  </div>
+  <div id="eq-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px"></div>`;
+  filterEquipment();
+}
+function filterEquipment(){
+  const search=(document.getElementById('eq-search')?.value||'').toLowerCase();
+  const cat=document.getElementById('eq-cat')?.value||'';
+  const status=document.getElementById('eq-status')?.value||'';
+  let eq=DB.get('equipment');
+  if(search)eq=eq.filter(e=>e.name.toLowerCase().includes(search)||e.brand?.toLowerCase().includes(search));
+  if(cat)eq=eq.filter(e=>e.category===cat);
+  if(status)eq=eq.filter(e=>e.status===status);
+  const statusColors={working:'var(--green)',maintenance:'var(--yellow)',broken:'var(--red)',retired:'var(--text-muted)'};
+  const statusLabels={working:'✅ Işleýär',maintenance:'⚠️ Tehniki Syna',broken:'❌ Näsaz',retired:'🔒 Pensiýa'};
+  const catColors={cardio:'#06B6D4',strength:'#EF4444',functional:'#F97316',stretching:'#10B981',other:'#F59E0B'};
+  document.getElementById('eq-grid').innerHTML=eq.map(e=>{
+    const daysLeft=daysUntil(e.nextMaintenance);
+    const pct=daysLeft!==null?Math.max(0,Math.min(100,100-daysLeft/e.maintenanceInterval*100)):50;
+    return`<div class="class-card">
+      <div class="class-card-header" style="background:${catColors[e.category]||'#5A5870'}"></div>
+      <div class="class-card-body">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
+          <div style="font-weight:700;font-size:13px">${e.name}</div>
+          <span style="font-size:11px;font-weight:700;color:${statusColors[e.status]||'var(--text-muted)'}">${statusLabels[e.status]||e.status}</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">${e.brand||''} ${e.model||''}</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">📍 ${e.location||'—'}</div>
+        <div style="font-size:12px;margin-bottom:2px">Soňky tehniki: ${formatDate(e.lastMaintenance)}</div>
+        <div style="font-size:12px;margin-bottom:6px">Indiki: <span style="color:${daysLeft!==null&&daysLeft<=14?'var(--yellow)':'var(--text-muted)'}">${formatDate(e.nextMaintenance)} ${daysLeft!==null?'('+daysLeft+'g)':''}</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${pct>80?'var(--red)':pct>60?'var(--yellow)':'var(--green)'}"></div></div>
+        <div style="display:flex;gap:6px;margin-top:10px">
+          <button class="btn btn-sm btn-secondary" style="flex:1" onclick="viewEquipment('${e.id}')">Taryh</button>
+          <button class="btn btn-sm btn-secondary" onclick="editEquipment('${e.id}')">✏️</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteEquipment('${e.id}')">🗑️</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('')||'<div class="empty-state"><div class="ei">🔧</div><p>Enjam tapylmady</p></div>';
+}
+function viewEquipment(id){
+  const e=DB.find('equipment',id);
+  if(!e)return;
+  openModal(`
+  <div class="modal-header"><h3>${e.name}</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+  <div class="modal-body">
+    <div class="stat-row"><span class="stat-label">Marka/Model</span><span class="stat-val">${e.brand} ${e.model}</span></div>
+    <div class="stat-row"><span class="stat-label">Seriýa №</span><span class="stat-val" style="font-family:'Space Mono',monospace">${e.serialNumber}</span></div>
+    <div class="stat-row"><span class="stat-label">Satyn alnan</span><span class="stat-val">${formatDate(e.purchaseDate)} — ${e.purchasePrice} USD</span></div>
+    <div class="stat-row"><span class="stat-label">Ýerleşiş</span><span class="stat-val">${e.location}</span></div>
+    <div class="stat-row"><span class="stat-label">Jemi sagat</span><span class="stat-val">${e.totalHours?.toLocaleString()} sag</span></div>
+    <h4 style="margin:16px 0 10px;font-size:13px">Tehniki Hyzmat Taryhy</h4>
+    ${(e.maintenanceHistory||[]).map(mh=>`<div style="padding:10px;background:var(--surface2);border-radius:8px;margin-bottom:8px"><div style="font-size:12px;font-weight:700">${formatDate(mh.date)} — ${mh.type}</div><div style="font-size:12px;color:var(--text-muted)">Çykdajy: ${mh.cost} | Tehniki: ${mh.tech}</div><div style="font-size:12px">${mh.note}</div></div>`).join('')||'<p style="color:var(--text-muted)">Taryh ýok</p>'}
+    <button class="btn btn-primary" style="margin-top:10px" onclick="addMaintenanceModal('${e.id}')">+ Tehniki Belläge</button>
+  </div>
+  <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">Ýap</button></div>
+  `,'modal-lg');
+}
+function addMaintenanceModal(eqId){
+  openModal(`
+  <div class="modal-header"><h3>Tehniki Hyzmat Belläge</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+  <div class="modal-body">
+    <div class="form-group"><label>Görnüşi *</label><select id="mh-type"><option value="routine">Routin</option><option value="repair">Abatlaýyş</option><option value="replacement">Ätiýaçlyk çalşygy</option></select></div>
+    <div class="form-grid-2">
+      <div class="form-group"><label>Sene *</label><input id="mh-date" type="date" value="${new Date().toISOString().slice(0,10)}"/></div>
+      <div class="form-group"><label>Çykdajy</label><input id="mh-cost" type="number" placeholder="150"/></div>
+    </div>
+    <div class="form-group"><label>Tehniki işgär</label><input id="mh-tech" placeholder="At..."/></div>
+    <div class="form-group"><label>Bellik</label><textarea id="mh-note" placeholder="Işler barada..."></textarea></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeModal()">Ýatyr</button>
+    <button class="btn btn-primary" onclick="saveMaintenanceRecord('${eqId}')">Sakla</button>
+  </div>
+  `,'modal-sm');
+}
+function saveMaintenanceRecord(eqId){
+  const e=DB.find('equipment',eqId);
+  if(!e)return;
+  const entry={date:document.getElementById('mh-date').value,type:document.getElementById('mh-type').value,cost:+document.getElementById('mh-cost').value||0,tech:document.getElementById('mh-tech').value,note:document.getElementById('mh-note').value};
+  const history=[...(e.maintenanceHistory||[]),entry];
+  const nextDate=new Date(entry.date);nextDate.setDate(nextDate.getDate()+e.maintenanceInterval);
+  DB.update('equipment',eqId,{maintenanceHistory:history,lastMaintenance:entry.date,nextMaintenance:nextDate.toISOString().slice(0,10),status:'working'});
+  toast.success('Tehniki belläge goşuldy!');
+  closeModal();
+}
+function showMaintenanceDue(){
+  const eq=DB.get('equipment').filter(e=>e.status==='maintenance'||e.status==='broken'||(daysUntil(e.nextMaintenance)<=14));
+  openModal(`
+  <div class="modal-header"><h3>⚠️ Tehniki Syna Gerek</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+  <div class="modal-body">
+    ${eq.map(e=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(239,68,68,.08)"><div><div style="font-weight:600">${e.name}</div><div style="font-size:12px;color:var(--text-muted)">${e.location} | Indiki: ${formatDate(e.nextMaintenance)}</div></div><button class="btn btn-sm btn-primary" onclick="addMaintenanceModal('${e.id}')">Belläge</button></div>`).join('')||'<p style="color:var(--green)">✅ Ähli enjamlar tertipde</p>'}
+  </div>
+  <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">Ýap</button></div>
+  `,'modal-lg');
+}
+function openAddEquipmentModal(prefill){
+  openModal(`
+  <div class="modal-header"><h3>${prefill?'Enjamy Düzetmek':'Täze Enjam'}</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+  <div class="modal-body">
+    <div class="form-grid-2">
+      <div class="form-group"><label>Ady *</label><input id="eq-name" value="${prefill?.name||''}" placeholder="Enjam ady..."/></div>
+      <div class="form-group"><label>Kategoriýa</label><select id="eq-cat2"><option value="cardio" ${prefill?.category==='cardio'?'selected':''}>Kardio</option><option value="strength" ${prefill?.category==='strength'?'selected':''}>Güýç</option><option value="functional" ${prefill?.category==='functional'?'selected':''}>Funksional</option><option value="other">Başga</option></select></div>
+      <div class="form-group"><label>Marka</label><input id="eq-brand" value="${prefill?.brand||''}" placeholder="Life Fitness..."/></div>
+      <div class="form-group"><label>Model</label><input id="eq-model" value="${prefill?.model||''}" placeholder="T5 Track+..."/></div>
+      <div class="form-group"><label>Ýerleşiş</label><input id="eq-loc" value="${prefill?.location||''}" placeholder="Kardio Zaly..."/></div>
+      <div class="form-group"><label>Ýagdaý</label><select id="eq-stat2"><option value="working" ${prefill?.status==='working'?'selected':''}>Işleýär</option><option value="maintenance" ${prefill?.status==='maintenance'?'selected':''}>Tehniki syna</option><option value="broken" ${prefill?.status==='broken'?'selected':''}>Näsaz</option></select></div>
+      <div class="form-group"><label>Satyn alnan sene</label><input id="eq-pd" type="date" value="${prefill?.purchaseDate||''}"/></div>
+      <div class="form-group"><label>Indiki tehniki syne</label><input id="eq-nm" type="date" value="${prefill?.nextMaintenance||''}"/></div>
+    </div>
+    <div class="form-group"><label>Bellik</label><textarea id="eq-notes" placeholder="Goşmaça bellik...">${prefill?.notes||''}</textarea></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeModal()">Ýatyr</button>
+    <button class="btn btn-primary" onclick="saveEquipment('${prefill?.id||''}')">💾 Sakla</button>
+  </div>
+  `,'modal-lg');
+}
+function editEquipment(id){const e=DB.find('equipment',id);if(e)openAddEquipmentModal(e);}
+function deleteEquipment(id){
+  confirmDialog('Enjamy öçürmek?',()=>{DB.remove('equipment',id);toast.success('Enjam öçürildi');filterEquipment();},true);
+}
+function saveEquipment(existingId){
+  const name=document.getElementById('eq-name').value.trim();
+  if(!name){toast.error('Ady giriziň!');return;}
+  const data={name,category:document.getElementById('eq-cat2').value,brand:document.getElementById('eq-brand').value,model:document.getElementById('eq-model').value,location:document.getElementById('eq-loc').value,status:document.getElementById('eq-stat2').value,purchaseDate:document.getElementById('eq-pd').value,nextMaintenance:document.getElementById('eq-nm').value,maintenanceInterval:90,notes:document.getElementById('eq-notes').value,maintenanceHistory:[]};
+  if(existingId){DB.update('equipment',existingId,data);toast.success('Enjam täzelendi!');}
+  else{DB.add('equipment',data);toast.success('Enjam goşuldy!');}
+  closeModal();
+  filterEquipment();
+}
+
+// ==================== NUTRITION ====================
+function renderNutrition(ca){
+  const plans=DB.get('nutrition');
+  ca.innerHTML=`
+  <div class="section-header">
+    <h2>🥗 Iýmitlenme Bölümi</h2>
+    <button class="btn btn-primary" onclick="openAddNutritionModal()">+ Täze Meýilnama</button>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px">
+    ${plans.map(p=>`
+    <div class="card">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px">
+        <div style="font-weight:700;font-size:14px">${p.name}</div>
+        <span class="badge badge-active">${{muscle:'Myşsa',weight_loss:'Agram azalt',endurance:'Çydamlylyk',general:'Umumy'}[p.goal]||p.goal}</span>
+      </div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">${p.gender==='male'?'Erkek':'Aýal'} | ${p.weightRange?.min||'?'}—${p.weightRange?.max||'?'} kg</div>
+      <div style="display:flex;gap:16px;margin-bottom:12px">
+        <div><div style="font-size:18px;font-weight:700;color:var(--red)">${p.dailyCalories}</div><div style="font-size:10px;color:var(--text-muted)">kcal/gün</div></div>
+        <div><div style="font-size:18px;font-weight:700;color:var(--cyan)">${p.macros?.protein}g</div><div style="font-size:10px;color:var(--text-muted)">belok</div></div>
+        <div><div style="font-size:18px;font-weight:700;color:var(--orange)">${p.macros?.carbs}g</div><div style="font-size:10px;color:var(--text-muted)">uglewod</div></div>
+        <div><div style="font-size:18px;font-weight:700;color:var(--yellow)">${p.macros?.fat}g</div><div style="font-size:10px;color:var(--text-muted)">ýag</div></div>
+      </div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">💧 ${p.waterIntake||0} ml/gün | ${p.meals?.length||0} nahar</div>
+      ${p.supplements?.length?`<div style="font-size:11px;color:var(--cyan)">💊 ${p.supplements.join(', ')}</div>`:''}
+      <div style="display:flex;gap:6px;margin-top:12px">
+        <button class="btn btn-sm btn-secondary" style="flex:1" onclick="viewNutrition('${p.id}')">Görmek</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteNutrition('${p.id}')">🗑️</button>
+      </div>
+    </div>`).join('')||'<div class="empty-state"><div class="ei">🥗</div><p>Meýilnama tapylmady</p></div>'}
+  </div>`;
+}
+function viewNutrition(id){
+  const p=DB.find('nutrition',id);
+  if(!p)return;
+  openModal(`
+  <div class="modal-header"><h3>${p.name}</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+  <div class="modal-body">
+    <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap">
+      ${[{l:'Kaloriýa',v:p.dailyCalories+'kcal',c:'var(--red)'},{l:'Belok',v:p.macros?.protein+'g',c:'var(--cyan)'},{l:'Uglewod',v:p.macros?.carbs+'g',c:'var(--orange)'},{l:'Ýag',v:p.macros?.fat+'g',c:'var(--yellow)'},{l:'Suw',v:(p.waterIntake||0)+'ml',c:'var(--info)'}].map(x=>`<div style="background:var(--surface2);border-radius:8px;padding:10px 14px;text-align:center"><div style="font-size:18px;font-weight:700;color:${x.c}">${x.v}</div><div style="font-size:10px;color:var(--text-muted)">${x.l}</div></div>`).join('')}
+    </div>
+    ${(p.meals||[]).map(m=>`
+    <div style="background:var(--surface2);border-radius:10px;padding:14px;margin-bottom:10px">
+      <div style="font-weight:700;margin-bottom:8px">🕐 ${m.time} — ${m.name}</div>
+      ${(m.foods||[]).map(f=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.05)"><span>${f.name} (${f.amount} ${f.unit})</span><span style="color:var(--text-muted)">${f.cal} kcal | B:${f.p}g U:${f.c}g Ý:${f.f}g</span></div>`).join('')}
+    </div>`).join('')}
+    ${p.supplements?.length?`<div style="margin-top:10px"><h4 style="font-size:13px;margin-bottom:6px">💊 Goşundylar:</h4>${p.supplements.map(s=>`<span class="badge badge-active" style="margin:3px">${s}</span>`).join('')}</div>`:''}
+  </div>
+  <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">Ýap</button></div>
+  `,'modal-lg');
+}
+function openAddNutritionModal(){
+  openModal(`
+  <div class="modal-header"><h3>Täze Iýmitlenme Meýilnamasy</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+  <div class="modal-body">
+    <div class="form-group"><label>Ady *</label><input id="nt-name" placeholder="Meýilnama ady..."/></div>
+    <div class="form-grid-2">
+      <div class="form-group"><label>Maksat</label><select id="nt-goal"><option value="muscle">Myşsa</option><option value="weight_loss">Agram azaltmak</option><option value="endurance">Çydamlylyk</option><option value="general">Umumy</option></select></div>
+      <div class="form-group"><label>Jynsy</label><select id="nt-gen"><option value="male">Erkek</option><option value="female">Aýal</option></select></div>
+    </div>
+    <div class="form-grid-2">
+      <div class="form-group"><label>Gündelik Kaloriýa</label><input id="nt-cal" type="number" placeholder="2500"/></div>
+      <div class="form-group"><label>Suw (ml/gün)</label><input id="nt-water" type="number" placeholder="3000"/></div>
+    </div>
+    <div class="form-grid-2">
+      <div class="form-group"><label>Belok (g)</label><input id="nt-prot" type="number" placeholder="150"/></div>
+      <div class="form-group"><label>Uglewod (g)</label><input id="nt-carb" type="number" placeholder="300"/></div>
+    </div>
+    <div class="form-group"><label>Ýag (g)</label><input id="nt-fat" type="number" placeholder="80"/></div>
+    <div class="form-group"><label>Goşundylar (vergül bilen)</label><input id="nt-supp" placeholder="Kreatin 5g, Protein shake..."/></div>
+    <div class="form-group"><label>Bellik</label><textarea id="nt-notes" placeholder="Goşmaça maslahatlar..."></textarea></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeModal()">Ýatyr</button>
+    <button class="btn btn-primary" onclick="saveNutrition()">💾 Sakla</button>
+  </div>
+  `,'modal-lg');
+}
+function saveNutrition(){
+  const name=document.getElementById('nt-name').value.trim();
+  if(!name){toast.error('Ady giriziň!');return;}
+  DB.add('nutrition',{name,goal:document.getElementById('nt-goal').value,gender:document.getElementById('nt-gen').value,dailyCalories:+document.getElementById('nt-cal').value||2000,waterIntake:+document.getElementById('nt-water').value||2500,macros:{protein:+document.getElementById('nt-prot').value||0,carbs:+document.getElementById('nt-carb').value||0,fat:+document.getElementById('nt-fat').value||0},supplements:document.getElementById('nt-supp').value.split(',').map(s=>s.trim()).filter(Boolean),meals:[],notes:document.getElementById('nt-notes').value});
+  toast.success('Meýilnama goşuldy!');closeModal();renderNutrition(document.getElementById('content-area'));
+}
+function deleteNutrition(id){confirmDialog('Bu meýilnamany öçürmek?',()=>{DB.remove('nutrition',id);toast.success('Öçürildi');renderNutrition(document.getElementById('content-area'));},true);}
+
+// ==================== FINANCE ====================
+function renderFinance(ca){
+  const txns=DB.get('transactions');
+  const income=txns.filter(t=>t.type==='income').reduce((a,t)=>a+t.amount,0);
+  const expense=txns.filter(t=>t.type==='expense').reduce((a,t)=>a+t.amount,0);
+  const pending=0;
+  ca.innerHTML=`
+  <div class="section-header">
+    <h2>💰 Maliýe</h2>
+    <div class="actions">
+      <button class="btn btn-secondary btn-sm" onclick="exportCSV(DB.get('transactions').map(t=>({ID:t.id,Görnüş:t.type,Kategoriýa:t.category,Agza:t.memberName,Möçber:t.amount,Görnüş2:t.paymentMethod,Sene:t.date,Bellik:t.reference})),'maliýe')">📤 CSV</button>
+      <button class="btn btn-primary" onclick="openAddPaymentGeneralModal()">+ Töleg Giriş</button>
+    </div>
+  </div>
+  <div class="finance-summary">
+    <div class="kpi-card"><div class="kpi-icon">📈</div><div class="kpi-val" style="color:var(--green)">${formatTMT(income)}</div><div class="kpi-sub">Giriş (Bu Aý)</div></div>
+    <div class="kpi-card"><div class="kpi-icon">📉</div><div class="kpi-val" style="color:var(--red)">${formatTMT(expense)}</div><div class="kpi-sub">Çykdajy (Bu Aý)</div></div>
+    <div class="kpi-card"><div class="kpi-icon">💰</div><div class="kpi-val" style="color:var(--cyan)">${formatTMT(income-expense)}</div><div class="kpi-sub">Arassa Girdeji</div></div>
+    <div class="kpi-card"><div class="kpi-icon">⏳</div><div class="kpi-val" style="color:var(--yellow)">${formatTMT(pending)}</div><div class="kpi-sub">Alynmaly</div></div>
+  </div>
+  <!-- Charts -->
+  <div class="grid-2" style="margin-bottom:20px">
+    <div class="card">
+      <h3 style="margin-bottom:14px;font-size:14px;font-weight:700">📊 Aýlyk Girdeji</h3>
+      <canvas id="fin-bar" height="200"></canvas>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:14px;font-size:14px;font-weight:700">🥧 Töleg Görnüşleri</h3>
+      <canvas id="fin-pie" height="200"></canvas>
+    </div>
+  </div>
+  <!-- Transactions -->
+  <div class="card">
+    <div class="filter-bar" style="margin-bottom:14px">
+      <input type="text" placeholder="🔍 Gözleg..." id="txn-search" oninput="filterTransactions()" style="flex:1"/>
+      <select id="txn-type" onchange="filterTransactions()"><option value="">Hemmesi</option><option value="income">Giriş</option><option value="expense">Çykdajy</option></select>
+      <select id="txn-cat" onchange="filterTransactions()"><option value="">Kategoriýa (Hemmesi)</option><option value="subscription">Abuna</option><option value="personal_training">Şahsy tälimçi</option><option value="class">Sapak</option><option value="other">Başga</option></select>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sene</th><th>Görnüş</th><th>Agza</th><th>Möçber</th><th>Töleg</th><th>Bellik</th></tr></thead>
+        <tbody id="txn-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Expiring subscriptions -->
+  <div class="card" style="margin-top:16px">
+    <h3 style="margin-bottom:14px;font-size:14px;font-weight:700">⚠️ Abunasy Gutarýanlar</h3>
+    <div id="expiring-list"></div>
+  </div>`;
+
+  // Bar chart
+  const months=['Ýan','Few','Mar','Apr','Maý','Iýun','Iýul','Awg','Sen','Okt','Noý','Dek'];
+  new Chart(document.getElementById('fin-bar'),{type:'bar',data:{labels:months.slice(0,6),datasets:[{label:'Giriş',data:[65000,72000,68000,84600,71000,90000],backgroundColor:'rgba(16,185,129,.6)'},{label:'Çykdajy',data:[12000,15000,13000,18200,14000,16000],backgroundColor:'rgba(239,68,68,.6)'}]},options:{responsive:true,plugins:{legend:{labels:{color:'#F0EEF8',font:{size:11}}}},scales:{x:{ticks:{color:'#5A5870'}},y:{ticks:{color:'#5A5870',callback:v=>v.toLocaleString()}}}}});
+  // Pie
+  const cashAmt=txns.filter(t=>t.paymentMethod==='cash').reduce((a,t)=>a+t.amount,0);
+  const cardAmt=txns.filter(t=>t.paymentMethod==='card').reduce((a,t)=>a+t.amount,0);
+  const trAmt=txns.filter(t=>t.paymentMethod==='transfer').reduce((a,t)=>a+t.amount,0);
+  new Chart(document.getElementById('fin-pie'),{type:'doughnut',data:{labels:['Nagt','Kart','Geçiriş'],datasets:[{data:[cashAmt,cardAmt,trAmt],backgroundColor:['#10B981','#06B6D4','#F97316'],borderWidth:0}]},options:{cutout:'65%',plugins:{legend:{position:'bottom',labels:{color:'#F0EEF8',font:{size:11}}}}}});
+
+  filterTransactions();
+  renderExpiringList();
+}
+function filterTransactions(){
+  const search=(document.getElementById('txn-search')?.value||'').toLowerCase();
+  const type=document.getElementById('txn-type')?.value||'';
+  const cat=document.getElementById('txn-cat')?.value||'';
+  let txns=DB.get('transactions');
+  if(search)txns=txns.filter(t=>(t.memberName+t.reference).toLowerCase().includes(search));
+  if(type)txns=txns.filter(t=>t.type===type);
+  if(cat)txns=txns.filter(t=>t.category===cat);
+  txns=txns.slice().reverse();
+  const catLabels={subscription:'Abuna',personal_training:'Şahsy tälimçi',class:'Sapak',shop:'Dükandaky',other:'Başga'};
+  const payLabels={cash:'Nagt',transfer:'Geçiriş',card:'Kart'};
+  const tbody=document.getElementById('txn-tbody');
+  if(!tbody)return;
+  tbody.innerHTML=txns.map(t=>`<tr>
+    <td style="font-size:12px">${formatDate(t.date)}</td>
+    <td><span class="badge ${t.type==='income'?'badge-active':'badge-expired'}">${t.type==='income'?'📈 Giriş':'📉 Çykdajy'}</span></td>
+    <td style="font-size:13px">${t.memberName||'—'}</td>
+    <td style="font-weight:700;color:${t.type==='income'?'var(--green)':'var(--red)'}">${t.type==='income'?'+':'−'}${formatTMT(t.amount)}</td>
+    <td style="font-size:12px">${payLabels[t.paymentMethod]||t.paymentMethod}</td>
+    <td style="font-size:11px;color:var(--text-muted);max-width:200px;overflow:hidden;text-overflow:ellipsis">${t.reference||'—'}</td>
+  </tr>`).join('')||'<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:20px">Töleg tapylmady</td></tr>';
+}
+function renderExpiringList(){
+  const el=document.getElementById('expiring-list');
+  if(!el)return;
+  const members=DB.get('members').filter(m=>m.subscription?.active&&daysUntil(m.subscription?.endDate)<=10&&daysUntil(m.subscription?.endDate)>=0).sort((a,b)=>daysUntil(a.subscription.endDate)-daysUntil(b.subscription.endDate));
+  if(!members.length){el.innerHTML='<p style="color:var(--green);font-size:13px">✅ Abunasy gutarýan agza ýok</p>';return;}
+  el.innerHTML=`<div class="table-wrap"><table><thead><tr><th>Agza</th><th>Plan</th><th>Gutarma</th><th>Galýan</th><th>Işler</th></tr></thead><tbody>${members.map(m=>`<tr><td style="font-weight:600">${m.firstName} ${m.lastName}</td><td>${getPlanBadge(m.subscription?.plan)}</td><td>${formatDate(m.subscription.endDate)}</td><td style="color:${daysUntil(m.subscription.endDate)<=3?'var(--red)':'var(--yellow)'}"><strong>${daysUntil(m.subscription.endDate)} gün</strong></td><td><button class="btn btn-sm btn-primary" onclick="renewSubscriptionModal('${m.id}')">💳 Uzat</button></td></tr>`).join('')}</tbody></table></div>`;
+}
+function openAddPaymentGeneralModal(){
+  const members=DB.get('members');
+  openModal(`
+  <div class="modal-header"><h3>Töleg Giriş</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+  <div class="modal-body">
+    <div class="form-group"><label>Agzany tap</label><select id="gp-member"><option value="">Agza däl / umumy</option>${members.map(m=>`<option value="${m.id}">${m.firstName} ${m.lastName}</option>`).join('')}</select></div>
+    <div class="form-grid-2">
+      <div class="form-group"><label>Görnüşi</label><select id="gp-type"><option value="income">Giriş</option><option value="expense">Çykdajy</option></select></div>
+      <div class="form-group"><label>Kategoriýa</label><select id="gp-cat"><option value="subscription">Abuna</option><option value="personal_training">Şahsy tälimçi</option><option value="class">Sapak</option><option value="other">Başga</option></select></div>
+    </div>
+    <div class="form-grid-2">
+      <div class="form-group"><label>Möçber (TMT) *</label><input id="gp-amt" type="number" placeholder="300"/></div>
+      <div class="form-group"><label>Töleg görnüşi</label><select id="gp-meth"><option value="cash">Nagt</option><option value="transfer">Geçiriş</option><option value="card">Kart</option></select></div>
+    </div>
+    <div class="form-group"><label>Sene</label><input id="gp-date" type="date" value="${new Date().toISOString().slice(0,10)}"/></div>
+    <div class="form-group"><label>Bellik / Amalat belgisi</label><input id="gp-note" placeholder="Bellik..."/></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeModal()">Ýatyr</button>
+    <button class="btn btn-primary" onclick="saveGeneralPayment()">💾 Sakla</button>
+  </div>
+  `,'modal-sm');
+}
+function saveGeneralPayment(){
+  const amt=+document.getElementById('gp-amt').value;
+  if(!amt){toast.error('Möçberi giriziň!');return;}
+  const memberId=document.getElementById('gp-member').value;
+  const member=memberId?DB.find('members',memberId):null;
+  DB.add('transactions',{type:document.getElementById('gp-type').value,category:document.getElementById('gp-cat').value,memberId:memberId||null,memberName:member?`${member.firstName} ${member.lastName}`:'',amount:amt,currency:'TMT',paymentMethod:document.getElementById('gp-meth').value,reference:document.getElementById('gp-note').value,date:document.getElementById('gp-date').value,receivedBy:currentUser.id,notes:''});
+  toast.success('Töleg ýazyldy!');closeModal();
+  if(currentSection==='finance')renderFinance(document.getElementById('content-area'));
+}
+
+// ==================== REPORTS ====================
+function renderReports(ca){
+  const members=DB.get('members');
+  const classes=DB.get('classes');
+  const transactions=DB.get('transactions');
+  const trainers=DB.get('trainers');
+  const months=['Ýan','Few','Mar','Apr','Maý','Iýun','Iýul','Awg','Sen','Okt','Noý','Dek'];
+  ca.innerHTML=`
+  <div class="section-header"><h2>📈 Hasabatlar we Analitika</h2></div>
+  <!-- Summary cards -->
+  <div class="kpi-grid" style="margin-bottom:24px">
+    <div class="kpi-card"><div class="kpi-icon">📊</div><div class="kpi-val" style="color:var(--cyan)">${members.length}</div><div class="kpi-sub">Jemi agzalar</div><div class="kpi-trend trend-up">▲ Bu ýyl</div></div>
+    <div class="kpi-card"><div class="kpi-icon">✅</div><div class="kpi-val" style="color:var(--green)">${members.filter(m=>m.subscription?.active).length}</div><div class="kpi-sub">Aktiw abunalar</div></div>
+    <div class="kpi-card"><div class="kpi-icon">🏋️</div><div class="kpi-val" style="color:var(--orange)">${classes.length}</div><div class="kpi-sub">Aktiw sapaklar</div></div>
+  </div>
+  <!-- Charts -->
+  <div class="grid-2" style="margin-bottom:20px">
+    <div class="card">
+      <h3 style="margin-bottom:14px;font-size:14px;font-weight:700">📊 Agza Ösüşi (6 Aý)</h3>
+      <canvas id="ret-chart" height="200"></canvas>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:14px;font-size:14px;font-weight:700">🥧 Agzalar Nähili Tapdy</h3>
+      <canvas id="src-chart" height="200"></canvas>
+    </div>
+  </div>
+  <div class="grid-2" style="margin-bottom:20px">
+    <div class="card">
+      <h3 style="margin-bottom:14px;font-size:14px;font-weight:700">📈 Saklama Koeffisienti</h3>
+      <div style="display:flex;gap:20px;flex-wrap:wrap">
+        ${[{l:'3 Aý',v:87},{l:'6 Aý',v:72},{l:'12 Aý',v:58}].map(r=>`<div style="text-align:center"><canvas id="ret${r.l}" width="80" height="80"></canvas><div style="font-size:12px;color:var(--text-muted)">${r.l}</div></div>`).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:14px;font-size:14px;font-weight:700">🏆 Iň Köp Ýazylganlary</h3>
+      ${classes.sort((a,b)=>(b.enrolledMembers?.length||0)-(a.enrolledMembers?.length||0)).slice(0,5).map((c,i)=>`<div class="load-bar">
+        <div class="load-bar-name">${i+1}. ${c.name.split(' ').slice(0,2).join(' ')}</div>
+        <div class="load-bar-track"><div class="load-bar-fill" style="width:${Math.round((c.enrolledMembers?.length||0)/c.maxCapacity*100)}%;background:${c.color}"></div></div>
+        <div class="load-bar-pct" style="color:${c.color}">${c.enrolledMembers?.length||0}</div>
+      </div>`).join('')}
+    </div>
+  </div>
+  <!-- Hasabat dörediji -->
+  <div class="card">
+    <h3 style="margin-bottom:16px;font-size:14px;font-weight:700">📋 Hasabat Dörediji</h3>
+    <div class="form-grid-2">
+      <div class="form-group"><label>Hasabat görnüşi</label>
+        <select id="rpt-type"><option value="members">Agza Hasabaty</option><option value="finance">Maliýe Hasabaty</option><option value="classes">Sapak Hasabaty</option></select>
+      </div>
+      <div class="form-group"><label>Format</label>
+        <select id="rpt-fmt"><option value="csv">CSV</option><option value="json">JSON</option></select>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="generateReport()">📊 Hasabat Döreder</button>
+  </div>`;
+
+  // Retention bar
+  new Chart(document.getElementById('ret-chart'),{type:'bar',data:{labels:months.slice(0,6),datasets:[{label:'Täze geldi',data:[23,18,31,27,39,47],backgroundColor:'rgba(16,185,129,.7)'},{label:'Çykdy',data:[8,12,9,15,11,8],backgroundColor:'rgba(239,68,68,.7)'}]},options:{responsive:true,plugins:{legend:{labels:{color:'#F0EEF8',font:{size:11}}}},scales:{x:{ticks:{color:'#5A5870'}},y:{ticks:{color:'#5A5870'}}}}});
+
+  // Source pie
+  const srcCounts={instagram:0,website:0,referral:0,walk_in:0,phone:0};
+  members.forEach(m=>{ if(srcCounts[m.source]!==undefined)srcCounts[m.source]++; });
+  new Chart(document.getElementById('src-chart'),{type:'pie',data:{labels:['Instagram','Saýt','Maslahat','Özü','Telefon'],datasets:[{data:Object.values(srcCounts),backgroundColor:['#E1306C','#06B6D4','#10B981','#F59E0B','#8B5CF6'],borderWidth:0}]},options:{plugins:{legend:{position:'bottom',labels:{color:'#F0EEF8',font:{size:11}}}}}});
+
+  // Retention gauges
+  setTimeout(()=>{
+    [{id:'ret3 Aý',v:87},{id:'ret6 Aý',v:72},{id:'ret12 Aý',v:58}].forEach(r=>{
+      const ctx=document.getElementById('ret'+r.l);
+      if(!ctx)return;
+      new Chart(ctx,{type:'doughnut',data:{labels:['Saklandy','Çykdy'],datasets:[{data:[r.v,100-r.v],backgroundColor:['#10B981','#1A1A24'],borderWidth:0}]},options:{cutout:'72%',plugins:{legend:{display:false},tooltip:{enabled:false}},animation:{animateRotate:true}}});
+    });
+  },100);
+}
+function generateReport(){
+  const type=document.getElementById('rpt-type').value;
+  const fmt=document.getElementById('rpt-fmt').value;
+  const data=DB.get(type==='finance'?'transactions':type);
+  const fname=type+'_'+new Date().toISOString().slice(0,10);
+  if(fmt==='csv')exportCSV(data.map(d=>flattenObj(d)),fname);
+  else exportJSON(data,fname);
+  toast.success('Hasabat döredildi!');
+}
+function flattenObj(obj,prefix=''){
+  return Object.keys(obj).reduce((acc,k)=>{
+    const v=obj[k];
+    const key=prefix?prefix+'_'+k:k;
+    if(v&&typeof v==='object'&&!Array.isArray(v)&&!(v instanceof Date)){Object.assign(acc,flattenObj(v,key));}
+    else{acc[key]=Array.isArray(v)?v.join(';'):v;}
+    return acc;
+  },{});
+}
+
+// ==================== NOTIFICATIONS ====================
+function renderNotifications(ca){
+  const notifs=DB.get('notifications');
+  const unread=notifs.filter(n=>!n.read).length;
+  ca.innerHTML=`
+  <div class="section-header">
+    <h2>🔔 Bildirişler</h2>
+    <button class="btn btn-ghost btn-sm" onclick="markAllRead()">Hemmesini okaldy belgile</button>
+  </div>
+  <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
+    <button class="btn btn-primary btn-sm" onclick="filterNotifs('')">Hemmesi</button>
+    <button class="btn btn-secondary btn-sm" onclick="filterNotifs('unread')">Okalmaýan (${unread})</button>
+    <button class="btn btn-secondary btn-sm" onclick="filterNotifs('member')">Agza</button>
+    <button class="btn btn-secondary btn-sm" onclick="filterNotifs('finance')">Maliýe</button>
+    <button class="btn btn-secondary btn-sm" onclick="filterNotifs('equipment')">Enjam</button>
+    <button class="btn btn-secondary btn-sm" onclick="filterNotifs('class')">Sapak</button>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <div id="notif-list"></div>
+  </div>`;
+  filterNotifs('');
+}
+function filterNotifs(type){
+  let notifs=DB.get('notifications');
+  if(type==='unread')notifs=notifs.filter(n=>!n.read);
+  else if(type)notifs=notifs.filter(n=>n.type===type);
+  const el=document.getElementById('notif-list');
+  if(!el)return;
+  el.innerHTML=notifs.map(n=>`
+  <div class="notif-item ${n.read?'':'unread'}" onclick="markRead('${n.id}')">
+    <div class="notif-dot ${n.read?'read':''}"></div>
+    <div style="font-size:18px;flex-shrink:0">${n.icon}</div>
+    <div class="notif-content">
+      <div class="notif-text" style="font-weight:${n.read?'400':'600'}">${n.text}</div>
+      <div class="notif-time">${timeAgo(n.time)}</div>
+    </div>
+    ${n.link?`<button class="btn btn-sm btn-ghost" onclick="event.stopPropagation();navigate('${n.link}')">Gör →</button>`:''}
+  </div>`).join('')||'<div class="empty-state"><div class="ei">📭</div><p>Bildiriş ýok</p></div>';
+}
+function markRead(id){
+  DB.update('notifications',id,{read:true});
+  updateNotifCount();
+  filterNotifs('');
+}
+function markAllRead(){
+  const notifs=DB.get('notifications').map(n=>({...n,read:true}));
+  DB.set('notifications',notifs);
+  updateNotifCount();
+  filterNotifs('');
+  toast.info('Hemmesi okaldy');
+}
+function addNotification(type,icon,text,link){
+  DB.add('notifications',{type,icon,text,time:new Date().toISOString(),read:false,link});
+  updateNotifCount();
+}
+
+// ==================== USERS ====================
+function renderUsers(ca){
+  if(currentUser.role!=='superadmin'){ca.innerHTML='<div class="empty-state"><div class="ei">🔒</div><p>Bu bölüme diňe Baş Admin girip bilýär</p></div>';return;}
+  const users=DB.get('users');
+  const roleLabels={superadmin:'Baş Admin',manager:'Menejer',receptionist:'Kabul Işgäri',trainer:'Tälimçi'};
+  ca.innerHTML=`
+  <div class="section-header">
+    <h2>👤 Ulanyjylar</h2>
+    <button class="btn btn-primary" onclick="openAddUserModal()">+ Täze Ulanyjy</button>
+  </div>
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>At</th><th>Login</th><th>Rol</th><th>Ýagdaý</th><th>Işler</th></tr></thead>
+        <tbody>
+          ${users.map(u=>`<tr>
+            <td><div style="display:flex;align-items:center;gap:8px"><div style="width:32px;height:32px;border-radius:8px;background:${u.color}22;color:${u.color};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">${u.avatar}</div><span style="font-weight:600">${u.name}</span></div></td>
+            <td style="font-family:'Space Mono',monospace;font-size:12px;color:var(--text-muted)">${u.login}</td>
+            <td><span class="badge badge-active">${roleLabels[u.role]||u.role}</span></td>
+            <td><span class="badge badge-active">✅ Aktiw</span></td>
+            <td><div style="display:flex;gap:4px">
+              <button class="btn btn-sm btn-secondary" onclick="editUser(${u.id})">✏️</button>
+              ${u.id!==currentUser.id?`<button class="btn btn-sm btn-danger" onclick="deleteUser(${u.id})">🗑️</button>`:''}
+            </div></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+function openAddUserModal(prefill){
+  openModal(`
+  <div class="modal-header"><h3>${prefill?'Ulanyjy Düzetmek':'Täze Ulanyjy'}</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+  <div class="modal-body">
+    <div class="form-grid-2">
+      <div class="form-group"><label>At *</label><input id="uf-name" value="${prefill?.name||''}" placeholder="Doly ady"/></div>
+      <div class="form-group"><label>Login *</label><input id="uf-login" value="${prefill?.login||''}" placeholder="login"/></div>
+    </div>
+    <div class="form-grid-2">
+      <div class="form-group"><label>Parol ${prefill?'(boş goýsaň üýtgemez)':' *'}</label><input id="uf-pass" type="password" placeholder="••••••••"/></div>
+      <div class="form-group"><label>Rol *</label><select id="uf-role"><option value="superadmin" ${prefill?.role==='superadmin'?'selected':''}>Baş Admin</option><option value="manager" ${prefill?.role==='manager'?'selected':''}>Menejer</option><option value="receptionist" ${prefill?.role==='receptionist'?'selected':''}>Kabul Işgäri</option><option value="trainer" ${prefill?.role==='trainer'?'selected':''}>Tälimçi</option></select></div>
+    </div>
+    <div class="form-group"><label>Avatar (2 harp)</label><input id="uf-av" value="${prefill?.avatar||''}" maxlength="2" placeholder="BA" style="width:80px"/></div>
+    <div class="form-group"><label>Reňk</label><input id="uf-color" type="color" value="${prefill?.color||'#EF4444'}"/></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeModal()">Ýatyr</button>
+    <button class="btn btn-primary" onclick="saveUser(${prefill?.id||'null'})">💾 Sakla</button>
+  </div>
+  `,'modal-sm');
+}
+function editUser(id){const u=DB.get('users').find(x=>x.id===id);if(u)openAddUserModal(u);}
+function deleteUser(id){
+  if(id===currentUser.id){toast.error('Öz hasabyňy öçürip bilmersiň!');return;}
+  confirmDialog('Bu ulanyjyny öçürmek?',()=>{
+    const users=DB.get('users').filter(u=>u.id!==id);DB.set('users',users);toast.success('Ulanyjy öçürildi');renderUsers(document.getElementById('content-area'));
+  },true);
+}
+function saveUser(existingId){
+  const name=document.getElementById('uf-name').value.trim();
+  const login=document.getElementById('uf-login').value.trim();
+  const pass=document.getElementById('uf-pass').value;
+  if(!name||!login){toast.error('At we loginy giriziň!');return;}
+  if(!existingId&&!pass){toast.error('Paroly giriziň!');return;}
+  const users=DB.get('users');
+  if(existingId!==null){
+    const idx=users.findIndex(u=>u.id===existingId);
+    if(idx>=0){users[idx]={...users[idx],name,login,role:document.getElementById('uf-role').value,avatar:document.getElementById('uf-av').value||name.slice(0,2).toUpperCase(),color:document.getElementById('uf-color').value,...(pass?{password:pass}:{})};DB.set('users',users);toast.success('Ulanyjy täzelendi!');}
+  } else {
+    const maxId=Math.max(...users.map(u=>u.id||0),0);
+    users.push({id:maxId+1,name,login,password:pass,role:document.getElementById('uf-role').value,avatar:document.getElementById('uf-av').value||name.slice(0,2).toUpperCase(),color:document.getElementById('uf-color').value});
+    DB.set('users',users);toast.success('Täze ulanyjy goşuldy!');
+  }
+  closeModal();renderUsers(document.getElementById('content-area'));
+}
+
+// ==================== SETTINGS ====================
+function renderSettings(ca){
+  const s=DB.get('settings')||{};
+  const plans=s.plans||[{id:1,name:'Başlangyç',price:180,desc:'Gym + Kardio'},{id:2,name:'Premium',price:300,desc:'Gym + Kardio + Topar sapaklar'},{id:3,name:'Elite',price:600,desc:'Hemmesi + Çäksiz şahsy'}];
+  const halls=s.halls||[];
+  ca.innerHTML=`
+  <div class="section-header"><h2>⚙️ Ulgam Sazlamalary</h2></div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="club" data-tab-group="settings" onclick="switchTab('settings','club')">Klub Maglumatlary</button>
+    <button class="tab-btn" data-tab="plans" data-tab-group="settings" onclick="switchTab('settings','plans')">Abuna Meýilnamalary</button>
+    <button class="tab-btn" data-tab="halls" data-tab-group="settings" onclick="switchTab('settings','halls')">Zallar</button>
+    <button class="tab-btn" data-tab="data" data-tab-group="settings" onclick="switchTab('settings','data')">Maglumat Dolandyrma</button>
+  </div>
+  <!-- Club info -->
+  <div class="tab-pane active card" data-pane="club" data-pane-group="settings">
+    <div class="form-grid-2">
+      <div class="form-group"><label>Klub ady *</label><input id="st-name" value="${s.clubName||'FitClub Aşgabat'}"/></div>
+      <div class="form-group"><label>Şäher *</label><input id="st-city" value="${s.city||'Aşgabat'}"/></div>
+      <div class="form-group"><label>Telefon *</label><input id="st-phone" value="${s.phone||''}"/></div>
+      <div class="form-group"><label>E-poçta</label><input id="st-email" value="${s.email||''}"/></div>
+      <div class="form-group"><label>Instagram</label><input id="st-insta" value="${s.instagram||''}" placeholder="@fitclub_ag"/></div>
+      <div class="form-group"><label>Açylyş ýyly</label><input id="st-year" type="number" value="${s.openYear||2019}"/></div>
+    </div>
+    <div class="form-group"><label>Adres *</label><input id="st-addr" value="${s.address||''}"/></div>
+    <button class="btn btn-primary" onclick="saveClubSettings()">💾 Sakla</button>
+  </div>
+  <!-- Plans -->
+  <div class="tab-pane card" data-pane="plans" data-pane-group="settings">
+    ${plans.map(p=>`<div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--surface2);border-radius:10px;margin-bottom:10px">
+      <div style="flex:1"><div style="font-weight:700">${p.name}</div><div style="font-size:12px;color:var(--text-muted)">${p.desc}</div></div>
+      <div style="font-weight:700;color:var(--red);font-size:15px">${p.price} TMT</div>
+      <button class="btn btn-sm btn-secondary" onclick="editPlan(${p.id})">✏️</button>
+    </div>`).join('')}
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="addPlanModal()">+ Täze Plan</button>
+  </div>
+  <!-- Halls -->
+  <div class="tab-pane card" data-pane="halls" data-pane-group="settings">
+    ${halls.map(h=>`<div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface2);border-radius:8px;margin-bottom:8px">
+      <div style="flex:1"><div style="font-weight:600">${h.name}</div><div style="font-size:12px;color:var(--text-muted)">Sig'ym: ${h.capacity||'—'}</div></div>
+      <span class="badge ${h.status==='open'?'badge-active':'badge-expired'}">${h.status==='open'?'Açyk':'Ýapyk'}</span>
+      <button class="btn btn-sm btn-secondary" onclick="editHall(${h.id})">✏️</button>
+    </div>`).join('')}
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="addHallModal()">+ Täze Zal</button>
+  </div>
+  <!-- Data Management -->
+  <div class="tab-pane card" data-pane="data" data-pane-group="settings">
+    <h4 style="margin-bottom:14px;font-size:14px">Maglumat Dolandyrma</h4>
+    <div style="display:flex;flex-direction:column;gap:10px;max-width:400px">
+      <button class="btn btn-secondary" onclick="exportJSON({members:DB.get('members'),classes:DB.get('classes'),trainers:DB.get('trainers'),equipment:DB.get('equipment'),transactions:DB.get('transactions')},'fitclub_backup')">📤 Ähli Maglumatlary Eksport et (JSON)</button>
+      <button class="btn btn-secondary" onclick="importData()">📥 Maglumatlary Import et (JSON)</button>
+      <button class="btn btn-secondary" onclick="loadDemoDataFresh()">🔄 Demo Maglumatlary Täzeden Ýükle</button>
+      <button class="btn btn-danger" style="margin-top:10px" onclick="clearAllData()">⚠️ Ähli Maglumatlary Pozmak</button>
+    </div>
+    <input type="file" id="import-file" accept=".json" style="display:none" onchange="processImport(this)"/>
+  </div>`;
+}
+function saveClubSettings(){
+  const s=DB.get('settings')||{};
+  DB.set('settings',{...s,clubName:document.getElementById('st-name').value,city:document.getElementById('st-city').value,phone:document.getElementById('st-phone').value,email:document.getElementById('st-email').value,instagram:document.getElementById('st-insta').value,openYear:+document.getElementById('st-year').value,address:document.getElementById('st-addr').value});
+  toast.success('Sazlamalar saklandy!');
+}
+function addPlanModal(){
+  openModal(`
+  <div class="modal-header"><h3>Täze Abuna Plany</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+  <div class="modal-body">
+    <div class="form-group"><label>Ady *</label><input id="pl-name" placeholder="Plan ady"/></div>
+    <div class="form-group"><label>Baha (TMT/aý) *</label><input id="pl-price" type="number" placeholder="250"/></div>
+    <div class="form-group"><label>Açyklama</label><input id="pl-desc" placeholder="Goşulýanlar..."/></div>
+  </div>
+  <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">Ýatyr</button><button class="btn btn-primary" onclick="savePlan()">Sakla</button></div>
+  `,'modal-sm');
+}
+function savePlan(){
+  const s=DB.get('settings')||{};
+  const plans=s.plans||[];
+  const maxId=Math.max(...plans.map(p=>p.id||0),0);
+  plans.push({id:maxId+1,name:document.getElementById('pl-name').value,price:+document.getElementById('pl-price').value||0,desc:document.getElementById('pl-desc').value});
+  DB.set('settings',{...s,plans});toast.success('Plan goşuldy!');closeModal();renderSettings(document.getElementById('content-area'));
+}
+function addHallModal(){
+  openModal(`
+  <div class="modal-header"><h3>Täze Zal</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+  <div class="modal-body">
+    <div class="form-group"><label>Ady *</label><input id="hl-name" placeholder="Zal ady"/></div>
+    <div class="form-group"><label>Sig'ym *</label><input id="hl-cap" type="number" placeholder="15"/></div>
+    <div class="form-group"><label>Ýagdaý</label><select id="hl-st"><option value="open">Açyk</option><option value="closed">Ýapyk</option></select></div>
+  </div>
+  <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">Ýatyr</button><button class="btn btn-primary" onclick="saveHall()">Sakla</button></div>
+  `,'modal-sm');
+}
+function saveHall(){
+  const s=DB.get('settings')||{};
+  const halls=s.halls||[];
+  const maxId=Math.max(...halls.map(h=>h.id||0),0);
+  halls.push({id:maxId+1,name:document.getElementById('hl-name').value,capacity:+document.getElementById('hl-cap').value||10,status:document.getElementById('hl-st').value});
+  DB.set('settings',{...s,halls});toast.success('Zal goşuldy!');closeModal();renderSettings(document.getElementById('content-area'));
+}
+function clearAllData(){
+  confirmDialog('⚠️ DİKKAT! Ähli maglumatlar (agzalar, sapaklar, maliýe) hemişelik öçüriler! Dowam etmek?',()=>{
+    confirmDialog('Tassykladyňyzmy? Bu amal yzyna gaýtarylyp bilinmez!',()=>{
+      ['members','classes','trainers','equipment','transactions','nutrition','notifications','settings','users'].forEach(k=>localStorage.removeItem('gym_'+k));
+      localStorage.removeItem('gym_initialized');
+      toast.success('Ähli maglumatlar öçürildi. Sahypa täzelenýär...');
+      setTimeout(()=>location.reload(),1500);
+    },true);
+  },true);
+}
+function loadDemoDataFresh(){
+  confirmDialog('Demo maglumatlary täzeden ýüklemek? Häzirki maglumatlar öçüriler.',()=>{
+    ['members','classes','trainers','equipment','transactions','nutrition','notifications'].forEach(k=>localStorage.removeItem('gym_'+k));
+    localStorage.removeItem('gym_initialized');
+    initDemoData();
+    toast.success('Demo maglumatlary ýüklendi!');
+    renderSettings(document.getElementById('content-area'));
+  },true);
+}
+function importData(){document.getElementById('import-file').click();}
+function processImport(input){
+  const file=input.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=(e)=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      Object.keys(data).forEach(k=>{if(DB.get(k)!==null)DB.set(k,data[k]);});
+      toast.success('Maglumatlar import edildi!');
+    }catch{toast.error('JSON faýly nädogry!');}
+  };
+  reader.readAsText(file);
+}
+
+// ==================== INIT ====================
+initDemoData();
+checkSession();
+if(typeof lucide!=='undefined')setTimeout(()=>lucide.createIcons(),500);
+</script>
+</body>
+</html>
