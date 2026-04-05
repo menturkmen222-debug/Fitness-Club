@@ -1,0 +1,1481 @@
+# 💪 REPLIT AI AGENT — FİTNES KLUB ADMİN PANELİ
+## Doly Dolandyryş Ulgamy | Türkmen Dili | Ýeňil Web Agency
+
+---
+
+## 🎯 NÄMÄ GURÝARSYŇ
+
+Fitnes klubunyň dolandyryjylary, tälimçiler we administrator üçin  
+**doly, professional admin paneli** — `admin.html` ýeke faýlda.
+
+Öňki döredilen `index.html` fitnes saýtynyň ähli maglumatlary —  
+agzalar, sapaklar, tälimçiler, abunalar, maliýe — hemmesi şu panelden dolandyrylýar.
+
+**Hiç hili backend ýok. `localStorage` esasynda. Real işe goýlanda backend bilen çalşylmaga taýýar arhitektura.**
+
+---
+
+## 🛠️ TEHNIKI GURLUŞ
+
+```
+Faýl:         admin.html  (HTML + CSS + JS — bir ýerde)
+Maglumat:     localStorage  (JSON, doly CRUD)
+Grafik:       Chart.js (CDN) — animirleýän diagrammalar
+Şrift:        Google Fonts — Outfit + Space Mono (CDN)
+Ikonlar:      Lucide Icons (CDN)
+Eksport:      CSV + JSON
+Çap:          Browser Print API
+Bildiriş:     Özboluşly Toast + in-app notification merkezi
+```
+
+---
+
+## 🔐 GİRİŞ SAHYPASY
+
+Panel açylanda ilki giriş ekrany görünmeli.
+
+```javascript
+const DEFAULT_USERS = [
+  {
+    id: 1,
+    name: 'Baş Admin',
+    login: 'admin',
+    password: 'admin123',
+    role: 'superadmin',
+    avatar: 'BA',
+    color: '#EF4444'
+  },
+  {
+    id: 2,
+    name: 'Menejer',
+    login: 'menejer',
+    password: 'menejer123',
+    role: 'manager',
+    avatar: 'MN',
+    color: '#F97316'
+  },
+  {
+    id: 3,
+    name: 'Administrator',
+    login: 'admin2',
+    password: 'admin456',
+    role: 'receptionist',
+    avatar: 'AD',
+    color: '#06B6D4'
+  },
+  {
+    id: 4,
+    name: 'Tälimçi',
+    login: 'talimci',
+    password: 'talimci123',
+    role: 'trainer',
+    avatar: 'TL',
+    color: '#10B981'
+  }
+];
+
+const PERMISSIONS = {
+  superadmin:   ['dashboard','members','classes','trainers','schedule',
+                 'equipment','finance','reports','nutrition','notifications',
+                 'settings','users'],
+  manager:      ['dashboard','members','classes','trainers','schedule',
+                 'equipment','finance','reports','nutrition'],
+  receptionist: ['dashboard','members','classes','schedule'],
+  trainer:      ['dashboard','classes','schedule','members_view']
+};
+```
+
+**Giriş ekrany dizaýny:**
+- Garaňky atletik fon (siyah/gara gradient, accent gyzyl)
+- Merkezde kart: Logo + at ýokarda
+- Login + Parol meýdanlary
+- "Meni ýatla" checkbox
+- Giriş düwmesi (gyzyl-naryn gradient)
+- Ýalňyş giriş: Kart silkme animasiýasy + ýazgy
+- Üstünlikli giriş: Dashboard-a smooth geçiş
+
+---
+
+## 🎨 DİZAÝN ULGAMY
+
+### Reňk Paletki:
+```css
+:root {
+  /* Esasy fitnes reňkleri */
+  --red:          #EF4444;
+  --red-dark:     #B91C1C;
+  --red-rgb:      239, 68, 68;
+  --orange:       #F97316;
+  --orange-rgb:   249, 115, 22;
+  --green:        #10B981;
+  --green-rgb:    16, 185, 129;
+  --cyan:         #06B6D4;
+  --yellow:       #F59E0B;
+
+  /* Fon */
+  --bg:           #060608;
+  --bg2:          #0C0C10;
+  --sidebar-bg:   #0A0A0F;
+  --surface:      #111118;
+  --surface2:     #1A1A24;
+  --border:       rgba(239,68,68, 0.12);
+  --border-hover: rgba(239,68,68, 0.35);
+
+  /* Tekst */
+  --text:         #F0EEF8;
+  --text-muted:   #5A5870;
+  --text-dim:     #3A3850;
+
+  /* Ýagdaý reňkleri */
+  --success:      #10B981;
+  --warning:      #F59E0B;
+  --danger:       #EF4444;
+  --info:         #06B6D4;
+}
+```
+
+### Şrift:
+```
+Headings / Sanlary:   'Outfit'      — häzirki, güýçli
+Mono / ID / Kodlar:   'Space Mono'  — takyk, tekhniki
+```
+
+### Esasy Kart Stili:
+```css
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px;
+  transition: all 0.25s ease;
+}
+.card:hover {
+  border-color: var(--border-hover);
+  box-shadow: 0 6px 30px rgba(0,0,0,0.4),
+              0 0 20px rgba(var(--red-rgb), 0.06);
+}
+```
+
+---
+
+## 🏗️ UMUMY MAKETI GURLUŞY
+
+```
+┌──────────────────────────────────────────────────────┐
+│  [SİDEBAR — çep, 248px, fixed]                       │
+│                                                      │
+│  [Logo + CLUB.name]                                  │
+│  ────────────                                        │
+│  [Avatar + At + Rol]                                 │
+│  ────────────                                        │
+│  📊 Dolandyryş Tagtasy          (hemmesi görýär)     │
+│  👥 Agza Dolandyrma             (admin, menejer)     │
+│  🏋️ Sapak Dolandyrma            (admin, menejer, tälimçi) │
+│  👨‍🏫 Tälimçiler                  (admin, menejer)     │
+│  📅 Sapak Tertibi               (hemmesi görýär)     │
+│  🔧 Enjamlary Dolandyrma        (admin, menejer)     │
+│  🥗 Iýmitlenme Bölümi           (admin, menejer)     │
+│  💰 Maliýe                      (admin)              │
+│  📈 Hasabatlar                  (admin, menejer)     │
+│  ────────────                                        │
+│  🔔 Bildirişler                                      │
+│  👤 Ulanyjylar                  (diňe superadmin)    │
+│  ⚙️ Sazlamalar                  (admin, menejer)     │
+│  ────────────                                        │
+│  🚪 Çykmak                                           │
+│                                                      │
+│  [Sidebar çökmek düwmesi ←]                          │
+├──────────────────────────────────────────────────────┤
+│  [ÜST ZOLAK — sticky]                                │
+│  Bölüm ady | Ýol (breadcrumb)                        │
+│  [Gözleg...] [🔔 (sany)] [Ulanyjy avatar ▼]          │
+├──────────────────────────────────────────────────────┤
+│  [ESASY MAZMUN — scroll]                             │
+└──────────────────────────────────────────────────────┘
+```
+
+**Sidebar aýratynlyklary:**
+- Aktiw bölüm: Gyzyl-naryn gradient arka + çep 3px çyzgy
+- Hover: Açyk gradient, ikonjanyň ulalmagy
+- Çöküp ýagdaý: 60px — diňe ikonlar, tooltip hover-da
+- Mobil: Drawer (hamburger bilen açylýar), overlay bilen ýapylýar
+
+---
+
+## 📊 BÖLÜM 1: DOLANDYRYŞ TAGTASY
+
+### 1A — KPI Kartlary (6 sany, 3+3 grid)
+
+```
+Setir 1:
+┌────────────────┐ ┌────────────────┐ ┌────────────────┐
+│ 👥 Jemi Agzalar│ │ ✅ Aktiw Abuna │ │ ⚡ Bu Gün Sapak│
+│   1,247        │ │   892          │ │   18 sapak     │
+│ +23 bu aý      │ │ 71% dolulyk    │ │ 6 zal işleýär  │
+│ ▲ +8%          │ │ ████████░░     │ │ 09:00—22:00    │
+└────────────────┘ └────────────────┘ └────────────────┘
+
+Setir 2:
+┌────────────────┐ ┌────────────────┐ ┌────────────────┐
+│ 💰 Bu Aý Gird. │ │ 🔧 Synag Gerek │ │ 🆕 Täze Agzalar│
+│ 84,600 TMT     │ │ 3 enjam        │ │ 47 bu aý       │
+│ ▲ +12%         │ │ !! Üns gerek   │ │ Geçen aý: 39   │
+│ ████████████░░ │ │ [Gör →]        │ │ ▲ +20%         │
+└────────────────┘ └────────────────┘ └────────────────┘
+```
+
+Her KPI kartynyň içki gurluşy:
+```javascript
+const kpiCards = [
+  {
+    icon: '👥', label: 'Jemi Agzalar',
+    value: () => DB.get('members').length,
+    sub: () => `+${getThisMonthNew('members')} bu aý`,
+    trend: 'up', color: 'cyan'
+  },
+  {
+    icon: '✅', label: 'Aktiw Abuna',
+    value: () => DB.get('members').filter(m => m.subscription?.active).length,
+    sub: () => calcActivePercent() + '% dolulyk',
+    trend: 'neutral', color: 'green',
+    progress: true
+  },
+  {
+    icon: '⚡', label: 'Bu Gün Sapaklar',
+    value: () => getTodayClasses().length,
+    sub: () => `${getActiveHalls()} zal işleýär`,
+    trend: 'neutral', color: 'orange'
+  },
+  {
+    icon: '💰', label: 'Bu Aý Girdeji',
+    value: () => formatTMT(getMonthRevenue()),
+    sub: () => `▲ +${getRevenueGrowth()}% geçen aý`,
+    trend: 'up', color: 'red'
+  },
+  {
+    icon: '🔧', label: 'Synag Gerek',
+    value: () => DB.get('equipment').filter(e => e.needsMaintenance).length,
+    sub: 'Enjam tehniki syna',
+    trend: 'warning', color: 'yellow'
+  },
+  {
+    icon: '🆕', label: 'Täze Agzalar',
+    value: () => getThisMonthNew('members'),
+    sub: () => `Geçen aý: ${getLastMonthNew('members')}`,
+    trend: 'up', color: 'green'
+  }
+];
+```
+
+### 1B — Şu Günüň Sapak Tertibi (Mini Gantt)
+
+Häzirki gün — sagat 06:00-dan 23:00-a çenli görünüş.  
+Her sapak horizontal zolak görnüşde, zal boýunça:
+
+```
+ZALA     06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+─────────────────────────────────────────────────────────────
+Kardio   ░░░░ [HIIT 07:00]       [Kardio Blast 14:00]  [HIIT 19:00]
+Ýoga     ░░░░░░░░ [Ýoga 09:00]   ░░░░░         [Ýoga 18:30]
+Boks     ░░░░░░░░░░░░ [Boks 11:00]             [MMA 17:00]
+Güýç     ░░░░░░░░░░░░░░░░        [Güýç 15:00]          [Güýç 20:00]
+```
+
+Häzirki wagt çyzygy gyzyl reňkde (real-time).  
+Sapaga basanda: Maglumat tooltip çykýar (tälimçi, ýer sany, ýazylmak).
+
+### 1C — Girdeji Diagrammasy
+
+```javascript
+// Soňky 12 aý — çyzyk + meýdan
+const revenueChart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: getLast12Months(),
+    datasets: [
+      {
+        label: 'Girdeji (TMT)',
+        data: getMonthlyRevenue(12),
+        borderColor: '#EF4444',
+        backgroundColor: 'rgba(239,68,68, 0.07)',
+        borderWidth: 2.5, tension: 0.4, fill: true,
+        pointBackgroundColor: '#EF4444',
+        pointRadius: 4, pointHoverRadius: 7
+      },
+      {
+        label: 'Abuna sany',
+        data: getMonthlySubscriptions(12),
+        borderColor: '#06B6D4',
+        backgroundColor: 'transparent',
+        borderWidth: 2, tension: 0.4,
+        yAxisID: 'y2',
+        pointRadius: 3
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { labels: { color: '#F0EEF8' } },
+      tooltip: {
+        backgroundColor: '#1A1A24',
+        borderColor: 'rgba(239,68,68,0.3)',
+        borderWidth: 1
+      }
+    },
+    scales: {
+      x:  { grid: { color:'rgba(255,255,255,0.04)' }, ticks: { color:'#5A5870' } },
+      y:  { grid: { color:'rgba(255,255,255,0.04)' }, ticks: { color:'#5A5870', callback: v => v.toLocaleString()+' ₸' } },
+      y2: { position:'right', grid:{ display:false }, ticks:{ color:'#5A5870' } }
+    }
+  }
+});
+```
+
+### 1D — Agza Ösüşi (Doughnut)
+
+```javascript
+// Abuna görnüşi paýlanmasy
+const memberChart = new Chart(ctx2, {
+  type: 'doughnut',
+  data: {
+    labels: ['Başlangyç', 'Premium', 'Elite', 'Öçürilen'],
+    datasets: [{
+      data: [340, 420, 132, 155],
+      backgroundColor: ['#06B6D4','#EF4444','#F59E0B','#3A3850'],
+      borderWidth: 0, hoverOffset: 6
+    }]
+  },
+  options: { cutout:'72%', plugins:{ legend:{ position:'bottom', labels:{ color:'#F0EEF8', padding:16 } } } }
+});
+```
+
+### 1E — Soňky Işler Feed
+
+```
+⚡ [2 min öň]  Täze agza ýazyldy — Oraz Nurlyýew (Premium)
+💰 [15 min öň] Töleg alyndy — Maýa G. 300 TMT
+✏️ [1 sag öň]  Sapak üýtgedildi — Ýoga 09:00 → 10:00
+🔧 [2 sag öň]  Enjam hasabata goşuldy — Беговая дорожка #4
+⚠️ [3 sag öň]  Abunasy gutarýar — Serdar A. (3 günde)
+```
+
+### 1F — Çalt Işler
+
+```
+[+ Täze Agza]  [+ Sapak]  [Abunasy Gutarýanlar(12)]  [Bu Hepde Zal]  [Hasabat Çykar]
+```
+
+---
+
+## 👥 BÖLÜM 2: AGZA DOLANDYRMA
+
+### 2A — Agza Maglumat Modeli
+
+```javascript
+const memberModel = {
+  id:           'MBR-2025-001',
+  
+  // Şahsy maglumat
+  firstName:    'Oraz',
+  lastName:     'Nurlyýew',
+  phone:        '+993 65 123456',
+  phone2:       '',
+  email:        'oraz@mail.com',
+  birthDate:    '1995-04-15',
+  gender:       'male',           // male / female
+  address:      'Aşgabat',
+  emergencyContact: { name:'Aýna Nurlyýewa', phone:'+993 62 654321', relation:'Aýaly' },
+  
+  // Fiziki maglumat
+  height:       178,              // sm
+  weight:       82,               // kg
+  fitnessGoal:  'muscle',         // muscle / weight_loss / endurance / general / sport_prep
+  healthNotes:  'Bili az agyrýar — çuňňur squat bolmaýar',
+  
+  // Agzalyk
+  memberSince:  '2024-03-10',
+  memberNumber: 'MBR-2025-001',
+  
+  // Abuna
+  subscription: {
+    plan:       'premium',        // basic / premium / elite
+    startDate:  '2025-01-01',
+    endDate:    '2025-07-31',
+    active:     true,
+    autoRenew:  false,
+    price:      300,              // TMT/aý
+    paymentType:'monthly'         // monthly / quarterly / annual
+  },
+  
+  // Şahsy tälimçi
+  personalTrainer: 2,             // Tälimçi ID (null bolsa ýok)
+  
+  // Gatnaşyk
+  attendance: [
+    { date:'2025-06-01', checkIn:'07:12', checkOut:'08:45', classes:['HIIT'] },
+    { date:'2025-06-03', checkIn:'18:20', checkOut:'19:55', classes:['Ýoga','Güýç'] }
+  ],
+  
+  // Saglyk ösüşi
+  measurements: [
+    { date:'2025-01-01', weight:88, bodyFat:22, muscle:64 },
+    { date:'2025-04-01', weight:84, bodyFat:19, muscle:67 },
+    { date:'2025-07-01', weight:82, bodyFat:17, muscle:69 }
+  ],
+  
+  // Ýazylmak gatnaşygy
+  subscribedClasses: [3, 7, 12],  // Sapak IDs
+  
+  // Meta
+  photo:        null,
+  source:       'instagram',      // website / instagram / referral / walk_in / phone
+  referredBy:   null,
+  notes:        '',
+  createdAt:    '2024-03-10T09:00:00',
+  createdBy:    1
+};
+```
+
+### 2B — Agza Sanawy
+
+**Üst Süzgüç Paneli:**
+```
+[🔍 Gözleg: at, telefon, ID...]
+[Abuna ▼: Hemmesi / Başlangyç / Premium / Elite / Öçürilen]
+[Ýagdaý ▼: Hemmesi / Aktiw / Gutarýar(7gün) / Gutaran / Togtadylan]
+[Maksat ▼: Myşsa / Agram / Çydamlylyk / Umumy]
+[Tälimçi ▼: Hemmesi / Ada görä...]
+[Eksport CSV] [Eksport JSON]
+```
+
+**Tablisy sütunlary:**
+```
+# | Surat | At | ID | Abuna | Gutarma | Tälimçi | Soňky Giriş | Gatnaşyk% | Ýagdaý | Işler
+```
+
+**Abuna ýagdaýy badgeleri:**
+```css
+.badge-active     { color:#10B981; background:rgba(16,185,129,0.12); }
+.badge-expiring   { color:#F59E0B; background:rgba(245,158,11,0.12); }  /* 7 günde gutarýar */
+.badge-expired    { color:#EF4444; background:rgba(239,68,68,0.12);  }
+.badge-paused     { color:#06B6D4; background:rgba(6,182,212,0.12);  }
+.badge-cancelled  { color:#5A5870; background:rgba(90,88,112,0.12);  }
+```
+
+**Abunasy 7 günde gutarýan agzalar üçin:**
+Tablisyda sargy ýazgy + dashboard bildirişi.
+
+### 2C — Agza Profili (Detail Modal)
+
+Doly tab-ly modal:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  [👤 Surat/Başlangyjy] Oraz Nurlyýew  MBR-2025-001         │
+│  📱 +993 65 123456  |  🎂 29 ýaş  |  ♂️ Erkek            │
+│  💪 Maksat: Myşsa ösdürmek  |  📅 Agza: 16 aý              │
+│                                                             │
+│  [Şahsy Maglumat] [Abuna] [Gatnaşyk] [Ösüş] [Tälimçi] [Hasap]│
+├─────────────────────────────────────────────────────────────┤
+│  TAB: ABUNA                                                 │
+│                                                             │
+│  Premium Plan           [Üýtget] [Uzat] [Togta] [Ýatyr]    │
+│  ─────────────────────────────────────────────             │
+│  Başlangyç: 01.01.2025    Gutarma: 31.07.2025              │
+│  Töleg: 300 TMT/aý        Indiki töleg: 01.08.2025         │
+│                                                             │
+│  Abuna ösüşi:                                               │
+│  ████████████████████████░░░░░░░ 78% (43/55 gün geçdi)     │
+│                                                             │
+│  TÖLEG TARYHY:                                              │
+│  ✅ 01.07.2025  300 TMT  Nagt                               │
+│  ✅ 01.06.2025  300 TMT  Geçiriş                            │
+│  ✅ 01.05.2025  300 TMT  Nagt                               │
+├─────────────────────────────────────────────────────────────┤
+│  TAB: GATNAŞYK                                              │
+│                                                             │
+│  Bu aý: 18 giriş  |  Bu ýyl: 142 giriş  |  Umumy: 287     │
+│                                                             │
+│  Hepdelik Gatnaşyk Heatmap (GitHub stili):                  │
+│  Duş Sal Çar Per Ann Şen                                    │
+│  ██  ░░  ██  ░░  ██  ██  ← bu hepde                        │
+│  ██  ██  ░░  ██  ██  ░░                                    │
+│  ...                                                        │
+│                                                             │
+│  Iň köp gatnaşyk: Duşenbe we Anna                           │
+│  Iň köp ulanýan zal: Güýç Türgenleşik Zaly                 │
+│  Iň köp ýazylýan sapak: HIIT (12x)                         │
+├─────────────────────────────────────────────────────────────┤
+│  TAB: ÖSÜŞ                                                  │
+│                                                             │
+│  [+ Täze Ölçeg Giriş]                                       │
+│                                                             │
+│  Agram:     88kg → 84kg → 82kg   ▼ -6kg (16 aýda)         │
+│  Ýag %:     22% → 19% → 17%     ▼ -5%                     │
+│  Myşsa:     64kg → 67kg → 69kg  ▲ +5kg                    │
+│                                                             │
+│  [Chart.js — üç çyzykly ösüş grafigi]                      │
+├─────────────────────────────────────────────────────────────┤
+│  TAB: ŞAHSY TÄLİMÇİ                                        │
+│                                                             │
+│  Merdan Hydyrow  |  Güýç & Powerlifting                    │
+│  📞 +993 65 xxx  |  Başlangyjy: 15.03.2025                 │
+│  Sapaklar: 2×/hepde (Çarşenbe, Şenbe 09:00)               │
+│                                                             │
+│  [Tälimçi Üýtget]  [Sapak Tertibini Gör]                   │
+│                                                             │
+│  Tälimçi bellikleri:                                        │
+│  "Squat tehnikasy gowulaşdy. Deadlift agramyny              │
+│   artdyryp bolar. Dynç gününde ýoga maslahat."             │
+├─────────────────────────────────────────────────────────────┤
+│  TAB: HASAP                                                 │
+│                                                             │
+│  Jemi tölenilen: 5,400 TMT (18 aý)                         │
+│  Galany / Tölenmedik: 0 TMT                                │
+│  Bonus nokatlary: 540 pkt                                   │
+│                                                             │
+│  [+ Töleg Giriş]  [Hasap Taryhy]                           │
+└─────────────────────────────────────────────────────────────┘
+```
+
+Modalyň aşagynda: `[Düzet] [Abunasy Uzat] [SMS Iber] [Çap et] [Öçür]`
+
+### 2D — Täze Agza / Düzetme Formy
+
+Seksiýalara bölünen forma modaly:
+
+```
+SEKSİÝA 1: ŞAHSY MAGLUMAT
+  At * | Familiýa * | Telefon * | Telefon 2
+  E-poçta | Doglan güni | Jynsy [Erkek/Aýal]
+  Adres | Gyssagly habarlaşmak (at + telefon + gatnaşygy)
+
+SEKSİÝA 2: FİZİKİ MAGLUMAT
+  Boy (sm) | Agram (kg)
+  Maksat *: [Myşsa / Agram azaltmak / Çydamlylyk / Umumy saglyk / Sport taýýarlyk]
+  Saglyk bellikleri (textarea) — Alarm: Bu maglumaty tälimçi görýär
+
+SEKSİÝA 3: ABUNA
+  Plan *: [Başlangyç — 180 TMT] [Premium — 300 TMT] [Elite — 600 TMT]
+  Başlangyç senesi *
+  Töleg görnüşi *: [Nagt / Bank geçiriş / Kart]
+  Awtomatik täzelemek: ☐
+
+SEKSİÝA 4: GOŞMAÇA
+  Şahsy tälimçi: [Saýla ▼]
+  Sapak ýazylmak: [Saýla ▼ — köp saýlawly]
+  Nähili tapdyňyz: [Saýla ▼]
+  Maslahat beren agza ID (referral)
+  Içerki bellik (diňe admin)
+```
+
+---
+
+## 🏋️ BÖLÜM 3: SAPAK DOLANDYRMA
+
+### 3A — Sapak Maglumat Modeli
+
+```javascript
+const classModel = {
+  id:           1,
+  name:         'Irki HIIT Topary',
+  type:         'hiit',      // hiit / yoga / boxing / strength / cardio / pilates / aqua / zumba
+  description:  'Ýokary intensiwli aralyk türgenleşigi. Güýç we çydamlylyk.',
+  
+  // Wagt
+  dayOfWeek:    [1, 3, 5],   // 0=Ýek, 1=Duş, ..., 6=Şen
+  startTime:    '07:00',
+  duration:     60,           // minut
+  
+  // Zal
+  hallId:       1,
+  maxCapacity:  15,
+  
+  // Tälimçi
+  trainerId:    1,
+  
+  // Baha
+  isFree:       false,        // Agzalyk içinde mugt?
+  extraPrice:   0,            // Goşmaça töleg (TMT) — 0 bolsa mugt
+  
+  // Ýazylmak
+  enrolledMembers: [101, 205, 308],  // Agza IDs
+  waitingList:     [],
+  
+  // Ýagdaý
+  active:       true,
+  level:        'all',        // beginner / intermediate / advanced / all
+  color:        '#EF4444',    // Tertipde görünýän reňk
+  
+  // Meta
+  totalSessions: 48,          // Geçirilen jemi
+  avgAttendance: 11.2,        // Ortaça gatnaşyk
+  rating:        4.8,
+  createdAt:    '2024-01-15'
+};
+```
+
+### 3B — Sapak Sanawy
+
+**Tab süzgüçler:** `[Hemmesi] [HIIT] [Ýoga] [Boks] [Güýç] [Kardio] [Pilates]`
+
+**Sapak Kartoçkasy (Grid görnüşde):**
+```
+┌─────────────────────────────────┐
+│ [Reňk zolak ýokarda — type-a görä] │
+│                                 │
+│ ⚡ Irki HIIT Topary    [✅ Aktiw] │
+│                                 │
+│ 📅 Duş / Çar / Ann             │
+│ ⏰ 07:00 — 08:00 (60 min)      │
+│ 🏛️ Kardio Zaly                  │
+│ 👨‍🏫 Merdan Hydyrow               │
+│                                 │
+│ 👥 11/15 ýer doldy              │
+│ ████████████░░░ 73%             │
+│                                 │
+│ ⭐ 4.8  |  📊 48 seans          │
+│                                 │
+│ [Görmek] [Düzetmek] [Tertip]    │
+└─────────────────────────────────┘
+```
+
+### 3C — Sapak Detail Modaly
+
+Tab görnüşde:
+
+```
+[MAGLUMAT] [ÝAZYLMAKLAR] [SEANS TARYHY] [STATISTIKA]
+
+TAB: ÝAZYLMAKLAR
+────────────────────────────────
+Ýazylganlary: 11/15 (4 ýer bar)
+Garaşymlar: 0
+
+Ýazylgan agzalaryň sanawy (tablisy):
+# | At | Abuna | Soňky Giriş | Gatnaşyk% | Işler
+1 | Oraz N. | Premium | Düýn | 87% | [❌ Çykar]
+2 | Maýa G. | Elite   | 3 gün | 92% | [❌ Çykar]
+
+[+ Agza Goş ▼]  — dropdown bilen agza gözleg
+
+TAB: SEANS TARYHY
+────────────────────────────────
+📅 03.07.2025 (Çarşenbe 07:00) — 12/15 agza geldi
+  Gelmedikler: Oraz N., Serdar A., Maral H.
+  Bellik: "Örän işjeň seans, hemmesi çydap gutardy"
+
+📅 01.07.2025 (Duşenbe 07:00)  — 11/15 agza geldi
+  [+ Seans Bellik Goş]
+
+TAB: STATİSTİKA
+────────────────────────────────
+Ortaça gatnaşyk: 11.2 / 15 (75%)
+Iň köp gelen agza: Maýa G. (46/48 seans)
+Iň az gelen: Serdar A. (22/48 seans)
+Reýting: ⭐ 4.8 / 5.0 (34 ses)
+Iň işjeň gün: Duşenbe
+Dolulygy artdyrmak maslahat: Penşenbe sapagy goşmak
+```
+
+### 3D — Täze Sapak Formy
+
+```
+At *
+Görnüşi *: [HIIT / Ýoga / Boks / Güýç / Kardio / Pilates / Aqua / Zumba / Başga]
+Derejesi *: [Başlangyç / Orta / Ýokary / Hemmesi üçin]
+Açyklama (textarea)
+Hepde günleri *: ☐Duş ☐Sal ☐Çar ☐Per ☐Ann ☐Şen ☐Ýek
+Başlangyç wagty * | Dowamlylygy (min) *
+Zal *: [Saýla ▼]
+Tälimçi *: [Saýla ▼]
+Iň köp agza *
+Abunalylara mugtmy? ◉Hawa ○Ýok
+Goşmaça töleg (TMT):
+Reňk saýla (tertipde görünýär): [Reňk palitri]
+Ýagdaýy: ◉Aktiw ○Ýapyk
+```
+
+---
+
+## 👨‍🏫 BÖLÜM 4: TÄLİMÇİLER
+
+### 4A — Tälimçi Maglumat Modeli
+
+```javascript
+const trainerModel = {
+  id:           1,
+  firstName:    'Merdan',
+  lastName:     'Hydyrow',
+  phone:        '+993 65 123456',
+  email:        'merdan@gym.tm',
+  birthDate:    '1990-08-22',
+  gender:       'male',
+  
+  // Hünär
+  specialties:  ['strength', 'powerlifting', 'hiit'],
+  bio:          'Milli çempion, 11 ýyl tejribe...',
+  certifications: [
+    { name:'NASM-CPT', issuer:'NASM', year:2018, expiry:'2026' },
+    { name:'Powerlifting Tälimçisi', issuer:'IPF', year:2020 }
+  ],
+  experience:   11,            // ýyl
+  
+  // Iş
+  hireDate:     '2020-05-01',
+  salary:       3500,          // TMT/aý
+  schedule: {
+    workDays:   [1,2,3,4,5],   // Duşenbe-Anna
+    startTime:  '07:00',
+    endTime:    '20:00'
+  },
+  
+  // Ýükleme
+  assignedClasses:    [1, 4, 7],    // Sapak IDs
+  personalClients:    [101, 205, 308, 412, 519],  // Agza IDs
+  maxPersonalClients: 8,
+  
+  // Statistika
+  totalSessions:     520,
+  avgRating:         4.9,
+  reviewCount:       87,
+  
+  // Ýagdaý
+  active:       true,
+  leaveUntil:   null,          // Rugsat senesi (null = işleýär)
+  notes:        '',
+  photo:        null
+};
+```
+
+### 4B — Tälimçi Kartlary
+
+```
+┌──────────────────────────────────┐
+│  [Gradient fon — hünäre görä]    │
+│  [Emoji — 64px]                  │
+│                                  │
+│  Merdan Hydyrow       [Aktiw ✅] │
+│  Güýç & Powerlifting             │
+│  ⭐ 4.9  |  11 ýyl tejribe       │
+│                                  │
+│  Sapaklar: 3 | Şahsy: 5/8       │
+│  ████████████░░░ 63% dolulyk     │
+│                                  │
+│  NASM · IPF sertifikatly         │
+│                                  │
+│  [Profili Gör] [Tertip] [Düzet] │
+└──────────────────────────────────┘
+```
+
+### 4C — Tälimçi Profili
+
+Modal içinde tab-lar:
+
+```
+[MAGLUMAT] [SAPAKLAR] [ŞAHSY MÜŞDERİLER] [TERTIP] [MALİÝE]
+
+TAB: TERTIP — Hepdelik görünüş
+Tälimçiniň şu hepde nämesi bar — Gantt görnüşde
+Boş wagty — Şahsy tälimçilik üçin elýeterli wagtlar
+
+TAB: ŞAHSY MÜŞDERİLER
+5 müşderi (8-den):
+# | Agza | Plan | Hepde | Soňky seans | Ösüş | Işler
+1 | Oraz N. | 2×/hepde | Çar,Şen | 3 gün öň | ▲ +3kg myşsa | [Gör]
+
+TAB: MALİÝE
+Bu aý: 3,500 TMT esasy aýlyk
+Şahsy tälimçilik goşmaçasy: +850 TMT
+Jemi: 4,350 TMT
+[Töleg Taryhy]
+```
+
+### 4D — Ýükleme Deňleýjisi
+
+Dashboard-da sidebar'yň aşagynda ýa-da Tälimçiler bölüminde:
+
+```
+TÄLİMÇİ ÝÜKLEME DEŇLEÝJISI:
+Merdan H.  ████████████████████░░ 91% (10/11 slot doly)  ⚠️
+Aýgül A.   █████████████░░░░░░░░░ 60% (6/10 slot)       ✅
+Serdar D.  ██████████░░░░░░░░░░░░ 45% (5/11 slot)       ✅
+Leýli A.   ████████████████████░░ 88% (7/8 slot)        ⚠️
+```
+
+---
+
+## 📅 BÖLÜM 5: SAPAK TERTİBİ
+
+### 5A — Hepdelik Tertip (Doly Karta)
+
+**Görünüş togly:** `[Hepde] [Gün] [Aý]`
+
+**Hepdelik görünüş (esasy):**
+
+```
+ZALA        DUŞENBE      SIŞENBE      ÇARŞENBE     PENŞENBE     ANNA
+──────────────────────────────────────────────────────────────────────
+07:00─08:00 [HIIT-Merdan] ────────── [HIIT-Merdan] ──────────── [HIIT]
+08:00─09:00 ─────────────[Kardio-Aý] ─────────────[Kardio-Aý]──────
+09:00─10:00 [Ýoga-Leýli]────────────[Ýoga-Leýli]──────────────[Ýoga]
+10:00─11:00 ──────────────────────────────────────────────────────────
+...
+18:00─19:00 [Boks-Serdar]───────────[Boks-Serdar]──────────────[Boks]
+19:00─20:00 [HIIT-Merdan]───────────[HIIT-Merdan]──────────────[HIIT]
+```
+
+Her sapak blogy reňkli, hover-da tooltip:
+```
+Irki HIIT Topary
+⏰ 07:00 — 08:00
+👨‍🏫 Merdan Hydyrow
+🏛️ Kardio Zaly
+👥 11/15 ýer
+[Gör →]
+```
+
+Boş ýere basmak → "Bu wagt we zal üçin sapak goş" modaly açylýar.
+
+**Çaknyşyk ýagyşy (Conflict Detection):**
+```javascript
+function detectScheduleConflicts(classes) {
+  const conflicts = [];
+  classes.forEach((c1, i) => {
+    classes.forEach((c2, j) => {
+      if (i >= j) return;
+      if (c1.hallId !== c2.hallId) return;
+      
+      const sharedDays = c1.dayOfWeek.filter(d => c2.dayOfWeek.includes(d));
+      if (!sharedDays.length) return;
+      
+      const c1End = addMinutes(c1.startTime, c1.duration);
+      const c2End = addMinutes(c2.startTime, c2.duration);
+      
+      if (c1.startTime < c2End && c1End > c2.startTime) {
+        conflicts.push({ class1: c1, class2: c2, days: sharedDays });
+      }
+    });
+  });
+  return conflicts;
+}
+// Çaknyşma tapylsa — tertipde gyzyl bilen bellenilýär + habar
+```
+
+**Aý görnüşi:**
+Her günde sapaklar kiçi haltajyklar görnüşde.  
+Günüň umumy dolulyk göterimi görünýär.
+
+---
+
+## 🔧 BÖLÜM 6: ENJAMLARY DOLANDYRMA
+
+### 6A — Enjam Maglumat Modeli
+
+```javascript
+const equipmentModel = {
+  id:               1,
+  name:             'Беговая дорожка №1',
+  turkmenName:      'Ylgaw ýodajygy №1',
+  category:         'cardio',     // cardio / strength / functional / stretching / other
+  brand:            'Life Fitness',
+  model:            'T5 Track+',
+  serialNumber:     'LF-T5-2024-001',
+  purchaseDate:     '2023-06-15',
+  purchasePrice:    8500,          // USD
+  location:         'Kardio Zaly',
+  status:           'working',     // working / maintenance / broken / retired
+  
+  // Tehniki hyzmat
+  lastMaintenance:  '2025-05-01',
+  nextMaintenance:  '2025-08-01',
+  maintenanceInterval: 90,         // gün
+  maintenanceCost:  150,           // USD/sefer
+  
+  // Ulanylyk
+  dailyUsageHours:  8,
+  totalHours:       3650,
+  
+  // Taryh
+  maintenanceHistory: [
+    { date:'2025-05-01', type:'routine', cost:150, note:'Ýag çalyndy, bant barlandy', tech:'Merdan' },
+    { date:'2025-02-01', type:'repair',  cost:280, note:'Motor çalşyldy', tech:'Daşary hünärmen' }
+  ],
+  
+  notes:     '',
+  photo:     null
+};
+```
+
+### 6B — Enjam Sanawy
+
+**Üst paneli:**
+```
+[🔍 Gözleg]  [Kategoriýa ▼]  [Ýagdaý ▼]  [Zal ▼]
+[+ Täze Enjam]  [Tehniki Syna Zerur (3)]
+```
+
+**Enjam Kartoçkasy:**
+```
+┌────────────────────────────────────┐
+│ [Kategoriýa reňk zolak]            │
+│                                    │
+│ 🏃 Ylgaw ýodajygy №1    [✅ Işleýär]│
+│ Life Fitness T5 Track+             │
+│ Kardio Zaly                        │
+│                                    │
+│ Soňky tehniki: 01.05.2025          │
+│ Indiki tehniki: 01.08.2025  (29 gün)│
+│ ████████████░░░░░ 68% wagt doldy   │
+│                                    │
+│ Jemi sagat: 3,650 sag              │
+│                                    │
+│ [Taryh] [Düzet] [Tehniki Bellik]   │
+└────────────────────────────────────┘
+```
+
+**Indiki tehniki bolan enjamlar:**
+Aşak barlanda gyzyl/sary badge, dashboard-da bildiriş.
+
+### 6C — Tehniki Hyzmat Belläge
+
+```
+Enjamy saýla *
+Hyzmat görnüşi *: [Routin / Abatlaýyş / Ätiýaçlyk çalşygy]
+Sene *
+Çykdajy (TMT ýa-da USD)
+Tehniki işgär / hünärmen
+Bellik (textarea)
+```
+
+---
+
+## 🥗 BÖLÜM 7: IÝMİTLENME BÖLÜMİ
+
+### 7A — Iýmitlenme Meýilnamasy Şablonlary
+
+```javascript
+const nutritionPlan = {
+  id:           1,
+  name:         'Myşsa Ösdürmek — Erkek (75-85 kg)',
+  goal:         'muscle',
+  gender:       'male',
+  weightRange:  { min:75, max:85 },
+  
+  dailyCalories: 3200,
+  macros: { protein:160, carbs:380, fat:85 },   // gram
+  
+  meals: [
+    {
+      time: '07:00',
+      name: 'Irdenki nahar',
+      foods: [
+        { name:'Ýumurtga (haşlama)', amount:3, unit:'sany', cal:234, p:19, c:3, f:15 },
+        { name:'Owsýan ýarmasy', amount:80, unit:'g', cal:300, p:10, c:54, f:5 },
+        { name:'Banan', amount:1, unit:'sany', cal:89, p:1, c:23, f:0 }
+      ]
+    },
+    // ... beýleki naharlar
+  ],
+  
+  waterIntake: 3500,   // ml/gün
+  supplements: ['Kreatin 5g', 'Protein shake (türgenleşikden soňra)'],
+  notes: ''
+};
+```
+
+### 7B — Agza Iýmitlenme Yzarlaýyş
+
+Agzanyň profilinden girip, onuň iýmitlenme meýilnamasyny gör/düzet.
+
+Grafik: Gündelik kaloriýa we makro (Chart.js bar + doughnut).
+
+### 7C — Iýmit Kitaphana
+
+Ýygy ulanylýan iýmitleriň sanawy — CRUD.
+
+---
+
+## 💰 BÖLÜM 8: MALİÝE
+
+### 8A — Girdeji Tablisy
+
+```javascript
+const transactionModel = {
+  id:           'PAY-2025-001',
+  type:         'income',        // income / expense
+  category:     'subscription',  // subscription / class / personal_training / shop / other
+  memberId:     101,
+  memberName:   'Oraz Nurlyýew',
+  amount:       300,
+  currency:     'TMT',
+  paymentMethod: 'cash',         // cash / transfer / card
+  reference:    'Iýul 2025 Premium abuna',
+  date:         '2025-07-01',
+  receivedBy:   2,               // Kabul eden ulanyjy ID
+  notes:        '',
+  createdAt:    '2025-07-01T09:15:00'
+};
+```
+
+### 8B — Maliýe Sanawy
+
+Üst paneli:
+```
+[🔍 Gözleg]  [Görnüş ▼: Giriş / Çykdajy / Hemmesi]
+[Kategoriýa ▼]  [Töleg görnüşi ▼]  [Döwür: ____ - ____]
+[Eksport CSV]
+```
+
+**Jemi sanylar ýokarsynda:**
+```
+┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐
+│ 📈 Giriş     │ │ 📉 Çykdajy   │ │ 💰 Arassa    │ │ ⏳ Alynmaly  │
+│ 124,500 TMT  │ │  18,200 TMT  │ │ 106,300 TMT  │ │  12,400 TMT  │
+│ Bu aý        │ │ Bu aý        │ │ Bu aý        │ │ Garaşylýan   │
+└──────────────┘ └──────────────┘ └──────────────┘ └──────────────┘
+```
+
+### 8C — Töleg Giriş
+
+```
+Agzany tap *: [Gözleg — at ýa-da ID]
+Töleg möçberi (TMT) *
+Töleg görnüşi *: [Nagt / Geçiriş / Kart]
+Kategoriýa *: [Abuna / Sapak / Şahsy tälimçi / Dükandaky / Başga]
+Sene *
+Amalat belgisi (bank geçiriminde)
+Bellik
+
+[Sakla we Çap et]  [Diňe Sakla]
+```
+
+### 8D — Abuna Täzeleme Dolandyryjy
+
+Abunasy gutarýan ýa-da gutaran agzalaryň sanawy:
+
+```
+Sana | At | Abuna | Gutarma | Galany gün | Soňky töleg | Işler
+──────────────────────────────────────────────────────────────
+1 | Serdar A. | Premium | 05.07.2025 | 2 gün | 300 TMT | [📱Habarlaş][💳Uzat]
+2 | Maral H.  | Elite   | 07.07.2025 | 4 gün | 600 TMT | [📱Habarlaş][💳Uzat]
+3 | Baýram N. | Başlangyç | 10.07.2025 | 7 gün | 180 TMT | [📱Habarlaş][💳Uzat]
+```
+
+**"Abunasy Uzat" düwmesi:**
+Basanda → baha we dowam etmek formy → töleg kabul → awtomatik täzelen.
+
+### 8E — Maliýe Diagrammalary
+
+```javascript
+// 1. Aýlyk giriş — bar chart (12 aý)
+// 2. Abuna plan paýlanmasy — doughnut
+// 3. Töleg görnüşi (nagt/geçiriş/kart) — pie
+// 4. Girdeji vs Çykdajy — stacked bar
+```
+
+---
+
+## 📈 BÖLÜM 9: HASABATLAR
+
+### 9A — Hasabat Dörediji
+
+```
+Hasabat görnüşi *:
+  ◉ Agza Hasabaty (Ýazylmak, Çykma, Ösüş)
+  ○ Maliýe Hasabaty (Girdeji, Abuna, Töleg)
+  ○ Sapak Hasabaty (Dolulyk, Gatnaşyk, Reýting)
+  ○ Tälimçi Hasabaty (Seans, Müşderi, Girdejä goşant)
+  ○ Enjam Hasabaty (Tehniki syna, Abatlaýyş çykdajy)
+  ○ Agza Ösüş Hasabaty (Agram, Myşsa, Ýag % ortaça)
+
+Döwür *: [Bu aý] [Geçen aý] [Bu çaryýyl] [Bu ýyl] [Özboluşly]
+
+Format: [HTML Görnüş] [CSV] [JSON]
+
+[Hasabat Döreder]
+```
+
+### 9B — Görsel Analitik Sahypasy
+
+Doly analitik dashboard:
+
+**1. Agza Tutulyk (Retention) Grafigi:**
+```javascript
+// Her aý täze gelen vs giden agzalar
+const retentionChart = new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: getLast6Months(),
+    datasets: [
+      { label: 'Täze geldi', data: [23,18,31,27,39,47], backgroundColor:'rgba(16,185,129,0.7)' },
+      { label: 'Çykdy',      data: [8,12,9,15,11,8],    backgroundColor:'rgba(239,68,68,0.7)'  }
+    ]
+  }
+});
+```
+
+**2. Sapak Dolulyk Kartasy (Heatmap):**
+Her sapak × hepde güni → Ortaça dolulyk göterimi.
+
+**3. Çeşme Analizi:**
+Agzalar nähili tapdy → Pie chart (Instagram, Web, Maslahat, Ş.gel).
+
+**4. Agzalary Saklamak Koeffisienti:**
+```javascript
+// 3-aý, 6-aý, 12-aý saklama göterim
+const retention = {
+  month3:  calculateRetention(3),   // % agza 3 aý soňra hem bar
+  month6:  calculateRetention(6),
+  month12: calculateRetention(12)
+};
+```
+
+**5. Gatnaşyk Heatmap:**
+GitHub contribution grafigi ýaly — hepde × sagat.
+
+---
+
+## 🔔 BÖLÜM 10: BİLDİRİŞLER
+
+### 10A — Bildiriş Merkezi
+
+```
+[Hemmesi] [Okalmaýan(5)] [Agza] [Maliýe] [Enjam] [Tertip]
+
+🆕 ●  Täze agza ýazyldy — Ogulgerek Meredowa     [2 min] [Gör]
+💰 ●  Töleg alyndy — Serdar A. 300 TMT           [18 min] [Gör]
+⚠️ ●  Abunasy gutarýar — Maral H. (4 günde)     [1 sag]  [Habarlaş]
+🔧 ●  Tehniki syna gerek — Ylgaw ýodajygy №3    [2 sag]  [Gör]
+📅 ●  Şu gün sapak bar — HIIT 07:00 (12 ýazylgy)  [3 sag]  [Gör]
+✏️    Tälimçi Merdan rugsat sorady — 14-16 Iýul   [Düýn]   [Tassykla]
+```
+
+### 10B — Awtomatik Bildiriş Sazlamalary
+
+```
+AGZ. BILDIRIŞLERI:
+✅ Täze agza ýazylynda habar
+✅ Abuna gutarmazdan 7 gün öň ýatlatma
+✅ Abuna gutaranda habar
+✅ Töleg alynanda habar
+
+TERTIP BİLDİRİŞLERİ:
+✅ Sapak çaknyşygynda habar
+✅ Tälimçi ýok wagty bar sapagy bar bolsa
+✅ Sapak dolulygynda habar (15/15)
+
+ENJAM BİLDİRİŞLERİ:
+✅ Tehniki syna möhleti geçmezden 7 gün öň
+✅ Enjam synamaly diýlip bellegilense
+
+GÜNDELIK:
+☐  Her gün 08:00-da umumy hasabat
+☐  Her hepdede Duşenbe jemi
+```
+
+---
+
+## 👤 BÖLÜM 11: ULANYJYLAR (Diňe Superadmin)
+
+### Ulanyjy Sanawy
+
+```
+At          | Login    | Rol          | Soňky giriş  | Ýagdaý | Işler
+──────────────────────────────────────────────────────────────────────
+Baş Admin   | admin    | Superadmin   | 5 min öň     | ✅     | [✏️]
+Menejer     | menejer  | Menejer      | 1 sag öň     | ✅     | [✏️🗑️]
+Admin       | admin2   | Kabul işgäri | Düýn 18:45   | ✅     | [✏️🗑️]
+Tälimçi1   | talimci  | Tälimçi      | 3 gün öň     | ✅     | [✏️🗑️]
+```
+
+### Ulanyjy Döretme / Düzetme
+
+```
+At *  |  Login *  |  Parol *  [👁️]
+Rol *: [Superadmin / Menejer / Kabul işgäri / Tälimçi]
+Rugsatlar (rol saýlanda awtomatik — el bilen üýtgedip hem bolýar)
+Tälimçi roly saýlansa: Tälimçi profili bilen baglanyşdyr → [Saýla ▼]
+Ýagdaýy: [Aktiw / Ýapyk]
+```
+
+---
+
+## ⚙️ BÖLÜM 12: ULGAM SAZLAMALARY
+
+### 12A — Klub Maglumatlary
+
+```
+Klub ady *  |  Şäher *  |  Telefon *  |  Telefon 2
+Adres *  |  E-poçta  |  Instagram  |  Telegram
+Iş saatlar (gün boýunça)
+Açylyş ýyly
+```
+
+### 12B — Abuna Meýilnamalary
+
+```
+Plan 1 — Başlangyç
+  At:      Başlangyç
+  Baha:    180 TMT/aý
+  Goşulýan: Gym zaly, Kardio
+  Çäklenme: Topar sapaklar ýok
+  Saklanan: ✅
+
+Plan 2 — Premium
+  At:      Premium
+  Baha:    300 TMT/aý
+  Goşulýan: Gym + Kardio + Topar sapaklar + SPA
+  Şahsy tälimçi: Aýda 2×
+  Saklanan: ✅
+  
+Plan 3 — Elite
+  At:      Elite
+  Baha:    600 TMT/aý
+  Goşulýan: Hemmesi + Çäksiz şahsy tälimçi
+  [Düzet] [+ Täze Plan]
+```
+
+### 12C — Zallar Dolandyrma
+
+```
+Zal ady * | Sig'ym * | Görnüşi | Ýagdaý (Açyk/Abatlaýyş/Ýapyk)
+[+ Täze Zal Goş]
+```
+
+### 12D — Maglumat Dolandyrma
+
+```
+[📤 Maglumatlary Eksport et — JSON]
+[📥 Maglumatlary Import et — JSON]
+[🔄 Demo Maglumatlary Ýükle]
+[⚠️ Ähli Maglumatlary Pozmak] ← Gyzyl, 2× tassyklama
+```
+
+---
+
+## 💾 MERKEZI MAGLUMAT ULGAMY
+
+```javascript
+const DB = {
+  get:    (key) => {
+    try { return JSON.parse(localStorage.getItem('gym_' + key)) || []; }
+    catch { return []; }
+  },
+  set:    (key, data) => localStorage.setItem('gym_' + key, JSON.stringify(data)),
+  add:    (key, item) => {
+    const list = DB.get(key);
+    const newItem = {
+      ...item,
+      id: 'ID-' + Date.now(),
+      createdAt: new Date().toISOString()
+    };
+    list.push(newItem);
+    DB.set(key, list);
+    return newItem;
+  },
+  update: (key, id, patch) => {
+    const list = DB.get(key).map(i =>
+      i.id === id ? { ...i, ...patch, updatedAt: new Date().toISOString() } : i
+    );
+    DB.set(key, list);
+    return list;
+  },
+  remove: (key, id) => {
+    const list = DB.get(key).filter(i => i.id !== id);
+    DB.set(key, list);
+    return list;
+  },
+  find:   (key, id) => DB.get(key).find(i => i.id === id),
+  filter: (key, fn) => DB.get(key).filter(fn),
+  count:  (key, fn) => fn ? DB.get(key).filter(fn).length : DB.get(key).length,
+};
+
+// İlk açylanda demo maglumatlary ýükle
+function initDemoData() {
+  if (localStorage.getItem('gym_initialized')) return;
+
+  DB.set('members',     DEMO_MEMBERS);       // 15+ agza
+  DB.set('classes',     DEMO_CLASSES);       // 10+ sapak
+  DB.set('trainers',    DEMO_TRAINERS);      // 4 tälimçi
+  DB.set('equipment',   DEMO_EQUIPMENT);     // 20+ enjam
+  DB.set('transactions',DEMO_TRANSACTIONS);  // 50+ töleg
+  DB.set('nutrition',   DEMO_NUTRITION);     // 5 meýilnama şablony
+  DB.set('settings',    DEFAULT_SETTINGS);
+  DB.set('users',       DEFAULT_USERS);
+
+  localStorage.setItem('gym_initialized', 'true');
+  console.log('✅ Demo maglumatlary ýüklendi');
+}
+```
+
+---
+
+## 🎨 UX KOMPONENTLERİ
+
+### Toast Bildirişler:
+```javascript
+const toast = {
+  show(msg, type = 'success', duration = 3500) {
+    const el = document.createElement('div');
+    el.className = `toast toast-${type}`;
+    el.innerHTML = `
+      <span class="toast-icon">${{success:'✅',error:'❌',warning:'⚠️',info:'ℹ️'}[type]}</span>
+      <span class="toast-msg">${msg}</span>
+      <button class="toast-close" onclick="this.parentElement.remove()">✕</button>
+    `;
+    document.getElementById('toast-container').appendChild(el);
+    setTimeout(() => el.classList.add('toast-exit'), duration);
+    setTimeout(() => el.remove(), duration + 350);
+  },
+  success: (msg) => toast.show(msg, 'success'),
+  error:   (msg) => toast.show(msg, 'error'),
+  warning: (msg) => toast.show(msg, 'warning'),
+  info:    (msg) => toast.show(msg, 'info'),
+};
+```
+
+### Tassyklama Dialogy:
+```javascript
+function confirm(msg, onYes, danger = false) {
+  const modal = createModal({
+    title: 'Tassyklarsynyzmy?',
+    body: `<p>${msg}</p>`,
+    footer: `
+      <button onclick="closeModal()" class="btn-ghost">Ýok</button>
+      <button onclick="(${onYes})(); closeModal()" 
+              class="${danger ? 'btn-danger' : 'btn-primary'}">Hawa</button>
+    `
+  });
+}
+```
+
+### Eksport Funksiýalar:
+```javascript
+function exportCSV(data, filename) {
+  if (!data.length) return toast.warning('Maglumat ýok');
+  const headers = Object.keys(data[0]);
+  const rows = data.map(r => headers.map(h => `"${r[h] ?? ''}"`).join(','));
+  const csv = [headers.join(','), ...rows].join('\n');
+  downloadFile(csv, filename + '.csv', 'text/csv');
+}
+
+function exportJSON(data, filename) {
+  downloadFile(JSON.stringify(data, null, 2), filename + '.json', 'application/json');
+}
+
+function downloadFile(content, filename, type) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], { type }));
+  a.download = filename;
+  a.click();
+}
+```
+
+---
+
+## 📱 MOBİL GOLDAW
+
+```css
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed; left: -248px;
+    transition: left 0.3s ease;
+    z-index: 100;
+    box-shadow: 4px 0 30px rgba(0,0,0,0.5);
+  }
+  .sidebar.open { left: 0; }
+  
+  .sidebar-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 99; display: none;
+  }
+  .sidebar-overlay.show { display: block; }
+
+  .main-content { margin-left: 0; }
+  
+  .kpi-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  
+  .modal { width: 100%; height: 100%; border-radius: 0;
+           max-height: 100vh; margin: 0; }
+  
+  .form-grid-2 { grid-template-columns: 1fr; }
+  
+  button, a, input, select { min-height: 44px; }
+}
+```
+
+---
+
+## ✅ HIL BARLAG SANAWY
+
+### Giriş & Rugsat:
+- [ ] 4 rol dogry işleýär (superadmin, menejer, kabul, tälimçi)
+- [ ] Rol boýunça menýu elýeterliligi dolandyrylýar
+- [ ] Rugsat bolmadyk bölüme girmek synanyşanda redirect
+
+### Dashboard:
+- [ ] KPI kartlary hakyky maglumatlardan hasaplanýar
+- [ ] Gantt tertibi dogry render bolýar
+- [ ] Chart.js diagrammalary işleýär
+- [ ] Soňky işler feed işleýär
+
+### Agzalar:
+- [ ] Sanawy süzgüçleme we gözleg işleýär
+- [ ] Detail modal ähli 5 tab bilen işleýär
+- [ ] Gatnaşyk heatmap dogry render bolýar
+- [ ] Ösüş grafigi işleýär
+- [ ] Täze agza goşmak hemme meýdan bilen işleýär
+- [ ] Abuna uzatmak işleýär
+- [ ] Abunasy gutarýan ýatlatma sanawy işleýär
+
+### Sapaklar:
+- [ ] Täze sapak goşmak işleýär
+- [ ] Sapaga agza goşmak/çykarmak işleýär
+- [ ] Seans taryhy ýazýar
+- [ ] Tälimçi ýükleme deňleýjisi işleýär
+
+### Tertip:
+- [ ] Hepdelik görünüş dogry
+- [ ] Çaknyşyk ýagyşy işleýär
+- [ ] Boş ýere basmak modal açýar
+- [ ] Aý görnüşi işleýär
+
+### Enjamlar:
+- [ ] Tehniki syna bildirişleri işleýär
+- [ ] Taryh goşmak işleýär
+
+### Maliýe:
+- [ ] Täze töleg giriş işleýär
+- [ ] Girdeji/Çykdajy/Arassa dogry hasaplanýar
+- [ ] CSV eksport işleýär
+
+### Umumy:
+- [ ] Toast bildirişler ähli işlerde çykýar
+- [ ] Tassyklama dialogy destruktif işlerde çykýar
+- [ ] Mobil drawer işleýär
+- [ ] Tablisylar gorizontal syrylýar
+- [ ] localStorage-dan maglumatlar ýitmeýär (sahypa täzelenende hem)
+
+---
+
+## 🚀 REPLIT AGENTINE SON SÖZ
+
+Bu panel — fitnes klubunyň **siňek beýni**.  
+Admin açanda sekuntda ähli zady görüp, bäş minutda ähli işi edip bilmeli.
+
+**Bir `admin.html`. Başga faýl ýok.**
+
+Gurluşy planda çyk → Giriş → Sidebar → Dashboard → her bölüm →  
+CRUD funksiýalar → Chart-lar → Toast/Modal → Eksport → Mobil → Test.
+
+Her düwme bir işi çözmeli.  
+Her tablisa bir soraga jogap bermeli.  
+Her grafik bir karara kömek etmeli.
+
+Gur ony. Kämil et. Buýsandyr. 💪🔥
