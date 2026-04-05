@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
-import { ArrowRight, Star, TrendingUp, Users, Clock } from "lucide-react";
+import { ArrowRight, Star } from "lucide-react";
 import type { FitnessClub } from "@/hooks/use-fitness-club";
 import { useLang } from "@/context/language-context";
 
@@ -45,6 +45,36 @@ function Counter({ target, suffix = "" }: { target: number; suffix?: string }) {
   }, [target, suffix]);
 
   return <span ref={nodeRef}>0{suffix}</span>;
+}
+
+function IconUsers({ size = 24, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+      <circle cx="9" cy="7" r="3.5" stroke="currentColor" strokeWidth="1.5" fill="currentColor" fillOpacity="0.1"/>
+      <path d="M2 19C2 15.7 5 13 9 13C13 13 16 15.7 16 19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      <circle cx="17.5" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.4" fill="currentColor" fillOpacity="0.1"/>
+      <path d="M20 17.5C21.5 18 22 19 22 19.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+function IconTrendingUp({ size = 24, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+      <polyline points="23,6 13.5,15.5 8.5,10.5 1,18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+      <polyline points="17,6 23,6 23,12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+function IconClock({ size = 24, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+      <circle cx="12" cy="12" r="9.5" stroke="currentColor" strokeWidth="1.5" fill="currentColor" fillOpacity="0.06"/>
+      <path d="M12 6.5 L12 12.5 L16 14.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+      <circle cx="12" cy="12" r="1.5" fill="currentColor" opacity="0.4"/>
+    </svg>
+  );
 }
 
 export function Hero({ club }: { club: FitnessClub }) {
@@ -134,14 +164,15 @@ export function Hero({ club }: { club: FitnessClub }) {
             >
               <a
                 href="#pricing"
-                className="w-full sm:w-auto px-8 py-4 bg-primary text-white font-bold uppercase tracking-wider rounded flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:gap-4 group animate-glow"
+                className="w-full sm:w-auto px-8 py-4 bg-primary text-white font-bold uppercase tracking-wider rounded-full flex items-center justify-center gap-2 hover:bg-primary/90 transition-all hover:gap-4 group animate-glow relative overflow-hidden"
               >
-                {t.hero.freeTrial}
-                <ArrowRight size={20} className="transition-transform" />
+                <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                <span className="relative z-10">{t.hero.freeTrial}</span>
+                <ArrowRight size={18} className="transition-transform relative z-10" />
               </a>
               <a
                 href="#services"
-                className="w-full sm:w-auto px-8 py-4 bg-white/5 text-white font-bold uppercase tracking-wider rounded border border-white/10 hover:bg-white/10 transition-all text-center"
+                className="w-full sm:w-auto px-8 py-4 bg-white/5 text-white font-bold uppercase tracking-wider rounded-full border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all text-center text-sm"
               >
                 {t.hero.pricing}
               </a>
@@ -151,17 +182,17 @@ export function Hero({ club }: { club: FitnessClub }) {
               className="hero-buttons mt-10 flex items-center gap-4 text-sm text-muted-foreground"
               style={{ opacity: 0 }}
             >
-              <div className="flex gap-1 text-yellow-500">
+              <div className="flex gap-0.5 text-yellow-500">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <Star key={i} size={16} fill="currentColor" />
+                  <Star key={i} size={15} fill="currentColor" />
                 ))}
               </div>
               <span className="w-1 h-1 rounded-full bg-white/20" />
-              <span className="font-mono text-white">
+              <span className="font-mono text-white text-sm">
                 {club.members}+ {t.hero.membersLabel}
               </span>
               <span className="w-1 h-1 rounded-full bg-white/20" />
-              <span>
+              <span className="text-xs">
                 {club.est}
                 {t.hero.membersSince}
               </span>
@@ -174,50 +205,66 @@ export function Hero({ club }: { club: FitnessClub }) {
               style={{ opacity: 0 }}
             >
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 blur-[40px] rounded-full pointer-events-none" />
+              <div
+                className="absolute inset-0 rounded-[2rem] pointer-events-none opacity-[0.03]"
+                style={{ backgroundImage: "repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(255,255,255,0.05) 10px, rgba(255,255,255,0.05) 11px)" }}
+              />
 
-              <h3 className="font-display text-2xl text-white mb-8 border-b border-white/10 pb-4">
-                {t.statsCard.title}
-              </h3>
+              <div className="flex items-center gap-2 mb-8 pb-5 border-b border-white/8">
+                <div className="w-1.5 h-5 rounded-full bg-primary" />
+                <h3 className="font-display text-xl text-white tracking-wider">
+                  {t.statsCard.title}
+                </h3>
+              </div>
 
-              <div className="space-y-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center">
-                    <Users size={24} />
+              <div className="space-y-5">
+                <div className="flex items-center gap-4 group">
+                  <div className="w-12 h-12 rounded-2xl bg-primary/15 border border-primary/20 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                    <IconUsers size={22} />
                   </div>
                   <div>
                     <div className="font-mono text-2xl text-white font-bold">{club.members}+</div>
-                    <div className="text-sm text-muted-foreground uppercase tracking-wide">
+                    <div className="text-xs text-muted-foreground uppercase tracking-widest">
                       {t.statsCard.members}
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center">
-                    <TrendingUp size={24} />
+                <div className="flex items-center gap-4 group">
+                  <div className="w-12 h-12 rounded-2xl bg-primary/15 border border-primary/20 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                    <IconTrendingUp size={22} />
                   </div>
                   <div>
                     <div className="font-mono text-2xl text-white font-bold">{club.trainers}+</div>
-                    <div className="text-sm text-muted-foreground uppercase tracking-wide">
+                    <div className="text-xs text-muted-foreground uppercase tracking-widest">
                       {t.statsCard.trainers}
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary/20 text-primary flex items-center justify-center">
-                    <Clock size={24} />
+                <div className="flex items-center gap-4 group">
+                  <div className="w-12 h-12 rounded-2xl bg-primary/15 border border-primary/20 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                    <IconClock size={22} />
                   </div>
                   <div>
                     <div className="font-mono text-2xl text-white font-bold">
                       {yearsExp}
                       {t.statsCard.yearSuffix}
                     </div>
-                    <div className="text-sm text-muted-foreground uppercase tracking-wide">
+                    <div className="text-xs text-muted-foreground uppercase tracking-widest">
                       {t.statsCard.experience}
                     </div>
                   </div>
                 </div>
+              </div>
+
+              <div className="mt-8 pt-5 border-t border-white/8">
+                <a
+                  href="#pricing"
+                  className="w-full py-3 rounded-xl bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-primary hover:text-white transition-all duration-300"
+                >
+                  {t.nav?.freeTrial ?? "Free Trial"} <ArrowRight size={14} />
+                </a>
               </div>
             </div>
           </div>
@@ -236,12 +283,15 @@ export function StatsTicker({ club }: { club: FitnessClub }) {
 
   return (
     <div className="w-full bg-primary/10 border-y border-primary/20 py-8 relative z-20">
-      <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-primary/10 text-center">
+      <div className="absolute inset-0 pointer-events-none opacity-[0.04]"
+        style={{ backgroundImage: "repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(255,255,255,0.05) 60px, rgba(255,255,255,0.05) 61px)" }}
+      />
+      <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center relative z-10">
         <div className="reveal">
           <div className="font-mono text-4xl md:text-5xl font-bold text-white mb-2 text-shadow-glow">
             <Counter target={memCount} suffix="+" />
           </div>
-          <div className="text-primary font-bold uppercase tracking-widest text-sm">
+          <div className="text-primary font-bold uppercase tracking-widest text-xs">
             {t.ticker.members}
           </div>
         </div>
@@ -249,7 +299,7 @@ export function StatsTicker({ club }: { club: FitnessClub }) {
           <div className="font-mono text-4xl md:text-5xl font-bold text-white mb-2 text-shadow-glow">
             <Counter target={trainCount} suffix="+" />
           </div>
-          <div className="text-primary font-bold uppercase tracking-widest text-sm">
+          <div className="text-primary font-bold uppercase tracking-widest text-xs">
             {t.ticker.trainers}
           </div>
         </div>
@@ -257,7 +307,7 @@ export function StatsTicker({ club }: { club: FitnessClub }) {
           <div className="font-mono text-4xl md:text-5xl font-bold text-white mb-2 text-shadow-glow">
             <Counter target={yearsExp} />
           </div>
-          <div className="text-primary font-bold uppercase tracking-widest text-sm">
+          <div className="text-primary font-bold uppercase tracking-widest text-xs">
             {t.ticker.experience}
           </div>
         </div>
@@ -265,7 +315,7 @@ export function StatsTicker({ club }: { club: FitnessClub }) {
           <div className="font-mono text-4xl md:text-5xl font-bold text-white mb-2 text-shadow-glow">
             24/7
           </div>
-          <div className="text-primary font-bold uppercase tracking-widest text-sm">
+          <div className="text-primary font-bold uppercase tracking-widest text-xs">
             {t.ticker.open}
           </div>
         </div>
