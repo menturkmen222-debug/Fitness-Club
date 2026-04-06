@@ -1069,7 +1069,12 @@ tbody tr:nth-child(even){background:rgba(255,255,255,.012)}
     </div>
     <div class="form-field">
       <label>Parol</label>
-      <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
+      <div style="position:relative">
+        <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()" style="padding-right:42px;width:100%"/>
+        <button type="button" id="toggle-pass" onclick="togglePassVis()" style="position:absolute;right:0;top:0;bottom:0;width:42px;background:transparent;border:none;color:rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:color .2s" onmouseover="this.style.color='rgba(255,255,255,.75)'" onmouseout="this.style.color='rgba(255,255,255,.35)'">
+          <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
     </div>
     <label class="login-remember"><input type="checkbox" id="login-remember"/> Meni ýatla</label>
     <button class="btn-login" onclick="doLogin()">Giriş</button>
@@ -1152,18 +1157,32 @@ const PERMISSIONS={
 // ==================== ICON HELPER ====================
 function ico(name,size){
   size=size||16;
+  if(typeof lucide==='undefined'){
+    // Lucide not loaded yet — return a minimal placeholder SVG
+    return`<span style="display:inline-flex;width:${size}px;height:${size}px"></span>`;
+  }
   const tmp=document.createElement('span');
   tmp.style.cssText='display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;line-height:0';
   const el=document.createElement('i');
   el.setAttribute('data-lucide',name);
   tmp.appendChild(el);
-  lucide.createIcons({nodes:[el]});
+  try{lucide.createIcons({nodes:[el]});}catch(e){}
   const svg=tmp.querySelector('svg');
   if(!svg)return'';
   svg.setAttribute('width',size);
   svg.setAttribute('height',size);
   svg.style.cssText='display:block;flex-shrink:0';
   return tmp.innerHTML;
+}
+
+// ==================== PASSWORD TOGGLE ====================
+function togglePassVis(){
+  const inp=document.getElementById('login-pass');
+  const isHidden=inp.type==='password';
+  inp.type=isHidden?'text':'password';
+  document.getElementById('eye-icon').innerHTML=isHidden
+    ?'<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>'
+    :'<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>';
 }
 
 const NAV_ITEMS=[
