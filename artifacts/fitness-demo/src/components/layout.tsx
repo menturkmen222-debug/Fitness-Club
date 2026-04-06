@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Menu, X, Instagram, Send, MapPin, Phone } from "lucide-react";
+import { Menu, X, Instagram, Send, MapPin, Phone, ShieldCheck } from "lucide-react";
 import type { FitnessClub } from "@/hooks/use-fitness-club";
 import { useLang } from "@/context/language-context";
 import type { Lang } from "@/i18n/translations";
@@ -106,6 +106,15 @@ export function Navbar({ club }: LayoutProps) {
 
           <div className="hidden md:flex items-center gap-3">
             <LangToggle />
+            <a
+              href="/admin.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-xs font-semibold text-white/60 hover:text-white hover:border-primary/40 hover:bg-primary/10 transition-all duration-200"
+            >
+              <ShieldCheck size={13} />
+              <span>Admin</span>
+            </a>
             <span className="font-mono text-white/70 text-sm font-medium border-l border-white/10 pl-3">{club.phone}</span>
             <a
               href="#pricing"
@@ -181,6 +190,15 @@ export function Navbar({ club }: LayoutProps) {
               className="px-10 py-3.5 bg-primary text-white text-sm font-bold uppercase tracking-[0.15em] rounded-full shadow-lg shadow-primary/20 hover:bg-primary/90 transition-colors"
             >
               {t.nav.freeTrial}
+            </a>
+            <a
+              href="/admin.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-6 py-2.5 bg-white/5 border border-white/10 rounded-full text-sm font-semibold text-white/60 hover:text-white hover:border-primary/40 transition-all"
+            >
+              <ShieldCheck size={15} />
+              <span>Admin Panel</span>
             </a>
           </div>
         </div>
