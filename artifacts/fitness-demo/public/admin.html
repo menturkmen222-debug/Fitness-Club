@@ -1063,6 +1063,7 @@ tbody tr:nth-child(even){background:rgba(255,255,255,.012)}
       <p>Dolandyryş Ulgamy</p>
     </div>
     <div class="login-error" id="login-error">Ýalňyş login ýa-da parol!</div>
+    <form onsubmit="event.preventDefault();doLogin()">
     <div class="form-field">
       <label>Login</label>
       <input type="text" id="login-user" placeholder="login..." autocomplete="username"/>
@@ -1070,14 +1071,15 @@ tbody tr:nth-child(even){background:rgba(255,255,255,.012)}
     <div class="form-field">
       <label>Parol</label>
       <div style="position:relative">
-        <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()" style="padding-right:42px;width:100%"/>
+        <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password" style="padding-right:42px;width:100%"/>
         <button type="button" id="toggle-pass" onclick="togglePassVis()" style="position:absolute;right:0;top:0;bottom:0;width:42px;background:transparent;border:none;color:rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:color .2s" onmouseover="this.style.color='rgba(255,255,255,.75)'" onmouseout="this.style.color='rgba(255,255,255,.35)'">
           <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
         </button>
       </div>
     </div>
     <label class="login-remember"><input type="checkbox" id="login-remember"/> Meni ýatla</label>
-    <button class="btn-login" onclick="doLogin()">Giriş</button>
+    <button type="submit" class="btn-login">Giriş</button>
+    </form>
     <div class="login-hints">
       <p>admin / admin123 — Baş Admin</p>
       <p>menejer / menejer123 — Menejer</p>
@@ -1202,7 +1204,7 @@ const NAV_ITEMS=[
 
 const DB={
   get:(k)=>{try{return JSON.parse(localStorage.getItem('gym_'+k))||[];}catch{return [];}},
-  set:(k,d)=>localStorage.setItem('gym_'+k,JSON.stringify(d)),
+  set:(k,d)=>{try{localStorage.setItem('gym_'+k,JSON.stringify(d));}catch(e){console.warn('DB.set error',k,e);}},
   add:(k,item)=>{const l=DB.get(k);const ni={...item,id:'ID-'+Date.now()+Math.random().toString(36).substr(2,4),createdAt:new Date().toISOString()};l.push(ni);DB.set(k,l);return ni;},
   update:(k,id,patch)=>{const l=DB.get(k).map(i=>i.id===id?{...i,...patch,updatedAt:new Date().toISOString()}:i);DB.set(k,l);return l;},
   remove:(k,id)=>{const l=DB.get(k).filter(i=>i.id!==id);DB.set(k,l);return l;},
@@ -1308,8 +1310,10 @@ function doLogin(){
   const login=document.getElementById('login-user').value.trim();
   const pass=document.getElementById('login-pass').value;
   const remember=document.getElementById('login-remember').checked;
-  const users=DB.get('users').length?DB.get('users'):DEFAULT_USERS;
-  const u=users.find(x=>x.login===login&&x.password===pass);
+  const storedUsers=DB.get('users');
+  // Try stored users first, then always fallback to DEFAULT_USERS
+  const u=(storedUsers.length?storedUsers:DEFAULT_USERS).find(x=>x.login===login&&x.password===pass)
+    ||DEFAULT_USERS.find(x=>x.login===login&&x.password===pass);
   if(!u){
     const err=document.getElementById('login-error');
     err.style.display='block';
@@ -1319,8 +1323,8 @@ function doLogin(){
     return;
   }
   currentUser=u;
-  if(remember)localStorage.setItem('gym_session',JSON.stringify(u));
-  launchApp();
+  try{if(remember)localStorage.setItem('gym_session',JSON.stringify(u));}catch(e){}
+  try{launchApp();}catch(e){console.error('launchApp error',e);}
 }
 function doLogout(){
   currentUser=null;
@@ -1629,14 +1633,14 @@ function renderDashboard(ca){
     rData.push(Math.round(40000+Math.random()*60000));
     rSubs.push(Math.round(300+Math.random()*200));
   }
-  new Chart(document.getElementById('revenue-chart'),{type:'line',data:{labels:rLabels,datasets:[{label:'Girdeji (TMT)',data:rData,borderColor:'#EF4444',backgroundColor:'rgba(239,68,68,.07)',borderWidth:2.5,tension:.4,fill:true,pointBackgroundColor:'#EF4444',pointRadius:3,pointHoverRadius:6,yAxisID:'y'},{label:'Agza sany',data:rSubs,borderColor:'#06B6D4',backgroundColor:'transparent',borderWidth:2,tension:.4,pointRadius:2,yAxisID:'y2'}]},options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#F0EEF8',font:{size:11}}},tooltip:{backgroundColor:'#1A1A24',borderColor:'rgba(239,68,68,.3)',borderWidth:1}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5A5870',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5A5870',font:{size:10},callback:v=>v.toLocaleString()+'₸'}},y2:{position:'right',grid:{display:false},ticks:{color:'#5A5870',font:{size:10}}}}}});
+  try{new Chart(document.getElementById('revenue-chart'),{type:'line',data:{labels:rLabels,datasets:[{label:'Girdeji (TMT)',data:rData,borderColor:'#EF4444',backgroundColor:'rgba(239,68,68,.07)',borderWidth:2.5,tension:.4,fill:true,pointBackgroundColor:'#EF4444',pointRadius:3,pointHoverRadius:6,yAxisID:'y'},{label:'Agza sany',data:rSubs,borderColor:'#06B6D4',backgroundColor:'transparent',borderWidth:2,tension:.4,pointRadius:2,yAxisID:'y2'}]},options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#F0EEF8',font:{size:11}}},tooltip:{backgroundColor:'#1A1A24',borderColor:'rgba(239,68,68,.3)',borderWidth:1}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5A5870',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5A5870',font:{size:10},callback:v=>v.toLocaleString()+'₸'}},y2:{position:'right',grid:{display:false},ticks:{color:'#5A5870',font:{size:10}}}}}}});}catch(e){console.warn('Chart.js not loaded:',e);}
 
   // Member Doughnut
   const basic=members.filter(m=>m.subscription?.plan==='basic'&&m.subscription?.active).length;
   const premium=members.filter(m=>m.subscription?.plan==='premium'&&m.subscription?.active).length;
   const elite=members.filter(m=>m.subscription?.plan==='elite'&&m.subscription?.active).length;
   const inactive=members.filter(m=>!m.subscription?.active).length;
-  new Chart(document.getElementById('member-chart'),{type:'doughnut',data:{labels:['Başlangyç','Premium','Elite','Aktiw däl'],datasets:[{data:[basic,premium,elite,inactive],backgroundColor:['#06B6D4','#EF4444','#F59E0B','#3A3850'],borderWidth:0,hoverOffset:6}]},options:{cutout:'72%',plugins:{legend:{position:'bottom',labels:{color:'#F0EEF8',padding:14,font:{size:11}}}}}});
+  try{new Chart(document.getElementById('member-chart'),{type:'doughnut',data:{labels:['Başlangyç','Premium','Elite','Aktiw däl'],datasets:[{data:[basic,premium,elite,inactive],backgroundColor:['#06B6D4','#EF4444','#F59E0B','#3A3850'],borderWidth:0,hoverOffset:6}]},options:{cutout:'72%',plugins:{legend:{position:'bottom',labels:{color:'#F0EEF8',padding:14,font:{size:11}}}}}});}catch(e){console.warn('Chart.js not loaded:',e);}
 
   // Today Gantt
   renderTodayGantt();
@@ -1962,7 +1966,7 @@ function viewMember(id){
     setTimeout(()=>{
       const ctx=document.getElementById('progress-chart');
       if(!ctx)return;
-      new Chart(ctx,{type:'line',data:{labels:m.measurements.map(x=>formatDate(x.date)),datasets:[{label:'Agram',data:m.measurements.map(x=>x.weight),borderColor:'#EF4444',tension:.4,pointRadius:4},{label:'Myşsa',data:m.measurements.map(x=>x.muscle),borderColor:'#10B981',tension:.4,pointRadius:4},{label:'Ýag%',data:m.measurements.map(x=>x.bodyFat),borderColor:'#F59E0B',tension:.4,pointRadius:4}]},options:{responsive:true,plugins:{legend:{labels:{color:'#F0EEF8',font:{size:11}}}},scales:{x:{ticks:{color:'#5A5870'}},y:{ticks:{color:'#5A5870'}}}}});
+      try{new Chart(ctx,{type:'line',data:{labels:m.measurements.map(x=>formatDate(x.date)),datasets:[{label:'Agram',data:m.measurements.map(x=>x.weight),borderColor:'#EF4444',tension:.4,pointRadius:4},{label:'Myşsa',data:m.measurements.map(x=>x.muscle),borderColor:'#10B981',tension:.4,pointRadius:4},{label:'Ýag%',data:m.measurements.map(x=>x.bodyFat),borderColor:'#F59E0B',tension:.4,pointRadius:4}]},options:{responsive:true,plugins:{legend:{labels:{color:'#F0EEF8',font:{size:11}}}},scales:{x:{ticks:{color:'#5A5870'}},y:{ticks:{color:'#5A5870'}}}}});}catch(e){}
     },100);
   }
 }
@@ -2782,12 +2786,12 @@ function renderFinance(ca){
 
   // Bar chart
   const months=['Ýan','Few','Mar','Apr','Maý','Iýun','Iýul','Awg','Sen','Okt','Noý','Dek'];
-  new Chart(document.getElementById('fin-bar'),{type:'bar',data:{labels:months.slice(0,6),datasets:[{label:'Giriş',data:[65000,72000,68000,84600,71000,90000],backgroundColor:'rgba(16,185,129,.6)'},{label:'Çykdajy',data:[12000,15000,13000,18200,14000,16000],backgroundColor:'rgba(239,68,68,.6)'}]},options:{responsive:true,plugins:{legend:{labels:{color:'#F0EEF8',font:{size:11}}}},scales:{x:{ticks:{color:'#5A5870'}},y:{ticks:{color:'#5A5870',callback:v=>v.toLocaleString()}}}}});
+  try{new Chart(document.getElementById('fin-bar'),{type:'bar',data:{labels:months.slice(0,6),datasets:[{label:'Giriş',data:[65000,72000,68000,84600,71000,90000],backgroundColor:'rgba(16,185,129,.6)'},{label:'Çykdajy',data:[12000,15000,13000,18200,14000,16000],backgroundColor:'rgba(239,68,68,.6)'}]},options:{responsive:true,plugins:{legend:{labels:{color:'#F0EEF8',font:{size:11}}}},scales:{x:{ticks:{color:'#5A5870'}},y:{ticks:{color:'#5A5870',callback:v=>v.toLocaleString()}}}}});}catch(e){}
   // Pie
   const cashAmt=txns.filter(t=>t.paymentMethod==='cash').reduce((a,t)=>a+t.amount,0);
   const cardAmt=txns.filter(t=>t.paymentMethod==='card').reduce((a,t)=>a+t.amount,0);
   const trAmt=txns.filter(t=>t.paymentMethod==='transfer').reduce((a,t)=>a+t.amount,0);
-  new Chart(document.getElementById('fin-pie'),{type:'doughnut',data:{labels:['Nagt','Kart','Geçiriş'],datasets:[{data:[cashAmt,cardAmt,trAmt],backgroundColor:['#10B981','#06B6D4','#F97316'],borderWidth:0}]},options:{cutout:'65%',plugins:{legend:{position:'bottom',labels:{color:'#F0EEF8',font:{size:11}}}}}});
+  try{new Chart(document.getElementById('fin-pie'),{type:'doughnut',data:{labels:['Nagt','Kart','Geçiriş'],datasets:[{data:[cashAmt,cardAmt,trAmt],backgroundColor:['#10B981','#06B6D4','#F97316'],borderWidth:0}]},options:{cutout:'65%',plugins:{legend:{position:'bottom',labels:{color:'#F0EEF8',font:{size:11}}}}}});}catch(e){}
 
   filterTransactions();
   renderExpiringList();
@@ -2911,19 +2915,19 @@ function renderReports(ca){
   </div>`;
 
   // Retention bar
-  new Chart(document.getElementById('ret-chart'),{type:'bar',data:{labels:months.slice(0,6),datasets:[{label:'Täze geldi',data:[23,18,31,27,39,47],backgroundColor:'rgba(16,185,129,.7)'},{label:'Çykdy',data:[8,12,9,15,11,8],backgroundColor:'rgba(239,68,68,.7)'}]},options:{responsive:true,plugins:{legend:{labels:{color:'#F0EEF8',font:{size:11}}}},scales:{x:{ticks:{color:'#5A5870'}},y:{ticks:{color:'#5A5870'}}}}});
+  try{new Chart(document.getElementById('ret-chart'),{type:'bar',data:{labels:months.slice(0,6),datasets:[{label:'Täze geldi',data:[23,18,31,27,39,47],backgroundColor:'rgba(16,185,129,.7)'},{label:'Çykdy',data:[8,12,9,15,11,8],backgroundColor:'rgba(239,68,68,.7)'}]},options:{responsive:true,plugins:{legend:{labels:{color:'#F0EEF8',font:{size:11}}}},scales:{x:{ticks:{color:'#5A5870'}},y:{ticks:{color:'#5A5870'}}}}});}catch(e){}
 
   // Source pie
   const srcCounts={instagram:0,website:0,referral:0,walk_in:0,phone:0};
   members.forEach(m=>{ if(srcCounts[m.source]!==undefined)srcCounts[m.source]++; });
-  new Chart(document.getElementById('src-chart'),{type:'pie',data:{labels:['Instagram','Saýt','Maslahat','Özü','Telefon'],datasets:[{data:Object.values(srcCounts),backgroundColor:['#E1306C','#06B6D4','#10B981','#F59E0B','#8B5CF6'],borderWidth:0}]},options:{plugins:{legend:{position:'bottom',labels:{color:'#F0EEF8',font:{size:11}}}}}});
+  try{new Chart(document.getElementById('src-chart'),{type:'pie',data:{labels:['Instagram','Saýt','Maslahat','Özü','Telefon'],datasets:[{data:Object.values(srcCounts),backgroundColor:['#E1306C','#06B6D4','#10B981','#F59E0B','#8B5CF6'],borderWidth:0}]},options:{plugins:{legend:{position:'bottom',labels:{color:'#F0EEF8',font:{size:11}}}}}});}catch(e){}
 
   // Retention gauges
   setTimeout(()=>{
     [{l:'3 Aý',v:87},{l:'6 Aý',v:72},{l:'12 Aý',v:58}].forEach(r=>{
       const ctx=document.getElementById('ret'+r.l);
       if(!ctx)return;
-      new Chart(ctx,{type:'doughnut',data:{labels:['Saklandy','Çykdy'],datasets:[{data:[r.v,100-r.v],backgroundColor:['#10B981','#1A1A24'],borderWidth:0}]},options:{cutout:'72%',plugins:{legend:{display:false},tooltip:{enabled:false}},animation:{animateRotate:true}}});
+      try{new Chart(ctx,{type:'doughnut',data:{labels:['Saklandy','Çykdy'],datasets:[{data:[r.v,100-r.v],backgroundColor:['#10B981','#1A1A24'],borderWidth:0}]},options:{cutout:'72%',plugins:{legend:{display:false},tooltip:{enabled:false}},animation:{animateRotate:true}}});}catch(e){}
     });
   },100);
 }
