@@ -1,0 +1,9 @@
+{
+  "buildCommand": "pnpm --filter @workspace/fitness-demo run build",
+  "outputDirectory": "artifacts/fitness-demo/dist/public",
+  "installCommand": "pnpm install",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
