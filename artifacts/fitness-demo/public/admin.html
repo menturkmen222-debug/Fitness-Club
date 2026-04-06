@@ -1458,13 +1458,15 @@ function closeModal(){
   const ov=document.getElementById('modal-overlay');
   if(ov)ov.remove();
 }
+let _pendingConfirm=null;
 function confirmDialog(msg,onYes,danger=false){
+  _pendingConfirm=onYes;
   openModal(`
     <div class="modal-header"><h3>Tassyklarsynyzmy?</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
     <div class="modal-body"><p style="font-size:14px;line-height:1.6">${msg}</p></div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal()">Ýok</button>
-      <button class="btn ${danger?'btn-danger':'btn-primary'}" onclick="(${onYes.toString()})();closeModal()">${danger?'Hawa, Öçür':'Hawa'}</button>
+      <button class="btn ${danger?'btn-danger':'btn-primary'}" onclick="if(_pendingConfirm){const _cb=_pendingConfirm;_pendingConfirm=null;closeModal();_cb();}">${danger?'Hawa, Öçür':'Hawa'}</button>
     </div>
   `,'modal-sm');
 }
@@ -1704,7 +1706,7 @@ function renderTrainerLoad(){
   if(!el)return;
   const trainers=DB.get('trainers');
   el.innerHTML=trainers.map(t=>{
-    const pct=Math.round(t.personalClients.length/t.maxPersonalClients*100);
+    const pct=Math.round((t.personalClients||[]).length/(t.maxPersonalClients||10)*100);
     const color=pct>=80?'var(--yellow)':pct>=60?'var(--orange)':'var(--green)';
     return`<div class="load-bar">
       <div class="load-bar-name">${t.firstName} ${t.lastName.charAt(0)}.</div>
@@ -2143,15 +2145,15 @@ function renderClasses(ca){
     <button class="btn btn-primary" onclick="openAddClassModal()">+ Täze Sapak</button>
   </div>
   <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
-    <button class="btn btn-primary btn-sm" onclick="filterClasses('')">Hemmesi</button>
-    ${types.map(t=>`<button class="btn btn-secondary btn-sm" onclick="filterClasses('${t}')">${t.toUpperCase()}</button>`).join('')}
+    <button class="btn btn-primary btn-sm" onclick="filterClasses('',this)">Hemmesi</button>
+    ${types.map(t=>`<button class="btn btn-secondary btn-sm" onclick="filterClasses('${t}',this)">${t.toUpperCase()}</button>`).join('')}
   </div>
   <div id="classes-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px"></div>`;
   renderClassGrid('');
 }
-function filterClasses(type){
-  document.querySelectorAll('[onclick^="filterClasses"]').forEach(b=>b.classList.remove('btn-primary'));
-  event?.target?.classList.add('btn-primary');
+function filterClasses(type,btn){
+  document.querySelectorAll('[onclick^="filterClasses"]').forEach(b=>{b.classList.remove('btn-primary');b.classList.add('btn-secondary');});
+  if(btn){btn.classList.add('btn-primary');btn.classList.remove('btn-secondary');}
   renderClassGrid(type);
 }
 function renderClassGrid(typeFilter){
@@ -2329,19 +2331,19 @@ function renderTrainers(ca){
   </div>
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px">
     ${trainers.map(t=>{
-      const pct=Math.round(t.personalClients.length/t.maxPersonalClients*100);
+      const pct=Math.round((t.personalClients||[]).length/(t.maxPersonalClients||10)*100);
       const color=pct>=80?'var(--yellow)':pct>=60?'var(--orange)':'var(--green)';
       return`<div class="trainer-card">
         <div class="trainer-card-header" style="background:linear-gradient(135deg,${t.color}22,${t.color}11)">
           <div class="trainer-avatar-lg" style="background:${t.color}22;color:${t.color}">${ico(t.emoji,28)}</div>
           <div style="font-weight:700;font-size:15px">${t.firstName} ${t.lastName}</div>
-          <div style="font-size:12px;color:var(--text-muted);margin-top:2px">${t.specialties.join(' · ')}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px">${(t.specialties||[]).join(' · ')}</div>
           <div style="margin-top:6px">${ico('star',14)} ${t.avgRating} &nbsp;|&nbsp; ${t.experience} ýyl</div>
         </div>
         <div class="trainer-card-body">
-          <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Sapaklar: ${t.assignedClasses.length} | Şahsy: ${t.personalClients.length}/${t.maxPersonalClients}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Sapaklar: ${(t.assignedClasses||[]).length} | Şahsy: ${(t.personalClients||[]).length}/${t.maxPersonalClients||10}</div>
           <div class="progress-bar" style="margin-bottom:8px"><div class="progress-fill" style="width:${pct}%;background:${color}"></div></div>
-          <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px">${t.certifications.join(' · ')}</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px">${(t.certifications||[]).join(' · ')}</div>
           <div style="display:flex;gap:6px">
             <button class="btn btn-sm btn-secondary" style="flex:1" onclick="viewTrainer('${t.id}')">Profil</button>
             <button class="btn btn-sm btn-secondary" onclick="editTrainer('${t.id}')">${ico('pencil',14)}</button>
@@ -2357,8 +2359,8 @@ function viewTrainer(id){
   if(!t)return;
   const members=DB.get('members');
   const classes=DB.get('classes');
-  const clients=t.personalClients.map(mid=>members.find(m=>m.id===mid)).filter(Boolean);
-  const trainerClasses=t.assignedClasses.map(cid=>classes.find(c=>c.id===cid)).filter(Boolean);
+  const clients=(t.personalClients||[]).map(mid=>members.find(m=>m.id===mid)).filter(Boolean);
+  const trainerClasses=(t.assignedClasses||[]).map(cid=>classes.find(c=>c.id===cid)).filter(Boolean);
   openModal(`
   <div class="modal-header"><h3>${t.firstName} ${t.lastName}</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
   <div class="modal-body">
@@ -2396,8 +2398,8 @@ function viewTrainer(id){
     </div>
     <div class="tab-pane" data-pane="finance" data-pane-group="tr-detail">
       <div class="stat-row"><span class="stat-label">Esasy aýlyk</span><span class="stat-val">${formatTMT(t.salary)}</span></div>
-      <div class="stat-row"><span class="stat-label">Şahsy tälimçilik</span><span class="stat-val" style="color:var(--green)">+${formatTMT(t.personalClients.length*200)}</span></div>
-      <div class="stat-row"><span class="stat-label">Jemi bu aý</span><span class="stat-val" style="color:var(--cyan)">${formatTMT(t.salary+t.personalClients.length*200)}</span></div>
+      <div class="stat-row"><span class="stat-label">Şahsy tälimçilik</span><span class="stat-val" style="color:var(--green)">+${formatTMT((t.personalClients||[]).length*200)}</span></div>
+      <div class="stat-row"><span class="stat-label">Jemi bu aý</span><span class="stat-val" style="color:var(--cyan)">${formatTMT(t.salary+(t.personalClients||[]).length*200)}</span></div>
     </div>
   </div>
   <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">Ýap</button><button class="btn btn-secondary" onclick="editTrainer('${t.id}')">${ico('pencil',14)} Düzet</button></div>
@@ -2816,7 +2818,7 @@ function renderExpiringList(){
   const el=document.getElementById('expiring-list');
   if(!el)return;
   const members=DB.get('members').filter(m=>m.subscription?.active&&daysUntil(m.subscription?.endDate)<=10&&daysUntil(m.subscription?.endDate)>=0).sort((a,b)=>daysUntil(a.subscription.endDate)-daysUntil(b.subscription.endDate));
-  if(!members.length){el.innerHTML='<p style="color:var(--green);font-size:13px">${ico('check-circle-2',14)} Abunasy gutarýan agza ýok</p>';return;}
+  if(!members.length){el.innerHTML=`<p style="color:var(--green);font-size:13px">${ico('check-circle-2',14)} Abunasy gutarýan agza ýok</p>`;return;}
   el.innerHTML=`<div class="table-wrap"><table><thead><tr><th>Agza</th><th>Plan</th><th>Gutarma</th><th>Galýan</th><th>Işler</th></tr></thead><tbody>${members.map(m=>`<tr><td style="font-weight:600">${m.firstName} ${m.lastName}</td><td>${getPlanBadge(m.subscription?.plan)}</td><td>${formatDate(m.subscription.endDate)}</td><td style="color:${daysUntil(m.subscription.endDate)<=3?'var(--red)':'var(--yellow)'}"><strong>${daysUntil(m.subscription.endDate)} gün</strong></td><td><button class="btn btn-sm btn-primary" onclick="renewSubscriptionModal('${m.id}')">${ico('credit-card',14)} Uzat</button></td></tr>`).join('')}</tbody></table></div>`;
 }
 function openAddPaymentGeneralModal(){
@@ -2918,7 +2920,7 @@ function renderReports(ca){
 
   // Retention gauges
   setTimeout(()=>{
-    [{id:'ret3 Aý',v:87},{id:'ret6 Aý',v:72},{id:'ret12 Aý',v:58}].forEach(r=>{
+    [{l:'3 Aý',v:87},{l:'6 Aý',v:72},{l:'12 Aý',v:58}].forEach(r=>{
       const ctx=document.getElementById('ret'+r.l);
       if(!ctx)return;
       new Chart(ctx,{type:'doughnut',data:{labels:['Saklandy','Çykdy'],datasets:[{data:[r.v,100-r.v],backgroundColor:['#10B981','#1A1A24'],borderWidth:0}]},options:{cutout:'72%',plugins:{legend:{display:false},tooltip:{enabled:false}},animation:{animateRotate:true}}});
@@ -3205,6 +3207,104 @@ function processImport(input){
     }catch{toast.error('JSON faýly nädogry!');}
   };
   reader.readAsText(file);
+}
+
+// ==================== MISSING HELPERS ====================
+function updatePlanPrice(){
+  const sel=document.getElementById('mf-plan');
+  if(!sel)return;
+  const opt=sel.options[sel.selectedIndex];
+  const priceEl=document.getElementById('mf-plan-price');
+  if(priceEl&&opt)priceEl.textContent=opt.dataset.price?opt.dataset.price+' TMT/aý':'';
+}
+function assignTrainer(memberId){
+  const trainers=DB.get('trainers');
+  const member=DB.find('members',memberId);
+  if(!member)return;
+  openModal(`
+  <div class="modal-header"><h3>Tälimçi Bellemek</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+  <div class="modal-body">
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px">${member.firstName} ${member.lastName} üçin şahsy tälimçi saýla:</p>
+    <div class="form-group"><label>Tälimçi</label>
+      <select id="at-trainer">
+        <option value="">Ýok (tälimçisiz)</option>
+        ${trainers.map(t=>`<option value="${t.id}" ${member.personalTrainer===t.id?'selected':''}>${t.firstName} ${t.lastName} — ${(t.personalClients||[]).length}/${t.maxPersonalClients||10} müşderi</option>`).join('')}
+      </select>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeModal()">Ýatyr</button>
+    <button class="btn btn-primary" onclick="doAssignTrainer('${memberId}')">Bellemek</button>
+  </div>
+  `,'modal-sm');
+}
+function doAssignTrainer(memberId){
+  const tid=document.getElementById('at-trainer').value;
+  DB.update('members',memberId,{personalTrainer:tid||null});
+  if(tid){
+    const t=DB.find('trainers',tid);
+    if(t){const pc=[...(t.personalClients||[])];if(!pc.includes(memberId))pc.push(memberId);DB.update('trainers',tid,{personalClients:pc});}
+  }
+  toast.success('Tälimçi bellendi!');
+  closeModal();
+  if(currentSection==='members')filterMembers();
+}
+function editPlan(planId){
+  const s=DB.get('settings')||{};
+  const plans=Array.isArray(s.plans)?s.plans:[];
+  const p=plans.find(x=>x.id===planId);
+  if(!p){toast.error('Plan tapylmady!');return;}
+  openModal(`
+  <div class="modal-header"><h3>Plany Düzetmek</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+  <div class="modal-body">
+    <div class="form-group"><label>Ady *</label><input id="epl-name" value="${p.name||''}"/></div>
+    <div class="form-group"><label>Baha (TMT/aý) *</label><input id="epl-price" type="number" value="${p.price||0}"/></div>
+    <div class="form-group"><label>Açyklama</label><input id="epl-desc" value="${p.desc||''}"/></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeModal()">Ýatyr</button>
+    <button class="btn btn-primary" onclick="saveEditPlan(${planId})">Sakla</button>
+  </div>
+  `,'modal-sm');
+}
+function saveEditPlan(planId){
+  const s=DB.get('settings')||{};
+  const plans=(Array.isArray(s.plans)?s.plans:[]).map(p=>p.id===planId?{...p,name:document.getElementById('epl-name').value.trim()||p.name,price:+document.getElementById('epl-price').value||p.price,desc:document.getElementById('epl-desc').value}:p);
+  DB.set('settings',{...s,plans});
+  toast.success('Plan täzelendi!');
+  closeModal();
+  renderSettings(document.getElementById('content-area'));
+}
+function editHall(hallId){
+  const s=DB.get('settings')||{};
+  const halls=Array.isArray(s.halls)?s.halls:[];
+  const h=halls.find(x=>x.id===hallId);
+  if(!h){toast.error('Zal tapylmady!');return;}
+  openModal(`
+  <div class="modal-header"><h3>Zaly Düzetmek</h3><div class="modal-close" onclick="closeModal()">✕</div></div>
+  <div class="modal-body">
+    <div class="form-group"><label>Ady *</label><input id="ehl-name" value="${h.name||''}"/></div>
+    <div class="form-group"><label>Sig'ym *</label><input id="ehl-cap" type="number" value="${h.capacity||15}"/></div>
+    <div class="form-group"><label>Ýagdaý</label>
+      <select id="ehl-st">
+        <option value="open" ${h.status==='open'?'selected':''}>Açyk</option>
+        <option value="closed" ${h.status==='closed'?'selected':''}>Ýapyk</option>
+      </select>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeModal()">Ýatyr</button>
+    <button class="btn btn-primary" onclick="saveEditHall(${hallId})">Sakla</button>
+  </div>
+  `,'modal-sm');
+}
+function saveEditHall(hallId){
+  const s=DB.get('settings')||{};
+  const halls=(Array.isArray(s.halls)?s.halls:[]).map(h=>h.id===hallId?{...h,name:document.getElementById('ehl-name').value.trim()||h.name,capacity:+document.getElementById('ehl-cap').value||10,status:document.getElementById('ehl-st').value}:h);
+  DB.set('settings',{...s,halls});
+  toast.success('Zal täzelendi!');
+  closeModal();
+  renderSettings(document.getElementById('content-area'));
 }
 
 // ==================== INIT ====================
