@@ -1146,13 +1146,6 @@ tbody tr:nth-child(even){background:rgba(255,255,255,.012)}
 // ==================== GLOBAL ERROR HANDLER ====================
 window.onerror=function(msg,src,line,col,err){
   console.error('JS Error:',msg,src,line);
-  // If login screen is still visible, show inline error
-  const ls=document.getElementById('login-screen');
-  const le=document.getElementById('login-error');
-  if(ls&&ls.style.display!=='none'&&le){
-    le.textContent='Ulgam ýalňyşlygy: '+msg;
-    le.style.display='block';
-  }
   return false;
 };
 
@@ -1215,19 +1208,30 @@ const NAV_ITEMS=[
   {id:'settings',icon:'settings',label:'Sazlamalar'}
 ];
 
+const DB_OBJECT_KEYS=['settings'];
 const DB={
-  get:(k)=>{try{return JSON.parse(localStorage.getItem('gym_'+k))||[];}catch{return [];}},
+  get:(k)=>{
+    try{
+      const raw=localStorage.getItem('gym_'+k);
+      if(raw===null||raw===undefined)return DB_OBJECT_KEYS.includes(k)?{}:[];
+      const parsed=JSON.parse(raw);
+      if(parsed===null||parsed===undefined)return DB_OBJECT_KEYS.includes(k)?{}:[];
+      return parsed;
+    }catch{return DB_OBJECT_KEYS.includes(k)?{}:[];}
+  },
   set:(k,d)=>{try{localStorage.setItem('gym_'+k,JSON.stringify(d));}catch(e){console.warn('DB.set error',k,e);}},
-  add:(k,item)=>{const l=DB.get(k);const ni={...item,id:'ID-'+Date.now()+Math.random().toString(36).substr(2,4),createdAt:new Date().toISOString()};l.push(ni);DB.set(k,l);return ni;},
-  update:(k,id,patch)=>{const l=DB.get(k).map(i=>i.id===id?{...i,...patch,updatedAt:new Date().toISOString()}:i);DB.set(k,l);return l;},
-  remove:(k,id)=>{const l=DB.get(k).filter(i=>i.id!==id);DB.set(k,l);return l;},
-  find:(k,id)=>DB.get(k).find(i=>i.id===id),
-  count:(k,fn)=>fn?DB.get(k).filter(fn).length:DB.get(k).length,
+  add:(k,item)=>{const l=DB.get(k);const ni={...item,id:'ID-'+Date.now()+Math.random().toString(36).substr(2,4),createdAt:new Date().toISOString()};if(Array.isArray(l))l.push(ni);DB.set(k,Array.isArray(l)?l:[ni]);return ni;},
+  update:(k,id,patch)=>{const l=Array.isArray(DB.get(k))?DB.get(k).map(i=>i.id===id?{...i,...patch,updatedAt:new Date().toISOString()}:i):[];DB.set(k,l);return l;},
+  remove:(k,id)=>{const l=Array.isArray(DB.get(k))?DB.get(k).filter(i=>i.id!==id):[];DB.set(k,l);return l;},
+  find:(k,id)=>Array.isArray(DB.get(k))?DB.get(k).find(i=>i.id===id):null,
+  count:(k,fn)=>{const l=Array.isArray(DB.get(k))?DB.get(k):[];return fn?l.filter(fn).length:l.length;},
 };
 
 // ==================== DEMO DATA ====================
 function initDemoData(){
-  if(localStorage.getItem('gym_initialized'))return;
+  const alreadyInit=localStorage.getItem('gym_initialized');
+  const usersOk=DB.get('users').length>0;
+  if(alreadyInit&&usersOk)return;
   DB.set('members',DEMO_MEMBERS);
   DB.set('classes',DEMO_CLASSES);
   DB.set('trainers',DEMO_TRAINERS);
@@ -1319,38 +1323,63 @@ const DEMO_NOTIFICATIONS=[
 
 // ==================== AUTH ====================
 let currentUser=null;
+function showLoginError(msg){
+  const err=document.getElementById('login-error');
+  if(err){err.textContent=msg||'Ýalňyş login ýa-da parol!';err.style.display='block';}
+  const card=document.getElementById('login-card');
+  if(card){card.classList.add('shake');setTimeout(()=>card.classList.remove('shake'),400);}
+}
+function hideLoginError(){
+  const err=document.getElementById('login-error');
+  if(err)err.style.display='none';
+}
 function doLogin(){
-  const login=document.getElementById('login-user').value.trim();
-  const pass=document.getElementById('login-pass').value;
-  const remember=document.getElementById('login-remember').checked;
-  const storedUsers=DB.get('users');
-  // Try stored users first, then always fallback to DEFAULT_USERS
-  const u=(storedUsers.length?storedUsers:DEFAULT_USERS).find(x=>x.login===login&&x.password===pass)
-    ||DEFAULT_USERS.find(x=>x.login===login&&x.password===pass);
-  if(!u){
-    const err=document.getElementById('login-error');
-    err.style.display='block';
-    const card=document.getElementById('login-card');
-    card.classList.add('shake');
-    setTimeout(()=>card.classList.remove('shake'),400);
-    return;
+  try{
+    const login=(document.getElementById('login-user')?.value||'').trim();
+    const pass=document.getElementById('login-pass')?.value||'';
+    const remember=document.getElementById('login-remember')?.checked||false;
+    if(!login||!pass){showLoginError('Login we paroly giriziň!');return;}
+    hideLoginError();
+    const storedUsers=DB.get('users');
+    const allUsers=storedUsers.length?[...storedUsers,...DEFAULT_USERS.filter(d=>!storedUsers.find(s=>s.login===d.login))]:DEFAULT_USERS;
+    const u=allUsers.find(x=>x.login===login&&x.password===pass);
+    if(!u){showLoginError('Ýalňyş login ýa-da parol!');return;}
+    currentUser=u;
+    try{if(remember)localStorage.setItem('gym_session',JSON.stringify(u));}catch(e){}
+    try{launchApp();}catch(e){console.error('launchApp error',e);showLoginError('Ulgam ýalňyşlygy. Sahypany täzeleň.');}
+  }catch(e){
+    console.error('doLogin error',e);
+    showLoginError('Ulgam ýalňyşlygy. Sahypany täzeleň.');
   }
-  currentUser=u;
-  try{if(remember)localStorage.setItem('gym_session',JSON.stringify(u));}catch(e){}
-  try{launchApp();}catch(e){console.error('launchApp error',e);}
 }
 function doLogout(){
   currentUser=null;
-  localStorage.removeItem('gym_session');
-  document.getElementById('app').style.display='none';
-  document.getElementById('login-screen').style.display='flex';
-  document.getElementById('login-user').value='';
-  document.getElementById('login-pass').value='';
-  document.getElementById('login-error').style.display='none';
+  try{localStorage.removeItem('gym_session');}catch(e){}
+  const app=document.getElementById('app');
+  const ls=document.getElementById('login-screen');
+  if(app)app.style.display='none';
+  if(ls)ls.style.display='flex';
+  const u=document.getElementById('login-user');
+  const p=document.getElementById('login-pass');
+  if(u)u.value='';
+  if(p)p.value='';
+  hideLoginError();
 }
 function checkSession(){
-  const s=localStorage.getItem('gym_session');
-  if(s){try{currentUser=JSON.parse(s);launchApp();return;}catch{}}
+  try{
+    const s=localStorage.getItem('gym_session');
+    if(!s)return;
+    const u=JSON.parse(s);
+    if(!u||!u.login||!u.role)return;
+    // Validate user still exists
+    const allUsers=[...DB.get('users'),...DEFAULT_USERS];
+    const valid=allUsers.find(x=>x.login===u.login&&x.id===u.id)||u;
+    currentUser=valid;
+    launchApp();
+  }catch(e){
+    console.warn('checkSession error',e);
+    try{localStorage.removeItem('gym_session');}catch{}
+  }
 }
 
 // ==================== APP LAUNCH ====================
@@ -1387,18 +1416,23 @@ function buildNav(){
   nav.innerHTML=html;
 }
 function updateTopbar(){
-  document.getElementById('sidebar-avatar').textContent=currentUser.avatar;
-  document.getElementById('sidebar-avatar').style.background=currentUser.color;
-  document.getElementById('sidebar-name').textContent=currentUser.name;
+  if(!currentUser)return;
+  const setEl=(id,prop,val)=>{const el=document.getElementById(id);if(el)el[prop]=val;};
+  const setStyle=(id,prop,val)=>{const el=document.getElementById(id);if(el)el.style[prop]=val;};
+  setEl('sidebar-avatar','textContent',currentUser.avatar||'');
+  setStyle('sidebar-avatar','background',currentUser.color||'#EF4444');
+  setEl('sidebar-name','textContent',currentUser.name||'');
   const roleMap={superadmin:'Baş Admin',manager:'Menejer',receptionist:'Kabul Işgäri',trainer:'Tälimçi'};
-  document.getElementById('sidebar-role').textContent=roleMap[currentUser.role]||currentUser.role;
-  document.getElementById('topbar-avatar').textContent=currentUser.avatar;
-  document.getElementById('topbar-avatar').style.background=currentUser.color;
+  setEl('sidebar-role','textContent',roleMap[currentUser.role]||currentUser.role||'');
+  setEl('topbar-avatar','textContent',currentUser.avatar||'');
+  setStyle('topbar-avatar','background',currentUser.color||'#EF4444');
   updateNotifCount();
 }
 function updateNotifCount(){
-  const n=DB.get('notifications').filter(x=>!x.read).length;
-  document.getElementById('notif-count').textContent=n;
+  const notifs=DB.get('notifications');
+  const n=Array.isArray(notifs)?notifs.filter(x=>!x.read).length:0;
+  const el=document.getElementById('notif-count');
+  if(el)el.textContent=n;
 }
 
 // ==================== NAVIGATION ====================
@@ -1435,30 +1469,35 @@ function toggleSidebar(){
   const sb=document.getElementById('sidebar');
   const mc=document.getElementById('main-content');
   const tg=document.getElementById('sidebar-toggle');
+  if(!sb||!mc||!tg)return;
   sb.classList.toggle('collapsed',sidebarCollapsed);
   mc.classList.toggle('collapsed',sidebarCollapsed);
   tg.innerHTML=sidebarCollapsed?'<i data-lucide="chevron-right"></i>':'<i data-lucide="chevron-left"></i>';
-  lucide.createIcons({nodes:[tg]});
+  if(typeof lucide!=='undefined'){try{lucide.createIcons({nodes:[tg]});}catch(e){}}
 }
 function openMobileSidebar(){
-  document.getElementById('sidebar').classList.add('mobile-open');
-  document.getElementById('sidebar-overlay').classList.add('show');
+  document.getElementById('sidebar')?.classList.add('mobile-open');
+  document.getElementById('sidebar-overlay')?.classList.add('show');
 }
 function closeMobileSidebar(){
-  document.getElementById('sidebar').classList.remove('mobile-open');
-  document.getElementById('sidebar-overlay').classList.remove('show');
+  document.getElementById('sidebar')?.classList.remove('mobile-open');
+  document.getElementById('sidebar-overlay')?.classList.remove('show');
 }
 
 // ==================== TOAST ====================
 const toast={
   show(msg,type='success',dur=3500){
-    const icons={success:ico('check-circle-2',15),error:ico('x-circle',15),warning:ico('alert-triangle',15),info:ico('info',15)};
-    const el=document.createElement('div');
-    el.className=`toast toast-${type}`;
-    el.innerHTML=`<span>${icons[type]}</span><span class="toast-msg">${msg}</span><button class="toast-close" onclick="this.parentElement.remove()">✕</button>`;
-    document.getElementById('toast-container').appendChild(el);
-    setTimeout(()=>el.classList.add('toast-exit'),dur);
-    setTimeout(()=>el.remove(),dur+350);
+    try{
+      const icons={success:ico('check-circle-2',15),error:ico('x-circle',15),warning:ico('alert-triangle',15),info:ico('info',15)};
+      const el=document.createElement('div');
+      el.className=`toast toast-${type}`;
+      el.innerHTML=`<span>${icons[type]||''}</span><span class="toast-msg">${msg}</span><button class="toast-close" onclick="this.parentElement.remove()">✕</button>`;
+      const tc=document.getElementById('toast-container');
+      if(tc)tc.appendChild(el);
+      else document.body.appendChild(el);
+      setTimeout(()=>el.classList.add('toast-exit'),dur);
+      setTimeout(()=>{try{el.remove();}catch{}},dur+350);
+    }catch(e){console.warn('toast error',e);}
   },
   success:(m)=>toast.show(m,'success'),
   error:(m)=>toast.show(m,'error'),
@@ -1707,6 +1746,13 @@ function renderTodayGantt(){
   ganttEl.innerHTML=html;
 }
 
+function safeIco(name,size){
+  if(!name)return'';
+  // If it looks like a lucide icon name (kebab-case letters only), use ico()
+  if(/^[a-z][a-z0-9-]*$/.test(name))return ico(name,size||16);
+  // Otherwise treat as emoji/text
+  return`<span style="font-size:${size||16}px;line-height:1">${name}</span>`;
+}
 function renderActivityFeed(){
   const feedEl=document.getElementById('activity-feed');
   if(!feedEl)return;
@@ -1714,7 +1760,7 @@ function renderActivityFeed(){
   if(!notifs.length){feedEl.innerHTML='<div class="empty-state"><div class="ei"><i data-lucide="inbox"></i></div><p>Işler ýok</p></div>';return;}
   feedEl.innerHTML=notifs.map(n=>`
     <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid rgba(239,68,68,.05)">
-      <span style="display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:30px;height:30px;background:var(--surface2);border-radius:8px">${ico(n.icon,16)}</span>
+      <span style="display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:30px;height:30px;background:var(--surface2);border-radius:8px">${safeIco(n.icon,16)}</span>
       <div style="flex:1">
         <div style="font-size:12px;line-height:1.5">${n.text}</div>
         <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${timeAgo(n.time)}</div>
@@ -2999,7 +3045,7 @@ function filterNotifs(type){
   el.innerHTML=notifs.map(n=>`
   <div class="notif-item ${n.read?'':'unread'}" onclick="markRead('${n.id}')">
     <div class="notif-dot ${n.read?'read':''}"></div>
-    <div style="font-size:18px;flex-shrink:0">${n.icon}</div>
+    <div style="font-size:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center;width:32px;height:32px">${safeIco(n.icon,18)}</div>
     <div class="notif-content">
       <div class="notif-text" style="font-weight:${n.read?'400':'600'}">${n.text}</div>
       <div class="notif-time">${timeAgo(n.time)}</div>
@@ -3218,13 +3264,14 @@ function loadDemoDataFresh(){
 }
 function importData(){document.getElementById('import-file').click();}
 function processImport(input){
-  const file=input.files[0];
+  const file=input?.files?.[0];
   if(!file)return;
   const reader=new FileReader();
+  const VALID_KEYS=['members','classes','trainers','equipment','transactions','nutrition','notifications','settings','users'];
   reader.onload=(e)=>{
     try{
       const data=JSON.parse(e.target.result);
-      Object.keys(data).forEach(k=>{if(DB.get(k)!==null)DB.set(k,data[k]);});
+      Object.keys(data).forEach(k=>{if(VALID_KEYS.includes(k))DB.set(k,data[k]);});
       toast.success('Maglumatlar import edildi!');
     }catch{toast.error('JSON faýly nädogry!');}
   };
