@@ -1143,6 +1143,19 @@ tbody tr:nth-child(even){background:rgba(255,255,255,.012)}
 </div>
 
 <script>
+// ==================== GLOBAL ERROR HANDLER ====================
+window.onerror=function(msg,src,line,col,err){
+  console.error('JS Error:',msg,src,line);
+  // If login screen is still visible, show inline error
+  const ls=document.getElementById('login-screen');
+  const le=document.getElementById('login-error');
+  if(ls&&ls.style.display!=='none'&&le){
+    le.textContent='Ulgam ýalňyşlygy: '+msg;
+    le.style.display='block';
+  }
+  return false;
+};
+
 // ==================== DATA ====================
 const DEFAULT_USERS = [
   {id:1,name:'Baş Admin',login:'admin',password:'admin123',role:'superadmin',avatar:'BA',color:'#EF4444'},
@@ -1344,9 +1357,14 @@ function checkSession(){
 function launchApp(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='flex';
-  buildNav();
-  updateTopbar();
-  navigate('dashboard');
+  try{buildNav();}catch(e){console.warn('buildNav error',e);}
+  try{updateTopbar();}catch(e){console.warn('updateTopbar error',e);}
+  try{navigate('dashboard');}catch(e){
+    console.warn('navigate error',e);
+    // Show a basic fallback if dashboard fails to render
+    const ca=document.getElementById('content-area');
+    if(ca)ca.innerHTML='<div style="padding:40px;text-align:center;color:rgba(255,255,255,.4)"><p style="font-size:18px;margin-bottom:10px">Dolandyryş Tagtasy</p><p style="font-size:13px">Sahypa ýüklenýär...</p></div>';
+  }
 }
 function buildNav(){
   const perms=PERMISSIONS[currentUser.role]||[];
@@ -3312,10 +3330,10 @@ function saveEditHall(hallId){
 }
 
 // ==================== INIT ====================
-initDemoData();
-checkSession();
-if(typeof lucide!=='undefined')setTimeout(()=>lucide.createIcons(),500);
+try{initDemoData();}catch(e){console.warn('initDemoData error',e);}
+try{checkSession();}catch(e){console.warn('checkSession error',e);}
+if(typeof lucide!=='undefined')setTimeout(()=>{try{lucide.createIcons();}catch(e){}},500);
 </script>
-<script>window.addEventListener("DOMContentLoaded",function(){lucide.createIcons();});</script>
+<script>window.addEventListener("DOMContentLoaded",function(){if(typeof lucide!=='undefined'){try{lucide.createIcons();}catch(e){}}});</script>
 </body>
 </html>
